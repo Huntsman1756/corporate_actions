@@ -27,13 +27,20 @@ def _facts(result: dict, event: dict) -> dict:
     }
 
 
+def _parlem_event(result: dict) -> dict:
+    return next(
+        e
+        for e in result["body"]["events"]
+        if e["event_type"] == "RIGHTS_ISSUE"
+        and (e.get("issuer_name") or "").startswith("PARLEM")
+    )
+
+
 def test_parlem_real_borme_document(repo_root):
     result = run_pipeline(repo_root, manifest_relpath=REAL_MANIFEST)
     verification = result["body"]["verification"]
-    assert verification and verification[0]["sha256_match"] is True
-    events = result["body"]["events"]
-    assert len(events) == 1
-    event = events[0]
+    assert verification and all(v["sha256_match"] for v in verification)
+    event = _parlem_event(result)
     assert event["event_type"] == "RIGHTS_ISSUE"
     assert event["issuer_name"].startswith("PARLEM TELECOM")
     facts = _facts(result, event)
@@ -72,7 +79,7 @@ def test_parlem_real_borme_document(repo_root):
 
 def test_parlem_real_dates_not_invented(repo_root):
     result = run_pipeline(repo_root, manifest_relpath=REAL_MANIFEST)
-    event = result["body"]["events"][0]
+    event = _parlem_event(result)
     facts = _facts(result, event)
     # El anuncio expresa el periodo de forma relativa: no hay fechas ex/record/payment.
     for invented in ("date.ex_date", "date.record_date", "date.payment_date"):
@@ -82,7 +89,7 @@ def test_parlem_real_dates_not_invented(repo_root):
 
 def test_parlem_real_provenance_points_to_document_fragment(repo_root):
     result = run_pipeline(repo_root, manifest_relpath=REAL_MANIFEST)
-    event = result["body"]["events"][0]
+    event = _parlem_event(result)
     facts = _facts(result, event)
     locator = facts["amount.issue_price_per_share"]["evidence_locator"]
     assert "BORME-C-2026-4914" in locator

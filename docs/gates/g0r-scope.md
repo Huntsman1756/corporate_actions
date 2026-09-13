@@ -11,15 +11,17 @@ Status: OPEN (iniciado 2026-09-13). Sustituye a G1 como siguiente fase.
 ## Scope
 
 ```
-R1  Persist canonical identity                       [DONE]
-R2  Real CNMV parser        → Almirall               [PENDING]
-R3  Real BORME parser       → Parlem                 [DONE]
-R4  Real Portfolio parser   → P3                     [PENDING]
-R5  Real issuer/CNMV dual   → SAN                    [PENDING]
-R6  Real ESMA_FIRDS_LISTINGS_V1 adapter              [PENDING]
-R7  Resolve CNMV_CHANNEL_COVERAGE_P3                 [PENDING]
-R8  Full second-run from raw sources                 [PENDING]
+R1  Persist canonical identity                       [PASS]
+R2  Real CNMV parser        → Almirall               [INCONCLUSIVE: sin correccion real]
+R3  Real BORME parser       → Parlem                 [PASS]
+R4  Real Portfolio parser   → P3                     [BLOCKED: Portfolio HTTP 500]
+R5  Real issuer/CNMV dual   → SAN                    [BLOCKED: falta pareja IR]
+R6  Real ESMA_FIRDS_LISTINGS_V1 adapter              [PASS]
+R7  Resolve CNMV_CHANNEL_COVERAGE_P3                 [PASS: NOT_PROVEN]
+R8  Full second-run from raw sources                 [PASS en corpus real disponible]
 ```
+
+Detalle de resultados y hallazgos: `docs/G0R-FINDINGS.md`.
 
 ## Hallazgo de R3 (validación real)
 

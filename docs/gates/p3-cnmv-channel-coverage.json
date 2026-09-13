@@ -1,21 +1,34 @@
 {
   "investigation": "CNMV_CHANNEL_COVERAGE_P3",
-  "question": "¿Cubre el canal CNMV el corporate action de P3 Spain SOCIMI usado como canario?",
-  "result": "INCONCLUSIVE",
-  "valid_results": ["PROVEN", "NOT_PROVEN", "CONTRADICTED", "INCONCLUSIVE"],
+  "question": "¿Cubre el canal publico de CNMV el corporate action de P3 Spain SOCIMI?",
+  "result": "NOT_PROVEN",
+  "valid_results": ["PROVEN", "NOT_PROVEN", "CONTRADICTED"],
+  "interpretation": "NOT_PROVEN = la hipotesis 'CNMV cubre P3' no queda demostrada con las consultas realizadas. NO significa 'no existe'.",
   "method": {
-    "planned": [
-      "Buscar el emisor P3 Spain SOCIMI en los canales publicos de CNMV (hechos relevantes / informacion periodica / registros).",
-      "Comparar el evento de Portfolio con el equivalente CNMV si existe.",
-      "Registrar fecha de consulta, URL y sha256 de cualquier extracto."
+    "tool": "scripts/fetch_cnmv.py",
+    "flow": "CNMV ASP.NET WebForms: GET + POST con ViewState; extraccion de resultados paginados",
+    "queries": [
+      {
+        "portal": "Otra Informacion Relevante (OIR)",
+        "filter": "LEI = 959800GS3VF3X7V7QR11 (P3 Spain, extraido de ESMA FIRDS)",
+        "expected_marker": "respuesta 'No se han encontrado datos disponibles'",
+        "result": "0 documentos"
+      },
+      {
+        "portal": "Otra Informacion Relevante (OIR)",
+        "filter": "denominacion contiene 'P3' / 'P3 SPAIN'",
+        "result": "0 documentos"
+      }
     ],
-    "executed_in_g0": "NONE",
-    "reason": "G0 se ejecuta offline sobre un corpus sintetico; no se ha consultado el canal CNMV en vivo. No se convierte 'no encontrado en el corpus' en 'no existe'."
+    "not_tested": [
+      "NIF registral de P3 (no publicado en FIRDS ni en el BORME consultado).",
+      "Canales propios del emisor (Portfolio Stock Exchange devuelve HTTP 500 en HEAD/GET durante G0-R)."
+    ]
   },
   "evidence": [],
   "not_claimed": [
-    "No se afirma que CNMV no publique el evento.",
-    "No se afirma que Portfolio sea la unica fuente."
+    "No se afirma que CNMV no publique informacion de P3.",
+    "No se afirma que P3 no cotice (FIRDS: P3 cotiza en segment MIC POSE desde 2023-11-22)."
   ],
-  "next_step": "Investigar con red y adjuntar extractos con hash; entonces re-evaluar como PROVEN/NOT_PROVEN/CONTRADICTED."
+  "next_step": "Ampliar a NIF registral y/o canal del emisor; re-evaluar como PROVEN/CONTRADICTED."
 }

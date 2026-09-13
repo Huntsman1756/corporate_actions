@@ -26,6 +26,50 @@
         "terms_reviewed_at": "2026-09-13",
         "redistribution": "HASH_AND_METADATA_ONLY"
       }
+    },
+    {
+      "source_id": "CNMV",
+      "official_document_id": "CNMV-IP-1884",
+      "content_sha256": "b9d8b44c5699f2afd6a9e516d700a9a6257716f932175c406c3f6cb5488d0680",
+      "retrieved_at": "2026-09-13T00:00:00Z",
+      "publication_date": "2023-06-12",
+      "media_type": "application/pdf",
+      "raw_relpath": "g0/corpus/raw/cnmv/almirall/ip-1884.pdf",
+      "synthetic": false,
+      "notes": "Almirall: lanzamiento de aumento de capital con exclusion del derecho de suscripcion preferente (ABB).",
+      "acquisition": {
+        "url": "https://www.cnmv.es/webservices/verdocumento/ver?t=%7b6fb06a75-26a7-4b3a-9898-37fb15e3fcbe%7d",
+        "official_identifier": "CNMV-IP-1884",
+        "registry": "Informacion Privilegiada",
+        "registration_number": 1884,
+        "retrieved_by": "ca-es G0-R",
+        "http_status": 200,
+        "terms_source": "https://www.cnmv.es/portal/inversor/aviso-legal.aspx",
+        "terms_reviewed_at": "2026-09-13",
+        "redistribution": "NOT_REDISTRIBUTED"
+      }
+    },
+    {
+      "source_id": "CNMV",
+      "official_document_id": "CNMV-IP-1885",
+      "content_sha256": "af046988125f5260f88e1f031d1e4f2745730239a5cfe74efacfdf5ef656177b",
+      "retrieved_at": "2026-09-13T00:00:00Z",
+      "publication_date": "2023-06-13",
+      "media_type": "application/pdf",
+      "raw_relpath": "g0/corpus/raw/cnmv/almirall/ip-1885.pdf",
+      "synthetic": false,
+      "notes": "Almirall: fijacion de terminos definitivos; referencia explicita a la comunicacion 1884.",
+      "acquisition": {
+        "url": "https://www.cnmv.es/webservices/verdocumento/ver?t=%7be4bba367-14ce-496b-b2fe-1cd5635fee1f%7d",
+        "official_identifier": "CNMV-IP-1885",
+        "registry": "Informacion Privilegiada",
+        "registration_number": 1885,
+        "retrieved_by": "ca-es G0-R",
+        "http_status": 200,
+        "terms_source": "https://www.cnmv.es/portal/inversor/aviso-legal.aspx",
+        "terms_reviewed_at": "2026-09-13",
+        "redistribution": "NOT_REDISTRIBUTED"
+      }
     }
   ]
 }

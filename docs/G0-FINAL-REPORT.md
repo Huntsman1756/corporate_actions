@@ -107,10 +107,16 @@ documento `SUPPORTS` ≠ revisión; corrección explícita → revisión.
 | publication_lag_days | min 8 / max 165 (6 muestras) |
 | result_sha | `79d8015800359e78a1aa07014030656f4b1f75247a1587c10fd3af22a38d11e4` |
 | second run | `deterministic: true` |
-| gates | 54 PASS / 0 FAIL / 1 INCONCLUSIVE |
+| gates | 55 PASS / 0 FAIL / 0 INCONCLUSIVE |
 
-Gate INCONCLUSIVE: `CNMV_CHANNEL_COVERAGE_P3` (ver §9). **Overall:
-INCONCLUSIVE**, no PASS, porque un gate requerido no está resuelto.
+`CNMV_CHANNEL_COVERAGE_P3` quedo resuelto en G0-R como **NOT_PROVEN**
+(investigacion online; ver §9 y `docs/gates/p3-cnmv-channel-coverage.json`).
+El gate mide que la investigacion se resuelva con un resultado valido, no
+que la cobertura sea positiva. **Overall de gates: PASS.**
+
+Nota: los gates G0 se evaluan sobre el corpus canario sintetico; la
+validacion con fuentes reales es el objeto de G0-R (ver
+`docs/G0R-FINDINGS.md`).
 
 ## 8. Canarios cubiertos
 
@@ -128,8 +134,10 @@ INCONCLUSIVE**, no PASS, porque un gate requerido no está resuelto.
 
 ## 9. Problemas encontrados
 
-- `CNMV_CHANNEL_COVERAGE_P3`: no investigable offline → `INCONCLUSIVE`.
-  No se convierte "no encontrado en el corpus" en "no existe".
+- `CNMV_CHANNEL_COVERAGE_P3`: resuelto en G0-R como **NOT_PROVEN** con
+  consultas reproducibles (CNMV OIR por LEI de P3 y por denominacion → 0
+  documentos). No se convierte "no encontrado" en "no existe"; Portfolio
+  devolvio HTTP 500.
 - La capa ESMA existente no expone LEI/ISIN/MIC a nivel listing; se
   definió el contrato y un adapter de artefacto normalizado, dejando
   explícito que la extracción pertenece a la capa ESMA (ver §10).

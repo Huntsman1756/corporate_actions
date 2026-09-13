@@ -8,7 +8,11 @@ license = { text = "Apache-2.0" }
 dependencies = []
 
 [project.optional-dependencies]
+# Tooling/CI only; el core ca_es es stdlib-only.
 tooling = ["jsonschema>=4.21,<5"]
+# Ingesta de documentos PDF reales (CNMV). Se importa de forma perezosa;
+# el core sigue siendo stdlib-only. Licencia BSD-3-Clause.
+pdf = ["pypdf>=4,<6"]
 
 [project.scripts]
 ca-es = "ca_es.cli:main"

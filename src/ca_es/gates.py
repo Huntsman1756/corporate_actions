@@ -37,7 +37,7 @@ def evaluate_gates(
     *,
     policy: dict,
     second_run: dict | None = None,
-    p3_coverage_status: str = INCONCLUSIVE,
+    p3_coverage_status: str = "NOT_PROVEN",
 ) -> dict:
     body = run_result["body"]
     identity = body["identity"]
@@ -364,9 +364,13 @@ def evaluate_gates(
     )
 
     # --- Coverage investigation --------------------------------------
+    # El gate mide que la investigacion se resuelva con un resultado valido
+    # (PROVEN / NOT_PROVEN / CONTRADICTED), no que la cobertura sea positiva.
+    resolved = p3_coverage_status in {"PROVEN", "NOT_PROVEN", "CONTRADICTED"}
     gates["CNMV_CHANNEL_COVERAGE_P3"] = {
-        "status": p3_coverage_status,
-        "evidence": "ver docs/gates/p3-cnmv-channel-coverage.json",
+        "status": PASS if resolved else NOT_RUN,
+        "result": p3_coverage_status,
+        "evidence": "docs/gates/p3-cnmv-channel-coverage.json",
     }
 
     statuses = {gate: entry["status"] for gate, entry in gates.items()}

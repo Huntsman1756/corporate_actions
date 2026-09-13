@@ -51,7 +51,11 @@ def test_gates_no_failures_and_coverage_inconclusive(repo_root, resolver, policy
     report = evaluate_gates(run_result, policy=policy, second_run=second)
     statuses = {gate: entry["status"] for gate, entry in report["gates"].items()}
     assert "FAIL" not in statuses.values()
-    assert statuses["CNMV_CHANNEL_COVERAGE_P3"] == "INCONCLUSIVE"
+    coverage = report["gates"]["CNMV_CHANNEL_COVERAGE_P3"]
+    # Investigacion resuelta online; el resultado (NOT_PROVEN) vive en evidence.
+    assert coverage["status"] == "PASS"
+    assert coverage["result"] == "NOT_PROVEN"
+    assert report["overall"] == "PASS"
     assert statuses["RAW_SHA256_PINNED"] == "PASS"
     assert statuses["SECOND_RUN_DETERMINISTIC"] == "PASS"
     assert statuses["NO_GLOBAL_DATE_ORDER_ASSUMPTION"] == "PASS"

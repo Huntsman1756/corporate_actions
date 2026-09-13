@@ -77,12 +77,17 @@ Los fixtures son **sintéticos y redistribuibles**: transcriben
 exclusivamente hechos explicitados en el alcance. El corpus real
 permanece `LOCAL_ONLY` (ADR-011).
 
-## Estado G0
+## Estado G0 / G0-R
 
-- Tests: **53 PASS**.
-- Gates: **54 PASS / 0 FAIL / 1 INCONCLUSIVE** (`CNMV_CHANNEL_COVERAGE_P3`,
-  pendiente de investigación con red).
-- Runtime: stdlib-only, sin red, sin credenciales.
+- Tests: **75 PASS**.
+- Gates G0: **55 PASS / 0 FAIL / 0 INCONCLUSIVE**
+  (`CNMV_CHANNEL_COVERAGE_P3` resuelto como `NOT_PROVEN`).
+- Runtime del core: stdlib-only. La extracción PDF real es un extra
+  opcional (`pypdf`) usado solo al ingerir documentos reales.
 
-Informe completo: `docs/G0-FINAL-REPORT.md`.
+Validación con fuentes reales (**G0-R**): BORME Parlem real, ESMA/FIRDS
+real (173 listings point-in-time), CNMV PDF real (Almirall 1884/1885),
+determinismo desde PDFs reales. Ver `docs/G0R-FINDINGS.md`.
+
+Informe G0: `docs/G0-FINAL-REPORT.md`.
 Decisiones: `docs/decisions/`. Gates: `docs/gates/`. Fuentes: `docs/sources/`.
