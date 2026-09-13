@@ -1,0 +1,104 @@
+{
+  "preregistration_version": "CA_ES_G1_PREREG_V1",
+  "frozen_at": "2026-09-13",
+  "parent_g0": "4931593 / g0r3",
+  "question": "Porcentaje del universo real cubrible con calidad operativa, y a que coste en intervencion y latencia.",
+  "window": {"from": "2025-01-01", "to": "2026-09-13", "can_shrink": true, "can_expand_selectively": false},
+  "target_size": {"min": 40, "max": 50},
+  "strata": [
+    {"id": "MAIN_MARKET", "target": 20, "description": "Mercado principal / emisores grandes"},
+    {"id": "BME_GROWTH_MTF", "target": 10, "description": "BME Growth / MTF"},
+    {"id": "PORTFOLIO", "target": 10, "description": "Portfolio Stock Exchange"},
+    {"id": "ADVERSARIAL", "target": 10, "description": "Adversariales / otros casos publicos"}
+  ],
+  "families": [
+    "CASH_DIVIDEND",
+    "SCRIP_DIVIDEND",
+    "RIGHTS_ISSUE",
+    "CAPITAL_INCREASE",
+    "CAPITAL_REDUCTION",
+    "SPLIT",
+    "REVERSE_SPLIT",
+    "MERGER",
+    "TENDER",
+    "REDEMPTION"
+  ],
+  "quota_policy": "NO se fuerzan cuotas por tipo o estrato que no aparezcan; la ausencia es un resultado de cobertura.",
+  "dev_holdout": {
+    "development": 35,
+    "holdout": 15,
+    "holdout_frozen_before_parser_tuning": true,
+    "on_holdout_fix_keep": ["first_run_result", "final_run_result", "reason_for_change"]
+  },
+  "regression_fixtures_excluded_from_metrics": ["MFE", "Santander", "Parlem", "P3"],
+  "state_semantics": {
+    "UNKNOWN": "La fuente se proceso correctamente, pero el dato no estaba publicado.",
+    "MISSING": "El pipeline no consiguio extraer/resolver algo que SI estaba publicado."
+  },
+  "human_intervention": {
+    "human_relation_adjudication": "ALLOWED",
+    "human_fact_entry": "FORBIDDEN",
+    "metric": "manual_adjudication_rate = manual_adjudications / events"
+  },
+  "hard_fail_criteria": {
+    "field_provenance_rate": {"operator": "<", "value": 1.0},
+    "silent_conflicts": {"operator": ">", "value": 0},
+    "unproven_auto_merges": {"operator": ">", "value": 0},
+    "human_authored_financial_facts": {"operator": ">", "value": 0},
+    "financial_precision_loss": {"operator": ">", "value": 0},
+    "second_run_determinism": {"operator": "!=", "value": 1.0}
+  },
+  "soft_metrics_policy": "Las metricas de cobertura/completitud se miden primero; los umbrales no se preregistran.",
+  "metrics": {
+    "DISCOVERY": [
+      {"name": "events_discovered", "status": "NOT_RUN"},
+      {"name": "events_ingested", "status": "NOT_RUN"},
+      {"name": "source_document_retrieval_rate", "status": "NOT_RUN"}
+    ],
+    "IDENTITY": [
+      {"name": "issuer_identity_exact_rate", "status": "NOT_RUN"},
+      {"name": "instrument_identity_exact_rate", "status": "NOT_RUN"},
+      {"name": "event_identity_resolved_rate", "status": "NOT_RUN"},
+      {"name": "manual_adjudication_rate", "status": "NOT_RUN"}
+    ],
+    "FACT_COMPLETENESS": [
+      {"name": "event_type_rate", "status": "NOT_RUN"},
+      {"name": "ex_date_rate", "status": "NOT_RUN"},
+      {"name": "record_date_rate", "status": "NOT_RUN"},
+      {"name": "payment_date_rate", "status": "NOT_RUN"},
+      {"name": "amount_or_ratio_rate", "status": "NOT_RUN"},
+      {"name": "currency_rate", "status": "NOT_RUN"}
+    ],
+    "QUALITY": [
+      {"name": "field_provenance_rate", "status": "NOT_RUN"},
+      {"name": "unknown_rate", "status": "NOT_RUN"},
+      {"name": "missing_rate", "status": "NOT_RUN"},
+      {"name": "conflict_rate", "status": "NOT_RUN"},
+      {"name": "revision_detection_rate", "status": "NOT_RUN"},
+      {"name": "unresolved_identity_rate", "status": "NOT_RUN"}
+    ],
+    "REFERENCE_DATA": [
+      {"name": "isin_binding_rate", "status": "NOT_RUN"},
+      {"name": "lei_resolution_rate", "status": "NOT_RUN"},
+      {"name": "mic_resolution_rate", "status": "NOT_RUN"},
+      {"name": "point_in_time_mic_rate", "status": "NOT_RUN"}
+    ],
+    "OPERATIONS": [
+      {"name": "publication_lag", "status": "NOT_RUN"},
+      {"name": "source_to_canonical_latency", "status": "NOT_RUN"}
+    ],
+    "REPRODUCIBILITY": [
+      {"name": "second_run_determinism", "status": "NOT_RUN"},
+      {"name": "raw_retrieval_reproducibility", "status": "NOT_RUN"}
+    ]
+  },
+  "discipline": [
+    "1. Congelar este protocolo (commit/tag) antes de ingerir.",
+    "2. Construir el marco de muestreo determinista.",
+    "3. Ingerir development (35) sin tocar holdout.",
+    "4. Ajustar parsers solo con development; registrar cambios.",
+    "5. Ejecutar holdout (15) en frio; conservar first/final/reason.",
+    "6. Informar metricas por estrato y globales; declarar cobertura y huecos.",
+    "7. G1 no se declara PASS por tests, sino por metricas."
+  ]
+}

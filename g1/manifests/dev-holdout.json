@@ -1,0 +1,15 @@
+{
+  "split_version": "CA_ES_G1_DEV_HOLDOUT_V1",
+  "frozen_at": "2026-09-13",
+  "policy": {
+    "development": 35,
+    "holdout": 15,
+    "holdout_frozen_before_parser_tuning": true,
+    "on_holdout_fix_keep": ["first_run_result", "final_run_result", "reason_for_change"],
+    "regression_fixtures_excluded_from_metrics": ["MFE", "Santander", "Parlem", "P3"]
+  },
+  "status": "FROZEN_AWAITING_SELECTION",
+  "development": [],
+  "holdout": [],
+  "holdout_runs": []
+}

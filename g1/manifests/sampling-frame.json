@@ -1,0 +1,26 @@
+{
+  "frame_version": "CA_ES_G1_SAMPLING_FRAME_V1",
+  "frozen_at": "2026-09-13",
+  "status": "FROZEN_AWAITING_SELECTION",
+  "window": {"from": "2025-01-01", "to": "2026-09-13"},
+  "selection_rule": "Calendario/registro oficial dentro de la ventana; orden por identificador oficial; sin seleccion por conveniencia.",
+  "quota_policy": "No se fuerzan cuotas que no aparezcan; la ausencia se reporta como hueco de cobertura.",
+  "strata": [
+    {"id": "MAIN_MARKET", "target": 20, "selected": [], "notes": "Mercado principal / emisores grandes"},
+    {"id": "BME_GROWTH_MTF", "target": 10, "selected": [], "notes": "BME Growth / MTF"},
+    {"id": "PORTFOLIO", "target": 10, "selected": [], "notes": "Portfolio Stock Exchange"},
+    {"id": "ADVERSARIAL", "target": 10, "selected": [], "notes": "Adversariales / otros casos publicos"}
+  ],
+  "families": [
+    "CASH_DIVIDEND",
+    "SCRIP_DIVIDEND",
+    "RIGHTS_ISSUE",
+    "CAPITAL_INCREASE",
+    "CAPITAL_REDUCTION",
+    "SPLIT",
+    "REVERSE_SPLIT",
+    "MERGER",
+    "TENDER",
+    "REDEMPTION"
+  ]
+}

@@ -2,10 +2,14 @@
 /raw/
 g0/corpus/raw/*
 !g0/corpus/raw/.gitkeep
+g1/corpus/raw/*
+!g1/corpus/raw/.gitkeep
 
 # outputs regenerables de un run (se recrean; Phase H los borra)
 g0/results/*.json
 !g0/results/.gitkeep
+g1/results/*.json
+!g1/results/.gitkeep
 
 # Python
 __pycache__/

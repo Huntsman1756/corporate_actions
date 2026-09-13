@@ -99,4 +99,15 @@ Ver `docs/G0R-FINDINGS.md`. El canario sintético Almirall 2026 queda
 `RETIRED / INVALIDATED_BY_REAL_EVIDENCE`.
 
 Informe G0: `docs/G0-FINAL-REPORT.md`.
+Validación real: `docs/G0R-FINDINGS.md`.
 Decisiones: `docs/decisions/`. Gates: `docs/gates/`. Fuentes: `docs/sources/`.
+
+## G1 — preregistrado (no iniciado)
+
+Protocolo de muestreo y métricas **congelado antes de ingerir**:
+`docs/gates/g1-scope.md` + `docs/gates/g1-preregistered.json`.
+Corpus estratificado 40–50 (35 dev / 15 holdout), ventana
+2025-01-01 → 2026-09-13, `UNKNOWN ≠ MISSING`, intervención humana solo en
+relaciones, y criterios duros de integridad (provenance 1.0, 0 conflictos
+silenciados, 0 merges no probados, 0 facts humanos, 0 pérdida de
+precisión, determinismo 1.0). Ver `ADR-014`.
