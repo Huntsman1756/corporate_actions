@@ -34,6 +34,7 @@ class Claim:
     date_kind: str | None = None
     asserted_as_of: str | None = None
     evidence_mode: str = "EXPLICIT"
+    fact_origin: str = "SOURCE_ASSERTION"
 
 
 @dataclass(frozen=True)

@@ -1,0 +1,18 @@
+{
+  "ledger_version": "CA_ES_IDENTITY_LEDGER_V1",
+  "relations": [],
+  "canonical_bindings": {},
+  "adjudications": [
+    {
+      "relation": "SAME_CORPORATE_ACTION",
+      "a": "6805bafa-526f-5bef-873a-c505ac7747f0",
+      "b": "6443e2be-b70d-50c7-88d1-4a62f43789e9",
+      "reviewed_at": "2026-09-13",
+      "reviewer": "ca-es G0-R2",
+      "evidence": [
+        "CNMV-SAN-DIV-2026 (informacion privilegiada) y SAN-IR-REMUNERATION describen el mismo dividendo complementario 2025: 0,1250 EUR/accion, pagado en mayo de 2026.",
+        "No hay identificador comun publicado en la pagina IR que permita un enlace determinista; se registra adjudicacion humana de relacion."
+      ]
+    }
+  ]
+}

@@ -79,15 +79,21 @@ permanece `LOCAL_ONLY` (ADR-011).
 
 ## Estado G0 / G0-R
 
-- Tests: **75 PASS**.
+- Tests: **84 PASS**.
 - Gates G0: **55 PASS / 0 FAIL / 0 INCONCLUSIVE**
   (`CNMV_CHANNEL_COVERAGE_P3` resuelto como `NOT_PROVEN`).
 - Runtime del core: stdlib-only. La extracción PDF real es un extra
   opcional (`pypdf`) usado solo al ingerir documentos reales.
 
-Validación con fuentes reales (**G0-R**): BORME Parlem real, ESMA/FIRDS
-real (173 listings point-in-time), CNMV PDF real (Almirall 1884/1885),
-determinismo desde PDFs reales. Ver `docs/G0R-FINDINGS.md`.
+Validación con fuentes reales (**G0-R2**):
+- MFE-MEDIAFOREUROPE `40280 → 40319`: **revisión explícita real**.
+- Santander división complementaria: **reconciliación CNMV + IR**.
+- P3 Spain SOCIMI: documento Portfolio real (record<ex, payment=ex,
+  0,11840672 EUR, Euroclear France).
+- Parlem BORME real, ESMA/FIRDS real (173 listings point-in-time),
+  determinismo desde PDFs reales.
+Ver `docs/G0R-FINDINGS.md`. El canario sintético Almirall 2026 queda
+`RETIRED / INVALIDATED_BY_REAL_EVIDENCE`.
 
 Informe G0: `docs/G0-FINAL-REPORT.md`.
 Decisiones: `docs/decisions/`. Gates: `docs/gates/`. Fuentes: `docs/sources/`.

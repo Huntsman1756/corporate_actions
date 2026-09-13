@@ -2,6 +2,7 @@
   "preregistration_version": "CA_ES_G0R_GATES_V1",
   "registered_at": "2026-09-13",
   "evaluated_at": "2026-09-13",
+  "phase": "G0-R2",
   "parent": "CA_ES_G0_GATES_V1",
   "policy": {
     "statuses": ["PASS", "FAIL", "INCONCLUSIVE", "NOT_RUN"],
@@ -12,52 +13,36 @@
     ]
   },
   "gates": {
-    "R1_CANONICAL_ID_STABLE": {
-      "requirement": "El canonical no cambia al entrar un candidate menor; bindings persistidos.",
+    "R1_CANONICAL_ID_STABLE": {"requirement": "El canonical no cambia al entrar un candidate menor; bindings persistidos.", "status": "PASS", "evidence": "ADR-012; 5 tests"},
+    "R2_REAL_EXPLICIT_REVISION": {
+      "requirement": "Caso real de modificacion explicita: misma CA, relacion explicita, modificacion parcial, nueva revision, revision previa retenida.",
       "status": "PASS",
-      "evidence": "ca_es/identity/engine.py + ledger canonical_bindings; 5 tests; ADR-012"
+      "evidence": "MFE-MEDIAFOREUROPE CNMV OIR 40280 -> 40319; 'nuevas fechas relativas a la distribucion del dividendo'; gen0 pago 29/07/2026 -> gen1 pago 22/07/2026; importe 0,22 EUR no reescrito; SHA-256 pinned; 2 tests"
     },
-    "R2_CNMV_REAL_ALMIRALL": {
-      "requirement": "Almirall reconstruido desde documento CNMV real (correction/supersession).",
-      "status": "INCONCLUSIVE",
-      "evidence": "Parser CNMV PDF real OK (CNMV-IP-1884/1885, SHA-256 pinned); clustering por EXACT_OFFICIAL_CROSS_REFERENCE y conflicto de fecha explicito. NO se encontro correccion/supersession real: el canario 2026 (55->65) no existe en el canal CNMV (ultimo hecho relevante Almirall: 2023). El evento real 2023 es lanzamiento + fijacion de terminos, no una correccion."
-    },
-    "R3_BORME_REAL_PARLEM": {
-      "requirement": "Parlem reconstruido desde BORME-C-2026-4914 real (rights/entitlement/Iberclear).",
+    "R3_BORME_REAL_PARLEM": {"requirement": "Parlem reconstruido desde BORME-C-2026-4914 real.", "status": "PASS", "evidence": "ratio 20:39, 0,80 EUR, entitlement temporal, Iberclear, BME Growth; 12 facts"},
+    "R4_A_P3_REAL_DOCUMENT": {
+      "requirement": "P3 real recuperado por una ruta oficial reproducible.",
       "status": "PASS",
-      "evidence": "g0/manifests/real-corpus.json sha256=94c6571d...; parser borme_html; 12 facts; raw LOCAL_ONLY"
+      "evidence": "Portfolio api.portfolio.exchange/poex/document/4733 (P3 Spain Logistic Parks, 08/07/2025); record 23/07/2025 < ex 24/07/2025, payment=ex, 0,11840672 EUR (escala 8), Euroclear France"
     },
-    "R4_PORTFOLIO_REAL_P3": {
-      "requirement": "P3 reconstruido desde OIR Portfolio real (dates/precision/Euroclear France).",
-      "status": "NOT_RUN",
-      "evidence": "Portfolio Stock Exchange devuelve HTTP 500 en HEAD/GET durante G0-R (https://www.portfolioexchange.com/). Sin documento no hay parser real."
-    },
-    "R5_DUAL_SOURCE_SAN": {
-      "requirement": "SAN reconciliado desde CNMV + issuer IR reales, conflicto explicito.",
-      "status": "NOT_RUN",
-      "evidence": "CNMV IP accesible (reg 3336 compra de acciones propias, 3240 oferta de recompra, 2026). Falta la pareja IR real del mismo evento; no se ha demostrado reconciliacion dual."
-    },
-    "R6_ESMA_FIRDS_REAL": {
-      "requirement": "ESMA_FIRDS_LISTINGS_V1 construido desde evidencia FIRDS real.",
+    "R4_B_PORTFOLIO_ADAPTER": {
+      "requirement": "Adaptador Portfolio reproducible.",
       "status": "PASS",
-      "evidence": "173 listings reales (SAN/Almirall/P3/Parlem); point-in-time P3=POSE/2026 y {GROW,LEUE}/2021; segment MIC preservado; g0/manifests/firds-acquisition.json"
+      "evidence": "GET api.portfolio.exchange/poex/document/{id} responde 200; www.portfolioexchange.com devolvia 500 pero la API de documentos es estable en G0-R2"
     },
-    "R7_CNMV_CHANNEL_COVERAGE_P3": {
-      "requirement": "CNMV_CHANNEL_COVERAGE_P3 resuelto (PROVEN/NOT_PROVEN/CONTRADICTED).",
+    "R5_CNMV_ISSUER_DUAL_SOURCE": {
+      "requirement": "Reconciliacion CNMV + issuer IR real.",
       "status": "PASS",
-      "result": "NOT_PROVEN",
-      "evidence": "docs/gates/p3-cnmv-channel-coverage.json"
+      "evidence": "Santander dividendo complementario 2025: CNMV (12,50 centimos, pago 05/05/2026, ex 30/04, record 04/05) + IR (12.50 cents, pagado en mayo 2026). Misma CA por adjudicacion humana registrada; 0,125 EUR en ambas; 0 conflictos; 0 revisiones"
     },
-    "R8_SECOND_RUN_FROM_RAW": {
-      "requirement": "Segunda ejecucion desde corpus real determinista.",
-      "status": "PASS",
-      "evidence": "run_pipeline real-corpus.json con PDFs: result_sha identico en dos runs (92370ba0...). Corpus real aun incompleto (sin P3/SAN)."
-    },
-    "CLOSURE_REAL_DOCUMENTS_ONLY": {"requirement": "0 fixtures sinteticos en el corpus de cierre.", "status": "NOT_RUN", "evidence": "R4/R5 pendientes; corpus real parcial"},
-    "CLOSURE_ZERO_HUMAN_FACTS": {"requirement": "0 facts financieros de origen humano.", "status": "PASS", "evidence": "0 adjudicaciones; loader prohibe campos financieros"},
-    "CLOSURE_ZERO_SILENT_CONFLICTS": {"requirement": "0 conflictos silenciados.", "status": "PASS", "evidence": "conflicto de fecha Almirall explicito; todas las fuentes retenidas"},
-    "CLOSURE_ZERO_UNPROVEN_MERGES": {"requirement": "0 merges sin evidencia determinista o adjudicacion.", "status": "PASS", "evidence": "clustering solo por referencia oficial explicita"},
-    "CLOSURE_LEI_ISIN_MIC_FIRDS": {"requirement": "LEI/ISIN/MIC proceden de evidencia FIRDS real.", "status": "INCONCLUSIVE", "evidence": "FIRDS real si; pero los eventos reales aun no consumen el enriquecimiento en pipeline completo (P3/SAN sin documento)"},
-    "CLOSURE_55_OF_55": {"requirement": "Los 55 gates de G0 resueltos (0 INCONCLUSIVE/NOT_RUN).", "status": "PASS", "evidence": "gate-report G0: 55 PASS / 0 FAIL / 0 INCONCLUSIVE"}
+    "R6_ESMA_FIRDS_REAL": {"requirement": "ESMA_FIRDS_LISTINGS_V1 desde evidencia FIRDS real.", "status": "PASS", "evidence": "173 listings; P3 POSE/2026 y GROW,LEUE/2021; segment MIC preservado"},
+    "R7_CNMV_CHANNEL_COVERAGE_P3": {"requirement": "CNMV_CHANNEL_COVERAGE_P3 resuelto.", "status": "PASS", "result": "NOT_PROVEN", "evidence": "docs/gates/p3-cnmv-channel-coverage.json (OIR por LEI y denominacion -> 0)"},
+    "R8_SECOND_RUN_FROM_RAW": {"requirement": "Second run determinista desde corpus real.", "status": "PASS", "evidence": "result_sha 20c233f4e09f4eb71e3c74e176672d05ad923589a99d7673876843e782771dde en dos runs (documentos reales PDF+HTML)"},
+    "CLOSURE_REAL_DOCUMENTS_ONLY": {"requirement": "0 fixtures sinteticos en el corpus de cierre.", "status": "PASS", "evidence": "real-corpus.json: 9 documentos reales, synthetic=false. El corpus sintetico permanece solo para regresion G0 y el canario Almirall queda RETIRED/INVALIDATED_BY_REAL_EVIDENCE"},
+    "CLOSURE_ZERO_HUMAN_FACTS": {"requirement": "0 facts financieros de origen humano.", "status": "PASS", "evidence": "1 adjudicacion, solo relacion SAME_CORPORATE_ACTION; loader prohibe campos financieros"},
+    "CLOSURE_ZERO_SILENT_CONFLICTS": {"requirement": "0 conflictos silenciados.", "status": "PASS", "evidence": "conflicto de fecha Almirall explicito; resto acuerda"},
+    "CLOSURE_ZERO_UNPROVEN_MERGES": {"requirement": "0 merges sin evidencia.", "status": "PASS", "evidence": "clustering por referencia oficial o adjudicacion registrada"},
+    "CLOSURE_LEI_ISIN_MIC_FIRDS": {"requirement": "LEI/ISIN/MIC proceden de evidencia FIRDS real.", "status": "INCONCLUSIVE", "evidence": "FIRDS real si, pero los documentos reales ingeridos no publican ISIN (BORME Parlem, CNMV/IR Santander), por lo que el enriquecimiento punto-a-punto del evento aun no se materializa en el pipeline"},
+    "CLOSURE_55_OF_55": {"requirement": "Los 55 gates G0 resueltos.", "status": "PASS", "evidence": "G0 gate-report: 55 PASS / 0 FAIL / 0 INCONCLUSIVE"}
   }
 }

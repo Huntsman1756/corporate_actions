@@ -79,6 +79,7 @@ def build_assertions(parsed: ParsedDocument) -> list[Assertion]:
                 evidence_mode=claim.evidence_mode,
                 asserted_as_of=claim.asserted_as_of,
                 date_kind=claim.date_kind,
+                fact_origin=claim.fact_origin,
             )
         )
 

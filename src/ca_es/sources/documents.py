@@ -30,6 +30,10 @@ class SourceDocument:
     synthetic: bool = False
     notes: str | None = None
     acquisition: dict | None = None
+    # Relaciones oficiales declaradas en el registro de la fuente
+    # (p.ej. la CNMV vincula explicitamente un OIR con la comunicacion
+    # anterior). Son evidencia, no heuristica.
+    relations: tuple[dict, ...] = ()
 
     @property
     def document_id(self) -> str:
@@ -49,6 +53,7 @@ class SourceDocument:
             "retrieval_status": self.retrieval_status,
             "synthetic": self.synthetic,
             "acquisition": self.acquisition,
+            "relations": [dict(rel) for rel in self.relations],
         }
 
 
@@ -81,6 +86,7 @@ def _document_from_entry(entry: dict, policy: dict[str, SourcePolicy]) -> Source
         synthetic=bool(entry.get("synthetic", False)),
         notes=entry.get("notes"),
         acquisition=entry.get("acquisition"),
+        relations=tuple(entry.get("relations", [])),
     )
 
 

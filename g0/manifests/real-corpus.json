@@ -70,6 +70,124 @@
         "terms_reviewed_at": "2026-09-13",
         "redistribution": "NOT_REDISTRIBUTED"
       }
+    },
+    {
+      "source_id": "CNMV",
+      "official_document_id": "CNMV-OIR-40280",
+      "content_sha256": "a896917f8da04af13a571473d40f89d02a6447825de3e359ee4ccb94d1b1cea4",
+      "retrieved_at": "2026-09-13T00:00:00Z",
+      "publication_date": "2026-04-15",
+      "media_type": "application/pdf",
+      "raw_relpath": "g0/corpus/raw/mfe/oir-40280.pdf",
+      "synthetic": false,
+      "notes": "MFE-MEDIAFOREUROPE: resultados 2025 y propuesta de dividendo 0,22 EUR; pago previsto 29/07/2026 (ex 27/07, record 28/07).",
+      "acquisition": {
+        "url": "https://www.cnmv.es/webservices/verdocumento/ver?t=%7b9eb0222e-df50-4c2f-b9a1-6fbcfccb5ac4%7d",
+        "official_identifier": "CNMV-OIR-40280",
+        "registry": "Otra Informacion Relevante",
+        "registration_number": 40280,
+        "nif": "N0239727A",
+        "retrieved_by": "ca-es G0-R2",
+        "http_status": 200,
+        "terms_source": "https://www.cnmv.es/portal/inversor/aviso-legal.aspx",
+        "terms_reviewed_at": "2026-09-13",
+        "redistribution": "NOT_REDISTRIBUTED"
+      }
+    },
+    {
+      "source_id": "CNMV",
+      "official_document_id": "CNMV-OIR-40319",
+      "content_sha256": "d9ef7d8ec10e2f444ec84400f33a41a2e29d8778e8fba2e0f7971dbe3a26405a",
+      "retrieved_at": "2026-09-13T00:00:00Z",
+      "publication_date": "2026-04-17",
+      "media_type": "application/pdf",
+      "raw_relpath": "g0/corpus/raw/mfe/oir-40319.pdf",
+      "synthetic": false,
+      "notes": "MFE: nuevas fechas del mismo dividendo (pago 22/07/2026, ex 20/07, record 21/07). Revision explicita de 40280.",
+      "relations": [
+        {
+          "relation": "EXPLICIT_PREDECESSOR_REFERENCE",
+          "target_source_id": "CNMV",
+          "target_official_document_id": "CNMV-OIR-40280",
+          "evidence_locator": "CNMV OIR 40319: 'nuevas fechas relativas a la distribucion del dividendo' y registro vinculado a la comunicacion 40280 del 15/04/2026",
+          "target_publication_date": "2026-04-15"
+        }
+      ],
+      "acquisition": {
+        "url": "https://www.cnmv.es/webservices/verdocumento/ver?t=%7b27ce01f5-9ab6-4fe0-bb05-bd95cd0e8d09%7d",
+        "official_identifier": "CNMV-OIR-40319",
+        "registry": "Otra Informacion Relevante",
+        "registration_number": 40319,
+        "nif": "N0239727A",
+        "retrieved_by": "ca-es G0-R2",
+        "http_status": 200,
+        "terms_source": "https://www.cnmv.es/portal/inversor/aviso-legal.aspx",
+        "terms_reviewed_at": "2026-09-13",
+        "redistribution": "NOT_REDISTRIBUTED"
+      }
+    },
+    {
+      "source_id": "CNMV",
+      "official_document_id": "CNMV-SAN-DIV-2026",
+      "content_sha256": "9e7bb6a31fd146684b2cf2a28123552a8cb9fa9685d8b18bc677a4b4f14f7a28",
+      "retrieved_at": "2026-09-13T00:00:00Z",
+      "publication_date": null,
+      "media_type": "application/pdf",
+      "raw_relpath": "g0/corpus/raw/san/cnmv-dividend.pdf",
+      "synthetic": false,
+      "notes": "Banco Santander: dividendo complementario 2025, 12,50 centimos/accion, pago 05/05/2026, ex 30/04, record 04/05.",
+      "acquisition": {
+        "url": "https://www.cnmv.es/webservices/verdocumento/ver?t=%7b1fb33d80-7a85-4932-b727-6cc3174415cb%7d",
+        "official_identifier": "CNMV-SAN-DIV-2026",
+        "registry": "Informacion Privilegiada",
+        "retrieved_by": "ca-es G0-R2",
+        "http_status": 200,
+        "terms_source": "https://www.cnmv.es/portal/inversor/aviso-legal.aspx",
+        "terms_reviewed_at": "2026-09-13",
+        "redistribution": "NOT_REDISTRIBUTED"
+      }
+    },
+    {
+      "source_id": "ISSUER_IR",
+      "official_document_id": "SAN-IR-REMUNERATION",
+      "content_sha256": "38c126aacf32f18ad76fcb14d99622734cf55f2e87fc6adf009658d17ca2a8eb",
+      "retrieved_at": "2026-09-13T00:00:00Z",
+      "publication_date": null,
+      "media_type": "text/html",
+      "raw_relpath": "g0/corpus/raw/san/ir-remuneration.html",
+      "synthetic": false,
+      "notes": "Banco Santander IR: dividendo final en efectivo 12.50 centimos/accion contra resultados H2 2025, pagado en mayo 2026.",
+      "acquisition": {
+        "url": "https://www.santander.com/en/accionistas-e-inversores/accion-santander/shareholder-remuneration",
+        "official_identifier": "SAN-IR-REMUNERATION",
+        "retrieved_by": "ca-es G0-R2",
+        "http_status": 200,
+        "terms_source": "https://www.santander.com/",
+        "terms_reviewed_at": "2026-09-13",
+        "redistribution": "NOT_REDISTRIBUTED"
+      }
+    },
+    {
+      "source_id": "PORTFOLIO_STOCK_EXCHANGE",
+      "official_document_id": "PORTFOLIO-4733",
+      "content_sha256": "62182d2eb234ae023fc1422aa4b94cf43f226c04c78363fa6b0c5810ff852879",
+      "retrieved_at": "2026-09-13T00:00:00Z",
+      "publication_date": "2025-07-08",
+      "media_type": "application/pdf",
+      "raw_relpath": "g0/corpus/raw/portfolio/p3-dividend-4733.pdf",
+      "synthetic": false,
+      "notes": "P3 Spain Logistic Parks SOCIMI: dividend distribution; record 23/07/2025 < ex 24/07/2025, payment=ex, 0,11840672 EUR/accion (8 decimales), pago via Euroclear France.",
+      "acquisition": {
+        "url": "https://api.portfolio.exchange/poex/document/4733",
+        "official_identifier": "PORTFOLIO-4733",
+        "venue": "Portfolio Stock Exchange",
+        "instrument": "ES0105282000",
+        "retrieved_by": "ca-es G0-R2",
+        "http_status": 200,
+        "terms_source": "https://portfolio.exchange/",
+        "terms_reviewed_at": "2026-09-13",
+        "redistribution": "NOT_REDISTRIBUTED"
+      }
     }
   ]
 }

@@ -7,7 +7,7 @@ segunda ejecucion sea determinista.
 """
 from __future__ import annotations
 
-from dataclasses import dataclass, field
+from dataclasses import dataclass, field, replace
 from datetime import date
 from pathlib import Path
 
@@ -37,7 +37,7 @@ from .sources.documents import (
     verify_document,
 )
 from .sources.registry import PARSERS, PARSER_VERSION
-from .sources.parsers.base import ParsedDocument
+from .sources.parsers.base import DocumentReference, ParsedDocument
 from .temporal import RULESET_VERSION, check as temporal_check
 from .vocab import AUTO_LINK_RELATIONS, DecisionBasis, FactOrigin, RelationType
 
@@ -86,6 +86,7 @@ def load_and_parse(
             continue
         payload = load_raw_bytes(corpus_root, document)
         parsed_doc = parser(payload, document, policy)
+        parsed_doc = _merge_manifest_relations(parsed_doc, document)
         parsed[document.document_id] = parsed_doc
         raw_records[document.document_id] = parsed_doc.raw_record
     return ParsedCorpus(
@@ -97,6 +98,38 @@ def load_and_parse(
         verification=verification,
         parse_errors=parse_errors,
     )
+
+
+def _merge_manifest_relations(
+    parsed_doc: ParsedDocument, document: SourceDocument
+) -> ParsedDocument:
+    """Anade relaciones oficiales declaradas en el registro de la fuente."""
+    if not document.relations:
+        return parsed_doc
+    existing = {
+        (r.relation, r.target_source_id, r.target_official_document_id)
+        for r in parsed_doc.references
+    }
+    references = list(parsed_doc.references)
+    for entry in document.relations:
+        key = (
+            entry["relation"],
+            entry.get("target_source_id"),
+            entry.get("target_official_document_id"),
+        )
+        if key in existing:
+            continue
+        existing.add(key)
+        references.append(
+            DocumentReference(
+                relation=entry["relation"],
+                target_official_document_id=entry.get("target_official_document_id"),
+                target_source_id=entry.get("target_source_id"),
+                evidence_locator=entry.get("evidence_locator", document.official_document_id),
+                target_publication_date=entry.get("target_publication_date"),
+            )
+        )
+    return replace(parsed_doc, references=tuple(references))
 
 
 def _documented_candidates(corpus: ParsedCorpus) -> dict[tuple[str, str], str]:
@@ -215,9 +248,14 @@ def _event_type(facts: list[Fact]) -> tuple[str, str | None, str]:
         if f.field_path == "event_type"
         and f.fact_origin == FactOrigin.SOURCE_ASSERTION.value
     ]
-    distinct = sorted({str(f.value) for f in explicit})
-    if len(distinct) == 1 and distinct[0] != "UNKNOWN":
-        return distinct[0], explicit[0].evidence_locator, "EXPLICIT"
+    distinct = sorted({str(f.value) for f in explicit if str(f.value) != "UNKNOWN"})
+    if len(distinct) == 1:
+        locator = next(
+            f.evidence_locator
+            for f in explicit
+            if str(f.value) == distinct[0] and f.evidence_locator
+        )
+        return distinct[0], locator, "EXPLICIT"
     if not distinct:
         return "UNKNOWN", None, "UNKNOWN"
     return "UNKNOWN", None, "CONFLICTING"

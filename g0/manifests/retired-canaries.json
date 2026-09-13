@@ -1,0 +1,16 @@
+{
+  "retired_at": "2026-09-13",
+  "phase": "G0-R2",
+  "policy": "Un fixture descartado por falsacion se conserva documentado; no se borra.",
+  "canaries": [
+    {
+      "canary_id": "ALMIRALL_2026_SCRIP_55_65",
+      "status": "INVALIDATED_BY_REAL_EVIDENCE",
+      "fixture": "g0/corpus/synthetic/almirall-cnmv-2026-001.json, g0/corpus/synthetic/almirall-cnmv-2026-002.json",
+      "premise": "Almirall 2026: correccion explicita de 55 a 65 derechos por accion nueva.",
+      "falsation": "El canal CNMV no registra hechos relevantes de Almirall en 2026; el ultimo es de 2023. La premisa factual era incorrecta.",
+      "replacement": "MFE-MEDIAFOREUROPE 40280 -> 40319 (revision explicita real de las fechas de pago del dividendo de 0,22 EUR).",
+      "evidence": "docs/G0R-FINDINGS.md; docs/gates/g0r-gates-preregistered.json#R2"
+    }
+  ]
+}

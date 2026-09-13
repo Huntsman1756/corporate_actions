@@ -64,7 +64,11 @@ class FinancialAmount:
             int_part, _, frac = raw.partition(decimal_sep)
         else:
             int_part, frac = raw, None
-        groups = int_part.split(thousands_sep) if thousands_sep in int_part else [int_part]
+        groups = (
+            int_part.split(thousands_sep)
+            if thousands_sep and thousands_sep in int_part
+            else [int_part]
+        )
         if not all(group.isdigit() for group in groups) or not groups:
             raise AmbiguousLexemeError(f"lexema financiero no interpretable: {raw_lexeme!r}")
         if len(groups) > 1 and (len(groups[0]) > 3 or any(len(g) != 3 for g in groups[1:])):
@@ -106,6 +110,37 @@ class FinancialAmount:
         except InvalidOperation as exc:  # pragma: no cover - guarda
             raise AmbiguousLexemeError(f"lexema financiero invalido: {raw!r}") from exc
         return cls(raw_lexeme=raw, normalized=normalized, scale=scale, currency=currency)
+
+    @classmethod
+    def from_cents(
+        cls,
+        raw_lexeme: str,
+        currency: str = "EUR",
+        cents_per_unit: int = 100,
+        decimal_sep: str = ",",
+        thousands_sep: str | None = ".",
+    ) -> "FinancialAmount":
+        """Convierte un importe publicado en centimos a la unidad (EUR).
+
+        Es una derivacion por definicion (1 EUR = 100 centimos). Se
+        preserva el lexema publicado y la escala resultante
+        (escala_publicada + log10(cents_per_unit)).
+        """
+        published = cls.parse_localized(
+            raw_lexeme,
+            currency=currency,
+            decimal_sep=decimal_sep,
+            thousands_sep=thousands_sep,
+        )
+        factor = Decimal(cents_per_unit)
+        exponent = factor.adjusted()
+        normalized = published.normalized / factor
+        return cls(
+            raw_lexeme=published.raw_lexeme,
+            normalized=normalized,
+            scale=published.scale + exponent,
+            currency=currency,
+        )
 
     def normalized_str(self) -> str:
         """Representacion decimal no cientifica, preservando la escala."""

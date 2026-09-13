@@ -12,14 +12,18 @@ Status: OPEN (iniciado 2026-09-13). Sustituye a G1 como siguiente fase.
 
 ```
 R1  Persist canonical identity                       [PASS]
-R2  Real CNMV parser        → Almirall               [INCONCLUSIVE: sin correccion real]
+R2  Real explicit revision  → MFE 40280->40319       [PASS]
 R3  Real BORME parser       → Parlem                 [PASS]
-R4  Real Portfolio parser   → P3                     [BLOCKED: Portfolio HTTP 500]
-R5  Real issuer/CNMV dual   → SAN                    [BLOCKED: falta pareja IR]
+R4-A Real Portfolio document → P3                    [PASS]
+R4-B Portfolio adapter                               [PASS: api.portfolio.exchange]
+R5  CNMV + issuer dual       → Santander             [PASS]
 R6  Real ESMA_FIRDS_LISTINGS_V1 adapter              [PASS]
 R7  Resolve CNMV_CHANNEL_COVERAGE_P3                 [PASS: NOT_PROVEN]
-R8  Full second-run from raw sources                 [PASS en corpus real disponible]
+R8  Full second-run from raw sources                 [PASS]
 ```
+
+Almirall sintético: `RETIRED / INVALIDATED_BY_REAL_EVIDENCE`
+(`g0/manifests/retired-canaries.json`).
 
 Detalle de resultados y hallazgos: `docs/G0R-FINDINGS.md`.
 

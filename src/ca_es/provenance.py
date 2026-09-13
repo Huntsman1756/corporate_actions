@@ -15,7 +15,7 @@ from dataclasses import dataclass, field
 
 from .assertions import Assertion, canonical_value
 from .canonical import canonical_json
-from .numeric import ensure_exact
+from .numeric import FinancialAmount, ensure_exact
 from .vocab import EvidenceMode, FactOrigin
 
 
@@ -139,15 +139,33 @@ def _group_key(fact: Fact) -> tuple:
     return (fact.event_id, fact.revision_id, fact.field_path, fact.asserted_as_of)
 
 
-def detect_conflicts(facts: list[Fact]) -> ConflictReport:
-    """Marca conflictos explicitos entre source assertions del mismo campo.
+def _economic_fingerprint(value: object) -> str:
+    """Huella para comparar disentimiento economico, no formato.
 
-    REFERENCE_ENRICHMENT y DETERMINISTIC_DERIVATION quedan fuera del
-    agrupamiento: su multiplicidad no es disentimiento entre fuentes.
+    Dos importes con mismo valor normalizado y divisa no discrepan
+    aunque cambie el lexema (0,1250 vs 0.1250) o la escala.
+    """
+    if isinstance(value, FinancialAmount):
+        return canonical_json(
+            {"normalized": value.normalized_str(), "currency": value.currency}
+        )
+    if isinstance(value, dict) and value.get("__financial__"):
+        return canonical_json(
+            {"normalized": value["normalized"], "currency": value["currency"]}
+        )
+    return canonical_json(canonical_value(value))
+
+
+def detect_conflicts(facts: list[Fact]) -> ConflictReport:
+    """Marca conflictos explicitos entre assertions del mismo campo.
+
+    Se agrupan SOURCE_ASSERTION y DETERMINISTIC_DERIVATION: un derivado
+    de una fuente que discrepa de otra es un conflicto real.
+    REFERENCE_ENRICHMENT queda fuera (su multiplicidad es esperada).
     """
     groups: dict[tuple, list[Fact]] = {}
     for fact in facts:
-        if fact.fact_origin != FactOrigin.SOURCE_ASSERTION.value:
+        if fact.fact_origin == FactOrigin.REFERENCE_ENRICHMENT.value:
             continue
         groups.setdefault(_group_key(fact), []).append(fact)
 
@@ -156,7 +174,7 @@ def detect_conflicts(facts: list[Fact]) -> ConflictReport:
     for key, group in groups.items():
         distinct: dict[str, list[Fact]] = {}
         for fact in group:
-            fingerprint = canonical_json(canonical_value(fact.value))
+            fingerprint = _economic_fingerprint(fact.value)
             distinct.setdefault(fingerprint, []).append(fact)
         if len(distinct) <= 1:
             continue
