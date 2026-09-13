@@ -1,0 +1,10 @@
+{
+  "note": "Consultas FIRDS que alimentan ESMA_FIRDS_LISTINGS_V1. La extraccion pertenece a la capa ESMA (ADR-006); ca-es solo consume el artefacto.",
+  "solr_core": "esma_registers_firds",
+  "queries": [
+    {"isin": "ES0113900J37", "label": "SAN"},
+    {"isin": "ES0157097017", "label": "Almirall"},
+    {"isin": "ES0105282000", "label": "P3 Spain SOCIMI"},
+    {"isin": "ES0105561007", "label": "Parlem"}
+  ]
+}

@@ -1,0 +1,42 @@
+{
+  "manifest_version": "CA_ES_FIRDS_ACQUISITION_V1",
+  "generated_at": "2026-09-13T00:00:00Z",
+  "records": [
+    {
+      "isin": "ES0113900J37",
+      "label": "SAN",
+      "solr_core": "esma_registers_firds",
+      "raw_relpath": "g0/corpus/raw/esma/ES0113900J37.json",
+      "sha256": "9cc707b2b4eb78752748994f0fafa5cf8078a1c1264e591f5f9f28f3c5c11aa1",
+      "num_found": 91,
+      "docs_returned": 91
+    },
+    {
+      "isin": "ES0157097017",
+      "label": "Almirall",
+      "solr_core": "esma_registers_firds",
+      "raw_relpath": "g0/corpus/raw/esma/ES0157097017.json",
+      "sha256": "3fe8a68685e5cecfdd0f2e88092a811fae432c62a9dd529cb9be7517fa7a9fce",
+      "num_found": 71,
+      "docs_returned": 71
+    },
+    {
+      "isin": "ES0105282000",
+      "label": "P3 Spain SOCIMI",
+      "solr_core": "esma_registers_firds",
+      "raw_relpath": "g0/corpus/raw/esma/ES0105282000.json",
+      "sha256": "a3178b8cd02ea82a08206d9bfe1087eec2aab666e109fb1ae8053fcd45753c7d",
+      "num_found": 5,
+      "docs_returned": 5
+    },
+    {
+      "isin": "ES0105561007",
+      "label": "Parlem",
+      "solr_core": "esma_registers_firds",
+      "raw_relpath": "g0/corpus/raw/esma/ES0105561007.json",
+      "sha256": "e045c0290c10a846bd3afeac991d31dee3b1dab14eed1044bd82ff5b7f39594e",
+      "num_found": 10,
+      "docs_returned": 10
+    }
+  ]
+}
