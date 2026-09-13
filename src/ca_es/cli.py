@@ -49,6 +49,7 @@ def cmd_run(args: argparse.Namespace) -> int:
         repo_root,
         identity_ledger_relpath=args.identity_ledger,
         adjudications_relpath=args.adjudications,
+        instrument_bindings_relpath=args.instrument_bindings,
         resolver=resolver,
         run_id=args.run_id,
         executed_at=args.executed_at,
@@ -78,6 +79,7 @@ def cmd_second_run(args: argparse.Namespace) -> int:
         repo_root,
         identity_ledger_relpath=args.identity_ledger,
         adjudications_relpath=args.adjudications,
+        instrument_bindings_relpath=args.instrument_bindings,
         resolver=resolver,
         run_id="run-001",
         executed_at="2026-09-13T00:00:00Z",
@@ -86,6 +88,7 @@ def cmd_second_run(args: argparse.Namespace) -> int:
         repo_root,
         identity_ledger_relpath=args.identity_ledger,
         adjudications_relpath=args.adjudications,
+        instrument_bindings_relpath=args.instrument_bindings,
         resolver=resolver,
         run_id="run-002",
         executed_at="2026-09-14T00:00:00Z",
@@ -110,6 +113,7 @@ def cmd_gates(args: argparse.Namespace) -> int:
         repo_root,
         identity_ledger_relpath=args.identity_ledger,
         adjudications_relpath=args.adjudications,
+        instrument_bindings_relpath=args.instrument_bindings,
         resolver=resolver,
         run_id=args.run_id,
         executed_at=args.executed_at,
@@ -120,6 +124,7 @@ def cmd_gates(args: argparse.Namespace) -> int:
             repo_root,
             identity_ledger_relpath=args.identity_ledger,
             adjudications_relpath=args.adjudications,
+        instrument_bindings_relpath=args.instrument_bindings,
             resolver=resolver,
             run_id="run-002",
             executed_at="2026-09-14T00:00:00Z",
@@ -139,6 +144,7 @@ def cmd_metrics(args: argparse.Namespace) -> int:
         repo_root,
         identity_ledger_relpath=args.identity_ledger,
         adjudications_relpath=args.adjudications,
+        instrument_bindings_relpath=args.instrument_bindings,
         resolver=resolver,
         run_id=args.run_id,
         executed_at=args.executed_at,
@@ -154,6 +160,7 @@ def cmd_event(args: argparse.Namespace) -> int:
         repo_root,
         identity_ledger_relpath=args.identity_ledger,
         adjudications_relpath=args.adjudications,
+        instrument_bindings_relpath=args.instrument_bindings,
         resolver=resolver,
         run_id="lookup",
         executed_at="1970-01-01T00:00:00Z",
@@ -178,6 +185,7 @@ def cmd_isin(args: argparse.Namespace) -> int:
         repo_root,
         identity_ledger_relpath=args.identity_ledger,
         adjudications_relpath=args.adjudications,
+        instrument_bindings_relpath=args.instrument_bindings,
         resolver=resolver,
         run_id="lookup",
         executed_at="1970-01-01T00:00:00Z",
@@ -197,6 +205,7 @@ def build_parser() -> argparse.ArgumentParser:
     common = argparse.ArgumentParser(add_help=False)
     common.add_argument("--identity-ledger", default=None)
     common.add_argument("--adjudications", default=None)
+    common.add_argument("--instrument-bindings", default=None)
     common.add_argument("--firds-listings", default=None)
 
     run = sub.add_parser("run", parents=[common])

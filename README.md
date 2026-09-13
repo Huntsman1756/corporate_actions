@@ -79,7 +79,7 @@ permanece `LOCAL_ONLY` (ADR-011).
 
 ## Estado G0 / G0-R
 
-- Tests: **84 PASS**.
+- Tests: **88 PASS**.
 - Gates G0: **55 PASS / 0 FAIL / 0 INCONCLUSIVE**
   (`CNMV_CHANNEL_COVERAGE_P3` resuelto como `NOT_PROVEN`).
 - Runtime del core: stdlib-only. La extracción PDF real es un extra
@@ -92,6 +92,9 @@ Validación con fuentes reales (**G0-R2**):
   0,11840672 EUR, Euroclear France).
 - Parlem BORME real, ESMA/FIRDS real (173 listings point-in-time),
   determinismo desde PDFs reales.
+- **G0-R3 cerrado**: `EVENTO → INSTRUMENTO → FIRDS` exacto (P3:
+  `PORTFOLIO-4733 → ES0105282000 → LEI + segment MIC POSE`), sin matching
+  por nombre (ADR-013).
 Ver `docs/G0R-FINDINGS.md`. El canario sintético Almirall 2026 queda
 `RETIRED / INVALIDATED_BY_REAL_EVIDENCE`.
 

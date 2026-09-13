@@ -20,12 +20,18 @@ R5  CNMV + issuer dual       → Santander             [PASS]
 R6  Real ESMA_FIRDS_LISTINGS_V1 adapter              [PASS]
 R7  Resolve CNMV_CHANNEL_COVERAGE_P3                 [PASS: NOT_PROVEN]
 R8  Full second-run from raw sources                 [PASS]
+
+R3-1 REAL_EVENT_TO_ISIN_EXACT                        [PASS]
+R3-2 ISIN_TO_FIRDS_EXACT                             [PASS]
+R3-3 POINT_IN_TIME_MIC_RESOLUTION                    [PASS]
+R3-4 SECOND_RUN_DETERMINISTIC                        [PASS]
 ```
 
 Almirall sintético: `RETIRED / INVALIDATED_BY_REAL_EVIDENCE`
 (`g0/manifests/retired-canaries.json`).
 
-Detalle de resultados y hallazgos: `docs/G0R-FINDINGS.md`.
+G0-R **CERRADO** (`CLOSURE_LEI_ISIN_MIC_FIRDS` PASS vía P3, ADR-013).
+Siguiente: G1. Detalle: `docs/G0R-FINDINGS.md`.
 
 ## Hallazgo de R3 (validación real)
 

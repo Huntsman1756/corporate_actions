@@ -1,8 +1,8 @@
 # G0-R — Real source validation: hallazgos
 
-Fecha: 2026-09-13. Fase final: **G0-R2**.
-Verdict: `G0 REAL-DATA` = **STRONG** (un gate INCONCLUSIVE: ISIN en el
-pipeline real). Arquitectura validada con documentos reales.
+Fecha: 2026-09-13. Fase final: **G0-R3**.
+Verdict: `G0 REAL-DATA` = **PASS**. Arquitectura validada con documentos
+reales y cadena `evento → instrumento → FIRDS` cerrada.
 
 ## Cierre por gate
 
@@ -18,7 +18,7 @@ pipeline real). Arquitectura validada con documentos reales.
 | R7 cobertura CNMV P3 | PASS | `NOT_PROVEN` |
 | R8 second-run desde raw | PASS | `20c233f4…` idéntico |
 | Integridad (0 facts humanos, 0 conflictos silenciados, 0 merges no probados) | PASS | — |
-| LEI/ISIN/MIC en el pipeline real | INCONCLUSIVE | docs reales sin ISIN |
+| R3 evento→ISIN→FIRDS | PASS | P3 `PORTFOLIO-4733 → ES0105282000 → LEI/MIC` |
 
 ## Los tres casos nuevos
 
@@ -61,17 +61,46 @@ pipeline real). Arquitectura validada con documentos reales.
 - El "12,50 céntimos" de Santander se normaliza a 0,125 EUR marcado
   `DERIVED_BY_DEFINITION`; la escala y el lexema se conservan.
 
-## Único gate abierto
+## G0-R3 — cierre EVENT → INSTRUMENT → FIRDS
 
-`CLOSURE_LEI_ISIN_MIC_FIRDS` sigue **INCONCLUSIVE**: la capa FIRDS real
-existe y resuelve point-in-time, pero los documentos reales ingeridos
-(BORME Parlem, CNMV/IR Santander) **no publican ISIN**, por lo que el
-evento no enlaza todavía con `ListingResolver` en el pipeline. Para
-cerrarlo: un documento real que publique ISIN, o una regla determinista
-de adopción de ISIN desde una fuente portadora (con evidencia).
+Gate `CLOSURE_LEI_ISIN_MIC_FIRDS` **PASS** con P3, sin matching por
+nombre ni ISIN insertado a mano (ADR-013):
+
+```
+PORTFOLIO-4733  --exact source-carried binding-->  ES0105282000  --exact-->  FIRDS
+   (Portfolio product page, JSON-LD FinancialProduct, product_id=5)
+                                                              LEI 959800GS3VF3X7V7QR11
+                                                              segment MIC POSE @2025-07-24
+```
+
+- `R3-1` documento→instrumento exacto: `PORTFOLIO-4733 → ES0105282000`
+  vía `product_id=5` + JSON-LD; evidencia mode
+  `SOURCE_CARRIED_INSTRUMENT_BINDING`.
+- `R3-2` ISIN→FIRDS exacto: LEI real `959800GS3VF3X7V7QR11`.
+- `R3-3` point-in-time: `as_of 2025-07-24 → {POSE}`; `as_of 2021-01-01 →
+  {GROW, LEUE}`.
+- `R3-4` second-run determinista con raw + snapshot FIRDS + bindings.
+
+No se exige que el PDF del evento imprima el ISIN (ADR-013): la fuente
+oficial portadora del instrumento (Portfolio) da el binding exacto.
 
 ## Decisión
 
-`G0 CORE` = **PASS** (55/55 gates).
-`G0 REAL-DATA` = **STRONG** (arquitectura validada; 1 gate abierto).
-`NEXT` = cerrar el enlace ISIN↔evento; después **G1**.
+```
+G0 CORE             PASS   (55/55 gates)
+G0 REAL-DATA        PASS
+G0 IDENTITY         PASS
+G0 REVISIONS        PASS
+G0 CROSS-SOURCE     PASS
+G0 EVENT->INSTRUMENT PASS
+G0 FIRDS ENRICHMENT PASS
+G0 DETERMINISM      PASS
+
+ARCHITECTURE RISK   LOW
+G0                  CLOSED
+NEXT                G1
+```
+
+El riesgo residual de parsers ya no se resuelve añadiendo casos manuales:
+se mide en **G1** (25–50 eventos reales: cobertura, completeness,
+conflictos, `UNKNOWN`, publication lag, intervención humana).

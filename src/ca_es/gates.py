@@ -267,19 +267,30 @@ def evaluate_gates(
 
     # --- Reference data ----------------------------------------------
     ref_facts = [f for f in facts if f["fact_origin"] == "REFERENCE_ENRICHMENT"]
+    segment_facts = [
+        f for f in ref_facts if f["field_path"] == "affected_venue.segment_mic"
+    ]
+    binding_facts = [f for f in facts if f["field_path"] == "affected_instrument.isin"]
+    lei_facts = [f for f in facts if f["field_path"] == "affected_instrument.lei"]
     gates["SEGMENT_MIC_PRESERVED"] = _result(
-        all(f["field_path"] == "affected_venue.segment_mic" for f in ref_facts)
+        bool(segment_facts),
+        evidence={"segment_mic_facts": len(segment_facts)},
+        inconclusive=not ref_facts,
     )
     gates["VENUE_RESOLUTION_POINT_IN_TIME"] = _result(
         all("as_of=" in f["evidence_locator"] for f in ref_facts)
     )
     gates["LEI_ISIN_MIC_CHAIN_PROVEN"] = _result(
-        True,
-        evidence={"reference_facts": len(ref_facts), "status": "WIRED"},
+        bool(binding_facts) and bool(segment_facts) and bool(lei_facts),
+        evidence={
+            "binding_facts": len(binding_facts),
+            "segment_mic_facts": len(segment_facts),
+            "lei_facts": len(lei_facts),
+        },
         inconclusive=not ref_facts,
     )
     gates["MULTI_VENUE_INSTRUMENT_SUPPORTED"] = _result(
-        len({f["value"] for f in ref_facts}) >= 1
+        len({f["value"] for f in segment_facts}) >= 1
     )
     gates["NO_CURRENT_VENUE_USED_FOR_HISTORICAL_EVENT"] = _result(
         all("as_of=" in f["evidence_locator"] for f in ref_facts)

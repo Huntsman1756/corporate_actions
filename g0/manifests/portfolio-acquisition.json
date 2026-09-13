@@ -1,0 +1,10 @@
+{
+  "manifest_version": "CA_ES_PORTFOLIO_ACQUISITION_V1",
+  "records": [
+    {
+      "url": "https://portfolio.exchange/es/portfolio-market/p3-spain-logistic-parks-socimi-PSLP-ES0105282000-5",
+      "raw_relpath": "g0/corpus/raw/portfolio/p3-product.html",
+      "sha256": "a67cfbe6bb67ab18196a4fedbcc45b4a6545fae302de9a2fbf26a527e1883ae5"
+    }
+  ]
+}

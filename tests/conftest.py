@@ -47,19 +47,27 @@ def resolver(repo_root: Path):
 
 
 @pytest.fixture(scope="session")
+def real_resolver(repo_root: Path):
+    return load_firds_listings(
+        repo_root / "g0/corpus/reference/esma-firds-listings-real.json"
+    )
+
+
+@pytest.fixture(scope="session")
 def run_result(repo_root: Path, resolver):
     return run_pipeline(repo_root, resolver=resolver, run_id="test-run")
 
 
 @pytest.fixture(scope="session")
-def real_run(repo_root: Path, resolver):
+def real_run(repo_root: Path, real_resolver):
     if not _real_corpus_available():
         pytest.skip("corpus real LOCAL_ONLY o pypdf no disponibles")
     return run_pipeline(
         repo_root,
         manifest_relpath="g0/manifests/real-corpus.json",
         adjudications_relpath="g0/manifests/adjudications-real.json",
-        resolver=resolver,
+        instrument_bindings_relpath="g0/corpus/reference/portfolio-instruments.json",
+        resolver=real_resolver,
         run_id="real-test",
     )
 

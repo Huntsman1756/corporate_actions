@@ -24,6 +24,9 @@ class EvidenceMode(str, Enum):
     REFERENCE_ENRICHMENT = "REFERENCE_ENRICHMENT"
     CONFLICTING = "CONFLICTING"
     UNKNOWN = "UNKNOWN"
+    # Binding instrumento<->evento (ADR-013), sin matching por nombre.
+    SOURCE_CARRIED_INSTRUMENT_BINDING = "SOURCE_CARRIED_INSTRUMENT_BINDING"
+    CROSS_SOURCE_BINDING = "CROSS_SOURCE_BINDING"
 
 
 class FactOrigin(str, Enum):

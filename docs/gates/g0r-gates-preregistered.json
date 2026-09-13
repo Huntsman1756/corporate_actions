@@ -37,12 +37,16 @@
     },
     "R6_ESMA_FIRDS_REAL": {"requirement": "ESMA_FIRDS_LISTINGS_V1 desde evidencia FIRDS real.", "status": "PASS", "evidence": "173 listings; P3 POSE/2026 y GROW,LEUE/2021; segment MIC preservado"},
     "R7_CNMV_CHANNEL_COVERAGE_P3": {"requirement": "CNMV_CHANNEL_COVERAGE_P3 resuelto.", "status": "PASS", "result": "NOT_PROVEN", "evidence": "docs/gates/p3-cnmv-channel-coverage.json (OIR por LEI y denominacion -> 0)"},
-    "R8_SECOND_RUN_FROM_RAW": {"requirement": "Second run determinista desde corpus real.", "status": "PASS", "evidence": "result_sha 20c233f4e09f4eb71e3c74e176672d05ad923589a99d7673876843e782771dde en dos runs (documentos reales PDF+HTML)"},
+    "R8_SECOND_RUN_FROM_RAW": {"requirement": "Second run determinista desde corpus real.", "status": "PASS", "evidence": "result_sha estable en dos runs (documentos reales PDF+HTML+FIRDS+bindings)"},
+    "R3_1_REAL_EVENT_TO_ISIN_EXACT": {"requirement": "Portfolio doc 4733 -> instrumento P3 -> ES0105282000 sin matching por nombre.", "status": "PASS", "evidence": "PORTFOLIO-4733 -> ES0105282000 via product page JSON-LD FinancialProduct (product_id=5); ADR-013"},
+    "R3_2_ISIN_TO_FIRDS_EXACT": {"requirement": "ES0105282000 -> filas FIRDS reales (LEI).", "status": "PASS", "evidence": "FIRDS real: LEI 959800GS3VF3X7V7QR11"},
+    "R3_3_POINT_IN_TIME_MIC_RESOLUTION": {"requirement": "Fecha de evento -> conjunto correcto de segment MIC.", "status": "PASS", "evidence": "as_of 2025-07-24 -> {POSE}; as_of 2021-01-01 -> {GROW, LEUE}"},
+    "R3_4_SECOND_RUN_DETERMINISTIC": {"requirement": "Mismos raw + snapshot de referencia -> mismo binding y salida canonica.", "status": "PASS", "evidence": "4 tests G0-R3 en tests/canaries/test_g0r3_instrument_closure.py"},
     "CLOSURE_REAL_DOCUMENTS_ONLY": {"requirement": "0 fixtures sinteticos en el corpus de cierre.", "status": "PASS", "evidence": "real-corpus.json: 9 documentos reales, synthetic=false. El corpus sintetico permanece solo para regresion G0 y el canario Almirall queda RETIRED/INVALIDATED_BY_REAL_EVIDENCE"},
     "CLOSURE_ZERO_HUMAN_FACTS": {"requirement": "0 facts financieros de origen humano.", "status": "PASS", "evidence": "1 adjudicacion, solo relacion SAME_CORPORATE_ACTION; loader prohibe campos financieros"},
     "CLOSURE_ZERO_SILENT_CONFLICTS": {"requirement": "0 conflictos silenciados.", "status": "PASS", "evidence": "conflicto de fecha Almirall explicito; resto acuerda"},
     "CLOSURE_ZERO_UNPROVEN_MERGES": {"requirement": "0 merges sin evidencia.", "status": "PASS", "evidence": "clustering por referencia oficial o adjudicacion registrada"},
-    "CLOSURE_LEI_ISIN_MIC_FIRDS": {"requirement": "LEI/ISIN/MIC proceden de evidencia FIRDS real.", "status": "INCONCLUSIVE", "evidence": "FIRDS real si, pero los documentos reales ingeridos no publican ISIN (BORME Parlem, CNMV/IR Santander), por lo que el enriquecimiento punto-a-punto del evento aun no se materializa en el pipeline"},
+    "CLOSURE_LEI_ISIN_MIC_FIRDS": {"requirement": "Evento real -> ISIN exacto -> FIRDS (LEI+MIC), sin fuzzy name, ticker, venue actual ni ISIN insertado a mano.", "status": "PASS", "evidence": "P3: PORTFOLIO-4733 -> ES0105282000 (SOURCE_CARRIED_INSTRUMENT_BINDING) -> FIRDS ES0105282000 -> LEI 959800GS3VF3X7V7QR11 + segment MIC POSE @2025-07-24. No se exige que el PDF del evento imprima el ISIN (ADR-013)"},
     "CLOSURE_55_OF_55": {"requirement": "Los 55 gates G0 resueltos.", "status": "PASS", "evidence": "G0 gate-report: 55 PASS / 0 FAIL / 0 INCONCLUSIVE"}
   }
 }

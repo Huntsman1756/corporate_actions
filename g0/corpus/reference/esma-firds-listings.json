@@ -6,7 +6,7 @@
   "listings": [
     {
       "isin": "ES0113900J37",
-      "lei": null,
+      "lei": "SYNTHETIC00000000001",
       "segment_mic": "XMAD",
       "operating_mic": "XMAD",
       "venue_name": "Bolsa de Madrid",
@@ -16,7 +16,7 @@
     },
     {
       "isin": "ES0113900J37",
-      "lei": null,
+      "lei": "SYNTHETIC00000000001",
       "segment_mic": "MAD4",
       "operating_mic": "XMAD",
       "venue_name": "SIBE",
@@ -26,7 +26,7 @@
     },
     {
       "isin": "ES0113900J37",
-      "lei": null,
+      "lei": "SYNTHETIC00000000001",
       "segment_mic": "XOLD",
       "operating_mic": "XOLD",
       "venue_name": "Venue historico cesado",

@@ -27,6 +27,11 @@ from .metrics import compute_metrics
 from .namespaces import candidate_event_id
 from .provenance import Fact, build_facts, detect_conflicts
 from .reference.contracts import ListingResolver, UnresolvedListingResolver
+from .reference.instrument_binding import (
+    InstrumentBindingIndex,
+    load_instrument_bindings,
+    resolve_event_instrument,
+)
 from .revisions import MemberDocument, build_revisions
 from .source_policy import SourcePolicy, load_source_policy
 from .sources.documents import (
@@ -261,6 +266,28 @@ def _event_type(facts: list[Fact]) -> tuple[str, str | None, str]:
     return "UNKNOWN", None, "CONFLICTING"
 
 
+def _binding_facts(canonical_event_id: str, resolution) -> list[Fact]:
+    if resolution.isin is None:
+        return []
+    return [
+        Fact(
+            event_id=canonical_event_id,
+            revision_id=EVENT_SCOPE_REVISION,
+            assertion_id=f"binding:{canonical_event_id}:{resolution.isin}",
+            field_path="affected_instrument.isin",
+            value=resolution.isin,
+            source_document_id=resolution.source_document_id or "INSTRUMENT_BINDING",
+            source_id="PORTFOLIO_STOCK_EXCHANGE"
+            if resolution.source_document_id
+            else "INSTRUMENT_BINDING",
+            evidence_locator=resolution.evidence_locator or "instrument binding",
+            raw_pointer="/instrument_bindings",
+            evidence_mode=resolution.evidence_mode or "UNKNOWN",
+            fact_origin=FactOrigin.SOURCE_ASSERTION.value,
+        )
+    ]
+
+
 def _reference_facts(
     resolver: ListingResolver,
     canonical_event_id: str,
@@ -271,22 +298,50 @@ def _reference_facts(
         return []
     listings = resolver.listings_by_isin(isin, date.fromisoformat(as_of))
     facts: list[Fact] = []
+    seen_lei: set[str] = set()
+    evidence = f"ESMA/FIRDS listings as_of={as_of} ISIN={isin}"
+
+    def base(assertion_suffix: str, field_path: str, value: object) -> Fact:
+        return Fact(
+            event_id=canonical_event_id,
+            revision_id=EVENT_SCOPE_REVISION,
+            assertion_id=f"reference:{canonical_event_id}:{assertion_suffix}",
+            field_path=field_path,
+            value=value,
+            source_document_id="ESMA_FIRDS",
+            source_id="ESMA_FIRDS",
+            evidence_locator=evidence,
+            raw_pointer=f"/listings/{isin}/{assertion_suffix}",
+            evidence_mode="REFERENCE_ENRICHMENT",
+            fact_origin=FactOrigin.REFERENCE_ENRICHMENT.value,
+        )
+
     for index, listing in enumerate(listings):
+        if listing.lei and listing.lei not in seen_lei:
+            seen_lei.add(listing.lei)
+            facts.append(base(f"lei:{listing.lei}", "affected_instrument.lei", listing.lei))
         facts.append(
-            Fact(
-                event_id=canonical_event_id,
-                revision_id=EVENT_SCOPE_REVISION,
-                assertion_id=f"reference:{canonical_event_id}:{listing.segment_mic}:{index}",
-                field_path="affected_venue.segment_mic",
-                value=listing.segment_mic,
-                source_document_id="ESMA_FIRDS",
-                source_id="ESMA_FIRDS",
-                evidence_locator=f"ESMA/FIRDS listings as_of={as_of}",
-                raw_pointer=f"/listings/{isin}/{listing.segment_mic}",
-                evidence_mode="REFERENCE_ENRICHMENT",
-                fact_origin=FactOrigin.REFERENCE_ENRICHMENT.value,
+            base(
+                f"{listing.segment_mic}:{index}",
+                "affected_venue.segment_mic",
+                listing.segment_mic,
             )
         )
+        facts.append(
+            base(
+                f"{listing.segment_mic}:{index}:admission",
+                "affected_venue.admission_date",
+                listing.admission_date,
+            )
+        )
+        if listing.termination_date:
+            facts.append(
+                base(
+                    f"{listing.segment_mic}:{index}:termination",
+                    "affected_venue.termination_date",
+                    listing.termination_date,
+                )
+            )
     return facts
 
 
@@ -294,6 +349,7 @@ def build_event_views(
     corpus: ParsedCorpus,
     identity: dict,
     resolver: ListingResolver,
+    instrument_index: InstrumentBindingIndex | None = None,
 ) -> tuple[list[dict], list[Fact], list[dict]]:
     groups = _groups_from_identity(identity)
 
@@ -336,10 +392,13 @@ def build_event_views(
                         assertions_by_document[document_id], canonical_id, revision.revision_id
                     )
                 )
+        instrument = resolve_event_instrument(member_docs, instrument_index)
+        event_isin = instrument.isin or _isin(member_docs)
+        binding_facts = _binding_facts(canonical_id, instrument)
         reference_facts = _reference_facts(
-            resolver, canonical_id, _isin(member_docs), _event_as_of(member_docs)
+            resolver, canonical_id, event_isin, _event_as_of(member_docs)
         )
-        event_facts = revision_facts + reference_facts
+        event_facts = revision_facts + binding_facts + reference_facts
         report = detect_conflicts(event_facts)
         all_facts.extend(report.facts)
         all_conflicts.extend(c.to_canonical() for c in report.conflicts)
@@ -359,7 +418,12 @@ def build_event_views(
                 "event_type": event_type,
                 "event_type_status": event_type_status,
                 "event_type_evidence_locator": event_type_locator,
-                "isin": _isin(member_docs),
+                "isin": event_isin,
+                "instrument_binding": {
+                    "evidence_mode": instrument.evidence_mode,
+                    "evidence_locator": instrument.evidence_locator,
+                    "source_document_id": instrument.source_document_id,
+                },
                 "lei": _lei(member_docs),
                 "issuer_name": _issuer(member_docs),
                 "revisions": [r.to_canonical() for r in revisions],
@@ -409,6 +473,7 @@ def run_pipeline(
     policy_relpath: str = _DEFAULT_POLICY_RELPATH,
     identity_ledger_relpath: str | None = None,
     adjudications_relpath: str | None = None,
+    instrument_bindings_relpath: str | None = None,
     resolver: ListingResolver | None = None,
     run_id: str = "run-001",
     executed_at: str = "1970-01-01T00:00:00Z",
@@ -432,7 +497,14 @@ def run_pipeline(
     )
 
     effective_resolver = resolver or UnresolvedListingResolver()
-    events, facts, conflicts = build_event_views(corpus, identity, effective_resolver)
+    instrument_index = (
+        load_instrument_bindings(repo_root / instrument_bindings_relpath)
+        if instrument_bindings_relpath
+        else None
+    )
+    events, facts, conflicts = build_event_views(
+        corpus, identity, effective_resolver, instrument_index
+    )
 
     assertions = [
         assertion.to_canonical()
