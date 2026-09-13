@@ -165,6 +165,13 @@ INCONCLUSIVE**, no PASS, porque un gate requerido no está resuelto.
 
 ## 12. Commit SHA
 
-No hay repositorio Git (`git` reporta "not a repository") y no se ha
-recibido autorización explícita para inicializarlo ni commitear. Por
-tanto no hay commit SHA.
+Repositorio inicializado y publicado con autorización del usuario.
+
+- Commit inicial: `64980af` — "Initial ca-es G0: deterministic,
+  evidence-first corporate actions core".
+- Repositorio: `https://github.com/Huntsman1756/corporate_actions.git`
+  (rama `main`).
+- Push realizado por HTTPS con el credential helper de `gh`; las claves
+  SSH disponibles no cubrían GitHub.
+- Este informe se actualiza en un commit posterior; el código de G0
+  corresponde al commit inicial `64980af`.
