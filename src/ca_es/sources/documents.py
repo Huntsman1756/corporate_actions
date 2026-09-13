@@ -29,6 +29,7 @@ class SourceDocument:
     retrieval_status: str = "OK"
     synthetic: bool = False
     notes: str | None = None
+    acquisition: dict | None = None
 
     @property
     def document_id(self) -> str:
@@ -47,6 +48,7 @@ class SourceDocument:
             "redistribution": self.redistribution,
             "retrieval_status": self.retrieval_status,
             "synthetic": self.synthetic,
+            "acquisition": self.acquisition,
         }
 
 
@@ -78,6 +80,7 @@ def _document_from_entry(entry: dict, policy: dict[str, SourcePolicy]) -> Source
         retrieval_status=entry.get("retrieval_status", "OK"),
         synthetic=bool(entry.get("synthetic", False)),
         notes=entry.get("notes"),
+        acquisition=entry.get("acquisition"),
     )
 
 

@@ -11,9 +11,9 @@
     ]
   },
   "gates": {
-    "R1_CANONICAL_ID_STABLE": {"requirement": "El canonical no cambia al entrar un candidate menor; bindings persistidos.", "status": "PASS"},
+    "R1_CANONICAL_ID_STABLE": {"requirement": "El canonical no cambia al entrar un candidate menor; bindings persistidos.", "status": "PASS", "evidence": "ca_es/identity/engine.py + ledger canonical_bindings; 5 tests; ADR-012"},
     "R2_CNMV_REAL_ALMIRALL": {"requirement": "Almirall reconstruido desde documento CNMV real (correction/supersession).", "status": "NOT_RUN"},
-    "R3_BORME_REAL_PARLEM": {"requirement": "Parlem reconstruido desde BORME-C-2026-4914 real (rights/entitlement/Iberclear).", "status": "NOT_RUN"},
+    "R3_BORME_REAL_PARLEM": {"requirement": "Parlem reconstruido desde BORME-C-2026-4914 real (rights/entitlement/Iberclear).", "status": "PASS", "evidence": "g0/manifests/real-corpus.json sha256=94c6571d...; parser borme_html; 4 tests; raw LOCAL_ONLY"},
     "R4_PORTFOLIO_REAL_P3": {"requirement": "P3 reconstruido desde OIR Portfolio real (dates/precision/Euroclear France).", "status": "NOT_RUN"},
     "R5_DUAL_SOURCE_SAN": {"requirement": "SAN reconciliado desde CNMV + issuer IR reales, conflicto explicito.", "status": "NOT_RUN"},
     "R6_ESMA_FIRDS_REAL": {"requirement": "ESMA_FIRDS_LISTINGS_V1 construido desde evidencia FIRDS real.", "status": "NOT_RUN"},

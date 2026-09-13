@@ -12,14 +12,35 @@ Status: OPEN (iniciado 2026-09-13). Sustituye a G1 como siguiente fase.
 
 ```
 R1  Persist canonical identity                       [DONE]
-R2  Real CNMV parser        → Almirall
-R3  Real BORME parser       → Parlem
-R4  Real Portfolio parser   → P3
-R5  Real issuer/CNMV dual   → SAN
-R6  Real ESMA_FIRDS_LISTINGS_V1 adapter
-R7  Resolve CNMV_CHANNEL_COVERAGE_P3
-R8  Full second-run from raw sources
+R2  Real CNMV parser        → Almirall               [PENDING]
+R3  Real BORME parser       → Parlem                 [DONE]
+R4  Real Portfolio parser   → P3                     [PENDING]
+R5  Real issuer/CNMV dual   → SAN                    [PENDING]
+R6  Real ESMA_FIRDS_LISTINGS_V1 adapter              [PENDING]
+R7  Resolve CNMV_CHANNEL_COVERAGE_P3                 [PENDING]
+R8  Full second-run from raw sources                 [PENDING]
 ```
+
+## Hallazgo de R3 (validación real)
+
+`BORME-C-2026-4914` real adquirido (`https://www.boe.es/buscar/doc.php?id=BORME-C-2026-4914`,
+SHA-256 `94c6571d50a97785990411abf2fbe2e84ab9c157089caf188d25ed7ac48fce4e`,
+LOCAL_ONLY). El parser real (`borme_html`) extrae, contra el documento:
+
+- `RIGHTS_ISSUE` (aumento de capital con derecho de suscripción preferente)
+- `ratio.terms = {new_shares: 20, old_shares: 39}` (enteros exactos)
+- `amount.issue_price_per_share = 0,80 EUR` (lexema raw, escala 2, sin float)
+- nominal 0,01; prima 0,79; nominal máx 99.375,00; prima máx 7.850.625,00
+- `entitlement_basis` con `asserted_as_of=2026-08-31`: elegibles 19.378.125;
+  componentes registradas 19.865.753, autocartera 209.745, renuncia 277.883
+- `ISSUER_CSD=IBERCLEAR` (registro contable explícito)
+- `TRADING_VENUE="BME Growth"` (venue name; el `segment_mic` es de ESMA/FIRDS)
+
+**Divergencia detectada frente al fixture sintético:** el fixture G0 usaba
+ratio `2` y fechas inventadas. El documento real usa 20:39 y **no publica
+fechas ex/record/payment explícitas** (periodo relativo a la publicación).
+El parser real las deja ausentes: no se inventan fechas. Esto es
+exactamente lo que G0-R debía descubrir.
 
 ## Criterio de cierre
 

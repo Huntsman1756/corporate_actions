@@ -41,3 +41,15 @@ def test_no_implicit_rounding():
     amount = FinancialAmount.parse("0.1184")
     assert amount.normalized_str() == "0.1184"
     assert amount.scale == 4
+
+
+def test_localized_spanish_amount_preserves_lexeme_and_scale():
+    amount = FinancialAmount.parse_localized("99.375,00", currency="EUR")
+    assert amount.raw_lexeme == "99.375,00"
+    assert amount.normalized_str() == "99375.00"
+    assert amount.scale == 2
+
+
+def test_localized_rejects_invalid_thousands_grouping():
+    with pytest.raises(AmbiguousLexemeError):
+        FinancialAmount.parse_localized("9.9375,00")

@@ -1,0 +1,31 @@
+{
+  "manifest_version": "CA_ES_SOURCE_MANIFEST_V1",
+  "corpus_id": "CA_ES_G0R_REAL_V1",
+  "retrieved_at": "2026-09-13T00:00:00Z",
+  "note": "Corpus real G0-R. Los originales permanecen LOCAL_ONLY en g0/corpus/raw/ (fuera de Git). En Git solo manifest, URL, SHA-256 y metadata de adquisicion. Reproducir con scripts/fetch_real_corpus.py.",
+  "documents": [
+    {
+      "source_id": "BOE_BORME",
+      "official_document_id": "BORME-C-2026-4914",
+      "content_sha256": "94c6571d50a97785990411abf2fbe2e84ab9c157089caf188d25ed7ac48fce4e",
+      "retrieved_at": "2026-09-13T00:00:00Z",
+      "publication_date": null,
+      "media_type": "text/html",
+      "raw_relpath": "g0/corpus/raw/parlem/borme-c-2026-4914.html",
+      "synthetic": false,
+      "notes": "Parlem Telecom. Aumento de capital con derecho de suscripcion preferente. Fecha de publicacion no explicita en el documento (se registra la fecha de firma como announcement_date).",
+      "acquisition": {
+        "url": "https://www.boe.es/buscar/doc.php?id=BORME-C-2026-4914",
+        "official_identifier": "BORME-C-2026-4914",
+        "section": "SECCION SEGUNDA. Anuncios y avisos legales / AUMENTO DE CAPITAL",
+        "borme_number": 174,
+        "pages": "6127 a 6129",
+        "retrieved_by": "ca-es G0-R",
+        "http_status": 200,
+        "terms_source": "https://www.boe.es/informacion/aviso_legal.php",
+        "terms_reviewed_at": "2026-09-13",
+        "redistribution": "HASH_AND_METADATA_ONLY"
+      }
+    }
+  ]
+}
