@@ -84,22 +84,39 @@ def _validate_relation(relation: IdentityRelation) -> None:
 @dataclass(frozen=True)
 class IdentityLedger:
     relations: tuple[IdentityRelation, ...] = field(default_factory=tuple)
+    # canonical persistido (candidate_id -> canonical_event_id). Una vez
+    # asignado, es inmutable: la llegada de un candidato menor no lo cambia.
+    canonical_bindings: tuple[tuple[str, str], ...] = field(default_factory=tuple)
 
     def append(self, relation: IdentityRelation) -> "IdentityLedger":
         """Append-only: nunca elimina ni reescribe relaciones previas."""
         _validate_relation(relation)
         # Idempotente: una relacion identica no se duplica, pero tampoco
         # se colapsan relaciones distintas.
-        canonical = relation.to_canonical()
-        if any(existing.to_canonical() == canonical for existing in self.relations):
+        payload = relation.to_canonical()
+        if any(existing.to_canonical() == payload for existing in self.relations):
             return self
-        return IdentityLedger(self.relations + (relation,))
+        return IdentityLedger(
+            self.relations + (relation,), self.canonical_bindings
+        )
 
     def extend(self, relations: list[IdentityRelation]) -> "IdentityLedger":
         ledger = self
         for relation in relations:
             ledger = ledger.append(relation)
         return ledger
+
+    def with_bindings(self, bindings: dict[str, str]) -> "IdentityLedger":
+        """Fija/persiste el canonical. Nunca borra bindings previos."""
+        merged = dict(self.canonical_bindings)
+        for candidate, value in bindings.items():
+            merged.setdefault(candidate, value)
+        return IdentityLedger(
+            self.relations, tuple(sorted(merged.items()))
+        )
+
+    def bindings(self) -> dict[str, str]:
+        return dict(self.canonical_bindings)
 
     def same_pairs(self) -> list[tuple[str, str]]:
         return [
@@ -112,6 +129,7 @@ class IdentityLedger:
         return {
             "ledger_version": LEDGER_VERSION,
             "relations": [r.to_canonical() for r in self.relations],
+            "canonical_bindings": dict(self.canonical_bindings),
         }
 
 
@@ -132,6 +150,9 @@ def load_identity_ledger(path) -> tuple[IdentityLedger, list[dict]]:
             reviewer=entry.get("reviewer"),
         )
         ledger = ledger.append(relation)
+    bindings = raw.get("canonical_bindings", {})
+    if bindings:
+        ledger = ledger.with_bindings(bindings)
     return ledger, list(raw.get("adjudications", []))
 
 

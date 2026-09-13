@@ -1,6 +1,9 @@
 # ADR-002 — Identity ledger and append-only merges
 
-Status: ACCEPTED (G0 freeze, 2026-09-13)
+Status: ACCEPTED (G0 freeze, 2026-09-13).
+La regla de selección de canonical (menor `candidate_event_id`) queda
+**SUPERSEDED BY ADR-012** (G0-R): el canonical se fija al crear el
+componente y se persiste.
 
 ## Context
 

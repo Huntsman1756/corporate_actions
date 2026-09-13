@@ -4,9 +4,14 @@
   "title": "IdentityLedger",
   "type": "object",
   "additionalProperties": false,
-  "required": ["ledger_version", "relations"],
+  "required": ["ledger_version", "relations", "canonical_bindings"],
   "properties": {
     "ledger_version": { "const": "CA_ES_IDENTITY_LEDGER_V1" },
+    "canonical_bindings": {
+      "type": "object",
+      "description": "candidate_id -> canonical_event_id persistido e inmutable",
+      "additionalProperties": { "type": "string" }
+    },
     "relations": {
       "type": "array",
       "items": {

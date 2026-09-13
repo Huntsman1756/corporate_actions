@@ -153,8 +153,13 @@ def build_identity(
         for d in corpus.documents.values()
         if d.retrieval_status == "OK"
     )
-    resolutions = resolve_canonical(candidate_ids, ledger)
+    pinned = ledger.bindings()
+    resolutions = resolve_canonical(candidate_ids, ledger, pinned=pinned)
     groups = group_by_canonical(resolutions)
+    # Persistir el canonical resuelto: estable ante futuros candidatos.
+    ledger = ledger.with_bindings(
+        {r.candidate_id: r.canonical_event_id for r in resolutions}
+    )
     identity = {
         "ledger": ledger.to_canonical(),
         "resolutions": [
