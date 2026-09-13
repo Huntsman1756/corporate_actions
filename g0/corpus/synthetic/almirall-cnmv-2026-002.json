@@ -1,0 +1,33 @@
+{
+  "synthetic_disclaimer": "Transcripcion estructurada sintetica. La segunda comunicacion CNMV corrige explicitamente la primera. Codifica el canario Almirall 2026 (55 -> 65 derechos/accion nueva).",
+  "document": {
+    "source_id": "CNMV",
+    "official_document_id": "CNMV-2026-ALM-CA-002"
+  },
+  "event_type": "SCRIP_DIVIDEND",
+  "event_type_evidence_locator": "CNMV, hecho relevante Almirall 2026, comunicacion de correccion: ampliacion de capital liberada",
+  "instrument": {
+    "isin": null,
+    "issuer_name": "Almirall",
+    "lei": null
+  },
+  "claims": [
+    {
+      "field_path": "ratio.rights_per_new_share",
+      "value": "65",
+      "value_kind": "financial",
+      "evidence_locator": "CNMV-2026-ALM-CA-002, apartado 'Contraprestacion corregida': 65 derechos por accion nueva",
+      "raw_pointer": "/claims/0"
+    }
+  ],
+  "references": [
+    {
+      "relation": "SUPERSEDES",
+      "target_source_id": "CNMV",
+      "target_official_document_id": "CNMV-2026-ALM-CA-001",
+      "evidence_locator": "CNMV-2026-ALM-CA-002: 'corrige y sustituye' la comunicacion CNMV-2026-ALM-CA-001",
+      "target_publication_date": "2026-09-01"
+    }
+  ],
+  "infrastructure_roles": []
+}

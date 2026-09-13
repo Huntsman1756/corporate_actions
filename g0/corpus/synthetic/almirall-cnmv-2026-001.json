@@ -1,0 +1,25 @@
+{
+  "synthetic_disclaimer": "Transcripcion estructurada sintetica. No se redistribuye el documento CNMV original. Codifica exclusivamente el patron y los valores explicitados en el alcance G0.",
+  "document": {
+    "source_id": "CNMV",
+    "official_document_id": "CNMV-2026-ALM-CA-001"
+  },
+  "event_type": "SCRIP_DIVIDEND",
+  "event_type_evidence_locator": "CNMV, hecho relevante Almirall 2026, primera comunicacion: ampliacion de capital liberada con derechos de asignacion gratuita",
+  "instrument": {
+    "isin": null,
+    "issuer_name": "Almirall",
+    "lei": null
+  },
+  "claims": [
+    {
+      "field_path": "ratio.rights_per_new_share",
+      "value": "55",
+      "value_kind": "financial",
+      "evidence_locator": "CNMV-2026-ALM-CA-001, apartado 'Contraprestacion': 55 derechos por accion nueva",
+      "raw_pointer": "/claims/0"
+    }
+  ],
+  "references": [],
+  "infrastructure_roles": []
+}

@@ -1,0 +1,30 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://ca-es.open/schema/source-document.schema.json",
+  "title": "SourceDocument",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "document_id",
+    "source_id",
+    "official_document_id",
+    "content_sha256",
+    "retrieved_at",
+    "redistribution",
+    "retrieval_status",
+    "synthetic"
+  ],
+  "properties": {
+    "document_id": { "type": "string", "format": "uuid" },
+    "source_id": { "type": "string" },
+    "official_document_id": { "type": "string" },
+    "content_sha256": { "type": "string", "pattern": "^[0-9a-f]{64}$" },
+    "retrieved_at": { "type": "string" },
+    "publication_date": { "type": ["string", "null"] },
+    "media_type": { "type": "string" },
+    "raw_relpath": { "type": ["string", "null"] },
+    "redistribution": { "type": "string" },
+    "retrieval_status": { "type": "string" },
+    "synthetic": { "type": "boolean" }
+  }
+}

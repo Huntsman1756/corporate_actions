@@ -1,0 +1,21 @@
+{
+  "investigation": "CNMV_CHANNEL_COVERAGE_P3",
+  "question": "¿Cubre el canal CNMV el corporate action de P3 Spain SOCIMI usado como canario?",
+  "result": "INCONCLUSIVE",
+  "valid_results": ["PROVEN", "NOT_PROVEN", "CONTRADICTED", "INCONCLUSIVE"],
+  "method": {
+    "planned": [
+      "Buscar el emisor P3 Spain SOCIMI en los canales publicos de CNMV (hechos relevantes / informacion periodica / registros).",
+      "Comparar el evento de Portfolio con el equivalente CNMV si existe.",
+      "Registrar fecha de consulta, URL y sha256 de cualquier extracto."
+    ],
+    "executed_in_g0": "NONE",
+    "reason": "G0 se ejecuta offline sobre un corpus sintetico; no se ha consultado el canal CNMV en vivo. No se convierte 'no encontrado en el corpus' en 'no existe'."
+  },
+  "evidence": [],
+  "not_claimed": [
+    "No se afirma que CNMV no publique el evento.",
+    "No se afirma que Portfolio sea la unica fuente."
+  ],
+  "next_step": "Investigar con red y adjuntar extractos con hash; entonces re-evaluar como PROVEN/NOT_PROVEN/CONTRADICTED."
+}

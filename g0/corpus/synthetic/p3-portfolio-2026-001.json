@@ -1,0 +1,54 @@
+{
+  "synthetic_disclaimer": "Transcripcion estructurada sintetica del anuncio de Portfolio Stock Exchange sobre P3 Spain SOCIMI. Las fechas concretas son ilustrativas del patron requerido (record < ex, payment = ex); no se presentan como verificadas en fuente. El importe 0,11840672 EUR y el canal de pago Euroclear France si son los exigidos por el canario.",
+  "document": {
+    "source_id": "PORTFOLIO_STOCK_EXCHANGE",
+    "official_document_id": "PORTFOLIO-2026-P3-DIV-001"
+  },
+  "event_type": "CASH_DIVIDEND",
+  "event_type_evidence_locator": "PORTFOLIO-2026-P3-DIV-001: 'distribucion de dividendo en efectivo'",
+  "instrument": {
+    "isin": null,
+    "issuer_name": "P3 Spain SOCIMI",
+    "lei": null
+  },
+  "claims": [
+    {
+      "field_path": "amount.gross_per_share",
+      "value": "0,11840672",
+      "value_kind": "financial",
+      "currency": "EUR",
+      "evidence_locator": "PORTFOLIO-2026-P3-DIV-001: importe bruto 0,11840672 EUR por accion",
+      "raw_pointer": "/claims/0"
+    },
+    {
+      "field_path": "date.ex_date",
+      "value": "2026-05-20",
+      "date_kind": "EX_DATE",
+      "evidence_locator": "PORTFOLIO-2026-P3-DIV-001: fecha ex-date",
+      "raw_pointer": "/claims/1"
+    },
+    {
+      "field_path": "date.record_date",
+      "value": "2026-05-19",
+      "date_kind": "RECORD_DATE",
+      "evidence_locator": "PORTFOLIO-2026-P3-DIV-001: fecha de registro",
+      "raw_pointer": "/claims/2"
+    },
+    {
+      "field_path": "date.payment_date",
+      "value": "2026-05-20",
+      "date_kind": "PAYMENT_DATE",
+      "evidence_locator": "PORTFOLIO-2026-P3-DIV-001: fecha de pago",
+      "raw_pointer": "/claims/3"
+    }
+  ],
+  "references": [],
+  "infrastructure_roles": [
+    {
+      "role": "PAYMENT_CHANNEL",
+      "entity": "EUROCLEAR_FRANCE",
+      "evidence_locator": "PORTFOLIO-2026-P3-DIV-001: pago a traves de Euroclear France",
+      "evidence_mode": "EXPLICIT"
+    }
+  ]
+}

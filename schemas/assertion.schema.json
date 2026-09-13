@@ -1,0 +1,36 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://ca-es.open/schema/assertion.schema.json",
+  "title": "Assertion",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "assertion_id",
+    "document_id",
+    "source_id",
+    "field_path",
+    "value",
+    "evidence_locator",
+    "raw_pointer",
+    "evidence_mode",
+    "fact_origin"
+  ],
+  "properties": {
+    "assertion_id": { "type": "string" },
+    "document_id": { "type": "string", "format": "uuid" },
+    "source_id": { "type": "string" },
+    "field_path": { "type": "string" },
+    "value": {},
+    "raw_value": {},
+    "evidence_locator": { "type": "string" },
+    "raw_pointer": { "type": "string" },
+    "evidence_mode": {
+      "enum": ["EXPLICIT", "DERIVED_BY_DEFINITION", "REFERENCE_ENRICHMENT", "CONFLICTING", "UNKNOWN"]
+    },
+    "asserted_as_of": { "type": ["string", "null"] },
+    "date_kind": { "type": ["string", "null"] },
+    "fact_origin": {
+      "enum": ["SOURCE_ASSERTION", "DETERMINISTIC_DERIVATION", "REFERENCE_ENRICHMENT"]
+    }
+  }
+}

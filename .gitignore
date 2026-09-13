@@ -1,0 +1,22 @@
+# raw corpus: nunca se commitea cuando la fuente no permite redistribucion.
+/raw/
+g0/corpus/raw/*
+!g0/corpus/raw/.gitkeep
+
+# outputs regenerables de un run (se recrean; Phase H los borra)
+g0/results/*.json
+!g0/results/.gitkeep
+
+# Python
+__pycache__/
+*.py[cod]
+*.egg-info/
+.pytest_cache/
+.ruff_cache/
+.venv/
+dist/
+build/
+
+# OS / editor
+.DS_Store
+Thumbs.db

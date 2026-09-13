@@ -1,0 +1,59 @@
+# AGENTS.md — Corporate Actions ES (ca-es)
+
+Guía para agentes que trabajen en este repositorio.
+
+## Comandos
+
+```bash
+# entorno (stdlib-only en runtime)
+export PYTHONPATH=src        # Windows: $env:PYTHONPATH='src'
+
+# tests (offline, sin red, sin credenciales)
+python -m pytest
+
+# pipeline canario con enriquecimiento FIRDS
+python -m ca_es.cli run --firds-listings g0/corpus/reference/esma-firds-listings.json
+python -m ca_es.cli gates --second-run --firds-listings g0/corpus/reference/esma-firds-listings.json
+python -m ca_es.cli metrics --firds-listings g0/corpus/reference/esma-firds-listings.json
+python -m ca_es.cli event <event-id>
+python -m ca_es.cli isin <isin>
+```
+
+No hay linter/formatter configurado; el estilo es PEP 8 + stdlib.
+
+## Reglas no negociables
+
+1. No usar `float` para valores financieros canónicos: `Decimal` +
+   `raw_lexeme` + `scale` (`ca_es.numeric`).
+2. No fusionar identidades sin evidencia determinista o adjudicación
+   registrada. Ante la duda: candidatos separados.
+3. No derivar `event_id`/`candidate_event_id` de fecha, importe, ratio,
+   ticker o nombre.
+4. No inferir fechas: `EXPLICIT`, `DERIVED_BY_DEFINITION` o `UNKNOWN`.
+   Sin orden global de fechas.
+5. No sobrescribir fuentes en silencio: usar `CONFLICTING` + `Conflict`.
+6. La adjudicación humana solo escribe **relaciones**, nunca facts.
+7. Iberclear es `REFERENCE_ONLY` (`PUBLIC_INGEST_INTERFACE_NOT_PROVEN`).
+8. FIRDS pertenece a la capa ESMA externa; ca-es solo define el contrato
+   `ListingResolver`.
+9. La génération ISO queda fuera del core (ADR-010).
+10. No añadir funcionalidad fuera de G0.
+
+## Flujo de cambio
+
+- Cambios pequeños, verificables y trazables; tests junto al
+  comportamiento.
+- Un gate solo pasa si hay evidencia; `NOT_RUN` ≠ `PASS`.
+- No reescribir historia ni artefactos congelados.
+
+## Estructura
+
+```
+src/ca_es/        núcleo (canonical, numeric, identity, assertions,
+                  provenance, revisions, temporal, entitlement,
+                  reference, sources, pipeline, metrics, gates, cli)
+schemas/          contratos JSON de artefactos
+tests/            unit / integration / canaries
+docs/             architecture / decisions (ADR) / gates / sources
+g0/               corpus (synthetic) / manifests / results (regenerables)
+```

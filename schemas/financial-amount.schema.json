@@ -1,0 +1,15 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://ca-es.open/schema/financial-amount.schema.json",
+  "title": "FinancialAmount",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["__financial__", "raw_lexeme", "normalized", "scale", "currency"],
+  "properties": {
+    "__financial__": { "const": true },
+    "raw_lexeme": { "type": "string", "minLength": 1 },
+    "normalized": { "type": "string", "pattern": "^-?[0-9]+(\\.[0-9]+)?$" },
+    "scale": { "type": "integer", "minimum": 0 },
+    "currency": { "type": ["string", "null"] }
+  }
+}

@@ -1,0 +1,34 @@
+{
+  "synthetic_disclaimer": "Transcripcion estructurada sintetica de investor relations. Se enlaza por referencia oficial exacta al documento CNMV y discrepa en el importe para forzar un conflicto explicito.",
+  "document": {
+    "source_id": "ISSUER_IR",
+    "official_document_id": "SAN-IR-2026-DIV-001"
+  },
+  "event_type": "CASH_DIVIDEND",
+  "event_type_evidence_locator": "SAN-IR-2026-DIV-001: 'cash dividend'",
+  "instrument": {
+    "isin": "ES0113900J37",
+    "issuer_name": "Banco Santander",
+    "lei": null
+  },
+  "claims": [
+    {
+      "field_path": "amount.gross_per_share",
+      "value": "0,11",
+      "value_kind": "financial",
+      "currency": "EUR",
+      "evidence_locator": "SAN-IR-2026-DIV-001: importe bruto 0,11 EUR por accion",
+      "raw_pointer": "/claims/0"
+    }
+  ],
+  "references": [
+    {
+      "relation": "EXACT_OFFICIAL_CROSS_REFERENCE",
+      "target_source_id": "CNMV",
+      "target_official_document_id": "CNMV-2026-SAN-DIV-001",
+      "evidence_locator": "SAN-IR-2026-DIV-001 referencia el anuncio CNMV-2026-SAN-DIV-001",
+      "target_publication_date": "2026-04-01"
+    }
+  ],
+  "infrastructure_roles": []
+}

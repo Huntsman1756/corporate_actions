@@ -1,0 +1,68 @@
+{
+  "manifest_version": "CA_ES_SOURCE_MANIFEST_V1",
+  "corpus_id": "CA_ES_G0_CANARY_SYNTHETIC_V1",
+  "retrieved_at": "2026-09-13T00:00:00Z",
+  "note": "Fixtures sinteticos redistribuibles. Transcriben exclusivamente hechos explicitados en el alcance G0. El corpus raw real permanece LOCAL_ONLY y fuera de Git.",
+  "documents": [
+    {
+      "source_id": "CNMV",
+      "official_document_id": "CNMV-2026-ALM-CA-001",
+      "content_sha256": "9761180130fe4b74d3baa2ad9e03bd8a17d561bcf64a3449d1474771d3011ee1",
+      "retrieved_at": "2026-09-13T00:00:00Z",
+      "publication_date": "2026-09-01",
+      "raw_relpath": "g0/corpus/synthetic/almirall-cnmv-2026-001.json",
+      "synthetic": true,
+      "notes": "Almirall V1 (55 derechos/accion nueva)."
+    },
+    {
+      "source_id": "CNMV",
+      "official_document_id": "CNMV-2026-ALM-CA-002",
+      "content_sha256": "579388b53ed9f8e633851fbcf36d9a00289aff3d44ee455ed36e538eac801012",
+      "retrieved_at": "2026-09-13T00:00:00Z",
+      "publication_date": "2026-09-05",
+      "raw_relpath": "g0/corpus/synthetic/almirall-cnmv-2026-002.json",
+      "synthetic": true,
+      "notes": "Almirall V2 (65 derechos/accion nueva), supersede V1."
+    },
+    {
+      "source_id": "BOE_BORME",
+      "official_document_id": "BORME-C-2026-4914",
+      "content_sha256": "718bef2528d5785349fc16c00b6577018937a8833dcc2f2712f00d5f8f5beac0",
+      "retrieved_at": "2026-09-13T00:00:00Z",
+      "publication_date": "2026-08-28",
+      "raw_relpath": "g0/corpus/synthetic/parlem-borme-c-2026-4914.json",
+      "synthetic": true,
+      "notes": "Parlem rights issue, entitlement basis temporal."
+    },
+    {
+      "source_id": "PORTFOLIO_STOCK_EXCHANGE",
+      "official_document_id": "PORTFOLIO-2026-P3-DIV-001",
+      "content_sha256": "f2e36c773d6860571c27618b432804a516597a68c19910be3a2e2225ebcb200d",
+      "retrieved_at": "2026-09-13T00:00:00Z",
+      "publication_date": "2026-05-10",
+      "raw_relpath": "g0/corpus/synthetic/p3-portfolio-2026-001.json",
+      "synthetic": true,
+      "notes": "P3 Spain SOCIMI, record<ex, payment=ex, Euroclear France."
+    },
+    {
+      "source_id": "CNMV",
+      "official_document_id": "CNMV-2026-SAN-DIV-001",
+      "content_sha256": "df774b9ed44881ef5fc8feb86624755044f196a62cf205124632f13584140dde",
+      "retrieved_at": "2026-09-13T00:00:00Z",
+      "publication_date": "2026-04-01",
+      "raw_relpath": "g0/corpus/synthetic/santander-cnmv-2026-div.json",
+      "synthetic": true,
+      "notes": "SAN cash dividend (0,10 EUR), lado CNMV."
+    },
+    {
+      "source_id": "ISSUER_IR",
+      "official_document_id": "SAN-IR-2026-DIV-001",
+      "content_sha256": "2903ca2cfd77564152f8f6c8e56d5089c6efb08c61ca68bf291e0f66d5eafdf5",
+      "retrieved_at": "2026-09-13T00:00:00Z",
+      "publication_date": "2026-04-05",
+      "raw_relpath": "g0/corpus/synthetic/santander-ir-2026-div.json",
+      "synthetic": true,
+      "notes": "SAN cash dividend (0,11 EUR), lado IR; conflicto explicito."
+    }
+  ]
+}

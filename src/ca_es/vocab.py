@@ -1,0 +1,144 @@
+"""Vocabulario controlado de ca-es.
+
+Solo se incluyen estados y tipos necesarios para G0. Cuando un concepto
+no esta demostrado por corpus suficiente, el valor preferido es
+UNKNOWN / UNMAPPED / UNRESOLVED y no se fuerza una categoria nueva.
+"""
+from __future__ import annotations
+
+from enum import Enum
+
+
+class SourceId(str, Enum):
+    CNMV = "CNMV"
+    BOE_BORME = "BOE_BORME"
+    PORTFOLIO_STOCK_EXCHANGE = "PORTFOLIO_STOCK_EXCHANGE"
+    ISSUER_IR = "ISSUER_IR"
+    ESMA_FIRDS = "ESMA_FIRDS"
+    IBERCLEAR = "IBERCLEAR"
+
+
+class EvidenceMode(str, Enum):
+    EXPLICIT = "EXPLICIT"
+    DERIVED_BY_DEFINITION = "DERIVED_BY_DEFINITION"
+    REFERENCE_ENRICHMENT = "REFERENCE_ENRICHMENT"
+    CONFLICTING = "CONFLICTING"
+    UNKNOWN = "UNKNOWN"
+
+
+class FactOrigin(str, Enum):
+    """Solo estas tres procedencias pueden crear facts canonicos."""
+
+    SOURCE_ASSERTION = "SOURCE_ASSERTION"
+    DETERMINISTIC_DERIVATION = "DETERMINISTIC_DERIVATION"
+    REFERENCE_ENRICHMENT = "REFERENCE_ENRICHMENT"
+
+
+class EventType(str, Enum):
+    CASH_DIVIDEND = "CASH_DIVIDEND"
+    SCRIP_DIVIDEND = "SCRIP_DIVIDEND"
+    RIGHTS_ISSUE = "RIGHTS_ISSUE"
+    CAPITAL_INCREASE = "CAPITAL_INCREASE"
+    CAPITAL_REDUCTION = "CAPITAL_REDUCTION"
+    UNKNOWN = "UNKNOWN"
+
+
+class DocumentRelation(str, Enum):
+    SUPPORTS = "SUPPORTS"
+    SUPPLEMENTS = "SUPPLEMENTS"
+    CONFLICTS_WITH = "CONFLICTS_WITH"
+    SUPERSEDES = "SUPERSEDES"
+    UNRESOLVED = "UNRESOLVED"
+
+    # Relaciones que SI autorizan clustering automatico.
+    EXPLICIT_PREDECESSOR_REFERENCE = "EXPLICIT_PREDECESSOR_REFERENCE"
+    EXACT_EXTERNAL_EVENT_ID = "EXACT_EXTERNAL_EVENT_ID"
+    EXACT_OFFICIAL_CROSS_REFERENCE = "EXACT_OFFICIAL_CROSS_REFERENCE"
+
+
+DETERMINISTIC_LINK_RELATIONS = frozenset(
+    {
+        DocumentRelation.EXPLICIT_PREDECESSOR_REFERENCE,
+        DocumentRelation.EXACT_EXTERNAL_EVENT_ID,
+        DocumentRelation.EXACT_OFFICIAL_CROSS_REFERENCE,
+    }
+)
+
+# Relaciones que autorizan clustering automatico. SUPERSEDES se incluye
+# porque implica una referencia explicita al predecesor; no es una
+# heuristica por fecha/importe.
+AUTO_LINK_RELATIONS = DETERMINISTIC_LINK_RELATIONS | {
+    DocumentRelation.SUPERSEDES,
+}
+
+# Relaciones de identidad permitidas en adjudicacion humana.
+ADJUDICABLE_RELATIONS = frozenset(
+    {
+        "SAME_CORPORATE_ACTION",
+        "DISTINCT_CORPORATE_ACTION",
+        "RELATED_CORPORATE_ACTION",
+    }
+)
+
+
+class RelationType(str, Enum):
+    SAME_CORPORATE_ACTION = "SAME_CORPORATE_ACTION"
+    DISTINCT_CORPORATE_ACTION = "DISTINCT_CORPORATE_ACTION"
+    RELATED_CORPORATE_ACTION = "RELATED_CORPORATE_ACTION"
+
+    RIGHTS_DISTRIBUTION = "RIGHTS_DISTRIBUTION"
+    RIGHTS_TRADING_PERIOD = "RIGHTS_TRADING_PERIOD"
+    RIGHTS_EXERCISE = "RIGHTS_EXERCISE"
+    NEW_SHARES_DELIVERY = "NEW_SHARES_DELIVERY"
+
+
+class DecisionBasis(str, Enum):
+    DETERMINISTIC = "DETERMINISTIC"
+    MANUAL_ADJUDICATION = "MANUAL_ADJUDICATION"
+
+
+class IdentityState(str, Enum):
+    EXACT = "EXACT"
+    UNRESOLVED = "UNRESOLVED"
+    CONFLICTING = "CONFLICTING"
+    AMBIGUOUS = "AMBIGUOUS"
+
+
+class InfrastructureRole(str, Enum):
+    ISSUER_CSD = "ISSUER_CSD"
+    INVESTOR_CSD = "INVESTOR_CSD"
+    SETTLEMENT_SYSTEM = "SETTLEMENT_SYSTEM"
+    TRADING_VENUE = "TRADING_VENUE"
+    CORPORATE_ACTION_AGENT = "CORPORATE_ACTION_AGENT"
+    PAYING_AGENT = "PAYING_AGENT"
+    PAYMENT_CHANNEL = "PAYMENT_CHANNEL"
+
+
+class DateKind(str, Enum):
+    EX_DATE = "EX_DATE"
+    RECORD_DATE = "RECORD_DATE"
+    PAYMENT_DATE = "PAYMENT_DATE"
+    ANNOUNCEMENT_DATE = "ANNOUNCEMENT_DATE"
+    RIGHTS_TRADING_START = "RIGHTS_TRADING_START"
+    RIGHTS_TRADING_END = "RIGHTS_TRADING_END"
+    RIGHTS_EXERCISE_START = "RIGHTS_EXERCISE_START"
+    RIGHTS_EXERCISE_END = "RIGHTS_EXERCISE_END"
+    ADMISSION_DATE = "ADMISSION_DATE"
+
+
+class EntitlementStatus(str, Enum):
+    SUBJECT_TO_ADJUSTMENT = "SUBJECT_TO_ADJUSTMENT"
+    FINAL = "FINAL"
+    UNKNOWN = "UNKNOWN"
+
+
+class MappingStatus(str, Enum):
+    PROVEN = "PROVEN"
+    UNMAPPED = "UNMAPPED"
+    NOT_APPLICABLE = "NOT_APPLICABLE"
+
+
+class RetrievalStatus(str, Enum):
+    OK = "OK"
+    NOT_FOUND = "NOT_FOUND"
+    UNRESOLVED = "UNRESOLVED"

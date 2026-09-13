@@ -1,0 +1,39 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://ca-es.open/schema/fact.schema.json",
+  "title": "Fact",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "event_id",
+    "revision_id",
+    "assertion_id",
+    "field_path",
+    "value",
+    "source_document_id",
+    "source_id",
+    "evidence_locator",
+    "raw_pointer",
+    "evidence_mode",
+    "fact_origin"
+  ],
+  "properties": {
+    "event_id": { "type": "string" },
+    "revision_id": { "type": "string" },
+    "assertion_id": { "type": "string" },
+    "field_path": { "type": "string" },
+    "value": {},
+    "source_document_id": { "type": "string" },
+    "source_id": { "type": "string" },
+    "evidence_locator": { "type": "string" },
+    "raw_pointer": { "type": "string" },
+    "evidence_mode": {
+      "enum": ["EXPLICIT", "DERIVED_BY_DEFINITION", "REFERENCE_ENRICHMENT", "CONFLICTING", "UNKNOWN"]
+    },
+    "fact_origin": {
+      "enum": ["SOURCE_ASSERTION", "DETERMINISTIC_DERIVATION", "REFERENCE_ENRICHMENT"]
+    },
+    "asserted_as_of": { "type": ["string", "null"] },
+    "date_kind": { "type": ["string", "null"] }
+  }
+}

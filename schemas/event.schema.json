@@ -1,0 +1,31 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://ca-es.open/schema/event.schema.json",
+  "title": "CorporateActionEventView",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "canonical_event_id",
+    "candidate_ids",
+    "event_type",
+    "event_type_status",
+    "revisions",
+    "temporal",
+    "fact_count",
+    "conflict_count"
+  ],
+  "properties": {
+    "canonical_event_id": { "type": "string" },
+    "candidate_ids": { "type": "array", "items": { "type": "string" } },
+    "event_type": { "type": "string" },
+    "event_type_status": { "enum": ["EXPLICIT", "CONFLICTING", "UNKNOWN"] },
+    "event_type_evidence_locator": { "type": ["string", "null"] },
+    "isin": { "type": ["string", "null"] },
+    "lei": { "type": ["string", "null"] },
+    "issuer_name": { "type": ["string", "null"] },
+    "revisions": { "type": "array", "items": { "type": "object" } },
+    "temporal": { "type": "object" },
+    "fact_count": { "type": "integer" },
+    "conflict_count": { "type": "integer" }
+  }
+}

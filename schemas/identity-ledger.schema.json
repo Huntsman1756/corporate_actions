@@ -1,0 +1,38 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://ca-es.open/schema/identity-ledger.schema.json",
+  "title": "IdentityLedger",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["ledger_version", "relations"],
+  "properties": {
+    "ledger_version": { "const": "CA_ES_IDENTITY_LEDGER_V1" },
+    "relations": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["relation", "a", "b", "decision_basis", "evidence"],
+        "properties": {
+          "relation": {
+            "enum": [
+              "SAME_CORPORATE_ACTION",
+              "DISTINCT_CORPORATE_ACTION",
+              "RELATED_CORPORATE_ACTION",
+              "RIGHTS_DISTRIBUTION",
+              "RIGHTS_TRADING_PERIOD",
+              "RIGHTS_EXERCISE",
+              "NEW_SHARES_DELIVERY"
+            ]
+          },
+          "a": { "type": "string" },
+          "b": { "type": "string" },
+          "decision_basis": { "enum": ["DETERMINISTIC", "MANUAL_ADJUDICATION"] },
+          "evidence": { "type": "array", "items": { "type": "string" } },
+          "reviewed_at": { "type": ["string", "null"] },
+          "reviewer": { "type": ["string", "null"] }
+        }
+      }
+    }
+  }
+}

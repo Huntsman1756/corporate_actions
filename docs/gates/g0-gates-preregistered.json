@@ -1,0 +1,83 @@
+{
+  "preregistration_version": "CA_ES_G0_GATES_V1",
+  "registered_at": "2026-09-13",
+  "policy": {
+    "registered_before_implementation": true,
+    "statuses": ["PASS", "FAIL", "INCONCLUSIVE", "NOT_RUN"],
+    "notes": [
+      "Los gates se registran antes de adaptar la implementacion para hacerlos pasar.",
+      "NOT_RUN nunca se interpreta como PASS.",
+      "Un gate INCONCLUSIVE significa que la evidencia disponible no permite decidir; no es PASS."
+    ]
+  },
+  "gates": {
+    "SOURCE_DOCUMENT_ID_STABLE": {"group": "Identity", "requirement": "El source_document_id depende solo de source_id + official_document_id, no del contenido ni del orden de ingestion."},
+    "CANDIDATE_ID_IMMUTABLE": {"group": "Identity", "requirement": "candidate_event_id es UUIDv5 determinista sobre (source_id, official_document_id) y no cambia al rectificar facts."},
+    "EVENT_REFERENCE_PERMANENTLY_RESOLVABLE": {"group": "Identity", "requirement": "Todo candidate_event_id historico resuelve a un canonical_event_id o a si mismo de forma permanente."},
+    "CANONICAL_ID_DETERMINISTIC": {"group": "Identity", "requirement": "Dados raw inputs, config, identity ledger y adjudication ledger, la resolucion canonica es identica en cada run."},
+    "ISSUER_IDENTITY_EXACT": {"group": "Identity", "requirement": "La identidad de emisor se resuelve solo por LEI/ISIN/identidad registral exacta; el nombre no autoriza fusion."},
+    "INSTRUMENT_IDENTITY_EXACT": {"group": "Identity", "requirement": "La identidad de instrumento se resuelve por ISIN exacto; nunca por nombre ni fuzzy."},
+
+    "EVENT_CLUSTERING_DETERMINISTIC": {"group": "Clustering", "requirement": "El clustering de eventos es una funcion determinista de relaciones explicitas."},
+    "NO_UNPROVEN_AUTO_MERGE": {"group": "Clustering", "requirement": "Ningun par de candidatos se fusiona sin evidencia determinista o adjudicacion registrada."},
+    "DEFAULT_SPLIT_ON_UNPROVEN_IDENTITY": {"group": "Clustering", "requirement": "En ausencia de evidencia suficiente, los candidatos permanecen separados."},
+    "CROSS_SOURCE_EVENT_LINK_PROVEN": {"group": "Clustering", "requirement": "El enlace entre fuentes exige EXPLICIT_PREDECESSOR_REFERENCE, EXACT_EXTERNAL_EVENT_ID o EXACT_OFFICIAL_CROSS_REFERENCE."},
+    "MERGE_APPEND_ONLY": {"group": "Clustering", "requirement": "Los merges no destruyen candidatos; se anaden relaciones y alias."},
+    "ADJUDICATION_RELATIONS_ONLY": {"group": "Clustering", "requirement": "La adjudicacion humana solo puede escribir relaciones, nunca facts financieros."},
+
+    "EXPLICIT_SUPERSESSION_PROVEN": {"group": "Lifecycle", "requirement": "Una nueva revision exige evidencia explicita de sustitucion o correccion."},
+    "AMENDMENT_CHAIN_PROVEN": {"group": "Lifecycle", "requirement": "La cadena de enmiendas de una corporate action es reconstruible y justificada."},
+    "NO_DOCUMENT_EQUALS_REVISION_ASSUMPTION": {"group": "Lifecycle", "requirement": "Un documento nuevo que soporta el mismo evento no crea revision por si mismo."},
+
+    "EVENT_TYPE_DETERMINISTIC": {"group": "Facts", "requirement": "El event_type procede de evidencia explicita o mapeo versionado; si no, UNKNOWN/UNMAPPED."},
+    "FIELD_PROVENANCE_COMPLETE": {"group": "Facts", "requirement": "Todo fact canonico conserva source_document_id, evidence_locator y evidence_mode."},
+    "NO_INFERRED_CANONICAL_DATES": {"group": "Facts", "requirement": "Una fecha no publicada no se promociona a fecha canonica; se marca DERIVED_BY_DEFINITION o UNKNOWN."},
+    "DERIVED_FACTS_LABELED": {"group": "Facts", "requirement": "Los facts derivados se distinguen de los explicitos mediante evidence_mode."},
+    "UNKNOWN_PRESERVED": {"group": "Facts", "requirement": "La ausencia de dato se preserva como UNKNOWN; nunca se rellena."},
+    "TEMPORAL_FACTS_NOT_PROMOTED_TO_STATELESS_ATTRIBUTES": {"group": "Facts", "requirement": "Los facts con as_of no se colapsan en atributos sin tiempo."},
+
+    "NO_BINARY_FLOAT_FOR_FINANCIAL_FACTS": {"group": "Numeric", "requirement": "Ningun fact financiero canonico usa float binario."},
+    "PUBLISHED_SCALE_PRESERVED": {"group": "Numeric", "requirement": "La escala publicada de un importe/ratio se conserva."},
+    "NO_IMPLICIT_ROUNDING": {"group": "Numeric", "requirement": "No se redondea silenciosamente; el lexema raw se conserva."},
+
+    "NO_GLOBAL_DATE_ORDER_ASSUMPTION": {"group": "Temporal", "requirement": "No existe la regla universal ex < record < payment."},
+    "DATE_SEMANTICS_SOURCE_SCOPED": {"group": "Temporal", "requirement": "Las reglas temporales son source/infrastructure/event-type scoped y declaradas."},
+
+    "CSD_NOT_ASSUMED_FROM_VENUE": {"group": "Infrastructure", "requirement": "No se deduce CSD a partir de pais o venue."},
+    "INFRASTRUCTURE_ROLE_EXACT": {"group": "Infrastructure", "requirement": "Cada rol de infraestructura se asigna solo con evidencia."},
+    "NO_ROLE_UPCASTING": {"group": "Infrastructure", "requirement": "PAYMENT_CHANNEL no se eleva a ISSUER_CSD."},
+    "SOURCE_ROLE_EXPLICIT": {"group": "Infrastructure", "requirement": "Cada fuente declara su rol explicitamente."},
+    "IBERCLEAR_SOURCE_AVAILABILITY": {"group": "Infrastructure", "requirement": "Iberclear es REFERENCE_ONLY mientras PUBLIC_INGEST_INTERFACE_NOT_PROVEN."},
+
+    "LEI_ISIN_MIC_CHAIN_PROVEN": {"group": "Reference data", "requirement": "La cadena LEI -> ISIN -> segment MIC se resuelve point-in-time."},
+    "VENUE_RESOLUTION_POINT_IN_TIME": {"group": "Reference data", "requirement": "La resolucion de venue usa el conjunto valido a la fecha del evento."},
+    "SEGMENT_MIC_PRESERVED": {"group": "Reference data", "requirement": "segment_mic se conserva; no se reduce automaticamente a operating MIC."},
+    "MULTI_VENUE_INSTRUMENT_SUPPORTED": {"group": "Reference data", "requirement": "Un ISIN puede estar admitido en mas de un MIC."},
+    "NO_CURRENT_VENUE_USED_FOR_HISTORICAL_EVENT": {"group": "Reference data", "requirement": "No se usa el venue actual para enriquecer un evento historico."},
+    "NO_NAME_AUTO_LINK_WHEN_LEI_OR_ISIN_AVAILABLE": {"group": "Reference data", "requirement": "Con LEI/ISIN disponible, el nombre no auto-enlaza."},
+    "FIRDS_SEMANTICS_PRESERVED": {"group": "Reference data", "requirement": "La semantica regulatoria del LEI en FIRDS se conserva (NORMAL_ISSUER, FUND, ...)."},
+
+    "CONFLICTS_EXPLICIT": {"group": "Conflicts", "requirement": "Dos fuentes que discrepan producen un conflicto explicito."},
+    "NO_SILENT_SOURCE_OVERRIDE": {"group": "Conflicts", "requirement": "Ninguna fuente sobrescribe silenciosamente a otra."},
+
+    "RAW_SHA256_PINNED": {"group": "Reproducibility", "requirement": "Todo source document usado tiene SHA-256 fijado."},
+    "SECOND_RUN_DETERMINISTIC": {"group": "Reproducibility", "requirement": "Una segunda ejecucion produce el mismo resultado logico y hashes."},
+
+    "SOURCE_REUSE_POLICY_DECLARED": {"group": "Legal", "requirement": "Cada fuente declara rol y politica de uso."},
+    "RAW_REDISTRIBUTION_POLICY_EXPLICIT": {"group": "Legal", "requirement": "La redistribucion de raw es explicita (LOCAL_ONLY/REDISTRIBUTABLE)."},
+
+    "FIBO_RELEASE_PINNED": {"group": "Semantics", "requirement": "La release de FIBO usada como referencia semantica esta fijada."},
+    "EVENT_TYPE_FIBO_MAPPING_EXPLICIT": {"group": "Semantics", "requirement": "Cada event_type tiene mapping FIBO explicito y versionado."},
+    "UNMAPPED_SEMANTICS_ALLOWED": {"group": "Semantics", "requirement": "Cuando no hay mapping demostrado se usa UNMAPPED."},
+    "NO_FORCED_ISO_MAPPING": {"group": "Semantics", "requirement": "No se fuerza equivalencia ISO sin demostracion."},
+
+    "CA_CORE_DOES_NOT_OWN_FIRDS": {"group": "Boundaries", "requirement": "ca-es define un contrato y consume la capa ESMA; no reconstruye FIRDS."},
+    "LISTING_RESOLVER_CONTRACT_FROZEN": {"group": "Boundaries", "requirement": "El Protocol ListingResolver esta congelado."},
+    "ISO_ADAPTER_OUTSIDE_CORE": {"group": "Boundaries", "requirement": "La proyeccion ISO queda fuera del core Python."},
+    "ISO_PROJECTION_BOUNDARY_FROZEN": {"group": "Boundaries", "requirement": "El limite core -> iso-adapter-jvm esta declarado."},
+    "ISO_RELEASE_METADATA_REQUIRED": {"group": "Boundaries", "requirement": "Toda proyeccion ISO futura exige metadata de release."},
+    "RELEASE_STATE_AS_OF_REQUIRED": {"group": "Boundaries", "requirement": "Toda proyeccion ISO futura exige release_state_as_of."},
+
+    "CNMV_CHANNEL_COVERAGE_P3": {"group": "Coverage investigation", "requirement": "Investigar de forma reproducible si el canal CNMV cubre P3: PROVEN / NOT_PROVEN / CONTRADICTED."}
+  }
+}

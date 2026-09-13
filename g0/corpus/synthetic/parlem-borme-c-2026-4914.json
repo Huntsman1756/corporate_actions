@@ -1,0 +1,65 @@
+{
+  "synthetic_disclaimer": "Transcripcion estructurada sintetica del anuncio BORME-C-2026-4914. No se redistribuye el BORME original. El entitlement basis es una assertion temporal y puede cambiar.",
+  "document": {
+    "source_id": "BOE_BORME",
+    "official_document_id": "BORME-C-2026-4914"
+  },
+  "event_type": "RIGHTS_ISSUE",
+  "event_type_evidence_locator": "BORME-C-2026-4914, 'Ampliacion de capital con derechos de suscripcion preferente'",
+  "instrument": {
+    "isin": null,
+    "issuer_name": "Parlem",
+    "lei": null
+  },
+  "claims": [
+    {
+      "field_path": "date.rights_trading_start",
+      "value": "2026-09-01",
+      "date_kind": "RIGHTS_TRADING_START",
+      "evidence_locator": "BORME-C-2026-4914, apartado 'Negociacion de derechos': inicio",
+      "raw_pointer": "/claims/0"
+    },
+    {
+      "field_path": "date.rights_trading_end",
+      "value": "2026-09-15",
+      "date_kind": "RIGHTS_TRADING_END",
+      "evidence_locator": "BORME-C-2026-4914, apartado 'Negociacion de derechos': fin",
+      "raw_pointer": "/claims/1"
+    },
+    {
+      "field_path": "ratio.rights_per_new_share",
+      "value": "2",
+      "value_kind": "financial",
+      "evidence_locator": "BORME-C-2026-4914, 'Relacion de canje': 2 derechos por accion nueva",
+      "raw_pointer": "/claims/2"
+    }
+  ],
+  "references": [],
+  "infrastructure_roles": [
+    {
+      "role": "ISSUER_CSD",
+      "entity": "IBERCLEAR",
+      "evidence_locator": "BORME-C-2026-4914: 'anotaciones en cuenta registradas en Iberclear' (Iberclear como entidad de registro)",
+      "evidence_mode": "EXPLICIT"
+    },
+    {
+      "role": "TRADING_VENUE",
+      "entity": "BME_GROWTH",
+      "evidence_locator": "BORME-C-2026-4914: negociacion de derechos en BME Growth / BME MTF Equity",
+      "evidence_mode": "EXPLICIT"
+    }
+  ],
+  "entitlement_basis": {
+    "eligible_shares": 19378125,
+    "asserted_as_of": "2026-08-31",
+    "status": "SUBJECT_TO_ADJUSTMENT",
+    "components": {
+      "registered_shares": "19865753",
+      "treasury_shares": "209745",
+      "waived_rights_basis_shares": "277883"
+    },
+    "adjustment_rule_present": true,
+    "evidence_locator": "BORME-C-2026-4914, apartado 'Base de la operacion': 19.378.125 acciones con derecho, excluyendo 209.745 de autocartera y 277.883 por renuncias, sobre 19.865.753 inscritas",
+    "raw_pointer": "/entitlement_basis"
+  }
+}

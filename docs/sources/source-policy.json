@@ -1,0 +1,66 @@
+{
+  "policy_version": "CA_ES_SOURCE_POLICY_V1",
+  "declared_at": "2026-09-13",
+  "sources": {
+    "CNMV": {
+      "role": ["PRIMARY_REGULATORY_DISCLOSURE"],
+      "authority": "Comision Nacional del Mercado de Valores",
+      "raw_storage": "LOCAL_ONLY",
+      "redistribution": "NOT_REDISTRIBUTED",
+      "terms_reviewed_at": "2026-09-13",
+      "terms_source": "https://www.cnmv.es/portal/inversor/aviso-legal.aspx",
+      "ingestion_status": "ACTIVE",
+      "notes": "Hechos publicos; no se redistribuye el corpus raw en el repo."
+    },
+    "BOE_BORME": {
+      "role": ["PRIMARY_OFFICIAL_GAZETTE"],
+      "authority": "Boletin Oficial del Estado / BORME",
+      "raw_storage": "LOCAL_ONLY",
+      "redistribution": "HASH_AND_METADATA_ONLY",
+      "terms_reviewed_at": "2026-09-13",
+      "terms_source": "https://www.boe.es/informacion/aviso_legal.php",
+      "ingestion_status": "ACTIVE",
+      "notes": "Documento oficial. Se conservan hash y locator; el raw permanece local."
+    },
+    "PORTFOLIO_STOCK_EXCHANGE": {
+      "role": ["VENUE_DISCLOSURE"],
+      "authority": "Portfolio Stock Exchange (BME Growth / BME MTF Equity)",
+      "raw_storage": "LOCAL_ONLY",
+      "redistribution": "NOT_REDISTRIBUTED",
+      "terms_reviewed_at": "2026-09-13",
+      "terms_source": "https://www.portfolioexchange.com/",
+      "ingestion_status": "ACTIVE",
+      "notes": "No se depende de redistribucion de BME."
+    },
+    "ISSUER_IR": {
+      "role": ["ISSUER_DISCLOSURE"],
+      "authority": "Emisor",
+      "raw_storage": "LOCAL_ONLY",
+      "redistribution": "NOT_REDISTRIBUTED",
+      "terms_reviewed_at": "2026-09-13",
+      "terms_source": "N/A",
+      "ingestion_status": "ACTIVE"
+    },
+    "ESMA_FIRDS": {
+      "role": ["REFERENCE_DATA_ENRICHMENT"],
+      "authority": "European Securities and Markets Authority",
+      "raw_storage": "LOCAL_ONLY",
+      "redistribution": "HASH_AND_METADATA_ONLY",
+      "terms_reviewed_at": "2026-09-13",
+      "terms_source": "https://www.esma.europa.eu/",
+      "ingestion_status": "REFERENCE_ONLY",
+      "notes": "Provee LEI/ISIN/MIC. ca-es no reconstruye FIRDS; consume la capa ESMA existente."
+    },
+    "IBERCLEAR": {
+      "role": ["LIFECYCLE_REFERENCE", "TERMINOLOGY_REFERENCE", "ISO_MAPPING_REFERENCE"],
+      "authority": "Iberclear",
+      "raw_storage": "NOT_INGESTED",
+      "redistribution": "NOT_REDISTRIBUTED",
+      "terms_reviewed_at": "2026-09-13",
+      "terms_source": "https://www.iberclear.es/",
+      "ingestion_status": "REFERENCE_ONLY",
+      "availability_claim": "PUBLIC_INGEST_INTERFACE_NOT_PROVEN",
+      "notes": "No se afirma ausencia de feed, solo que no hay interfaz publica de ingesta demostrada."
+    }
+  }
+}

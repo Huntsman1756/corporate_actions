@@ -1,0 +1,38 @@
+{
+  "artifact_version": "ESMA_FIRDS_LISTINGS_V1",
+  "source": "ESMA_FIRDS",
+  "generated_at": "2026-09-13T00:00:00Z",
+  "note": "Artefacto normalizado consumido por ca-es. La extraccion LEI/ISIN/MIC pertenece a la capa ESMA existente; ca-es no reconstruye FIRDS. Valores de MIC/segmento son ilustrativos para demostrar resolucion point-in-time y multi-venue.",
+  "listings": [
+    {
+      "isin": "ES0113900J37",
+      "lei": null,
+      "segment_mic": "XMAD",
+      "operating_mic": "XMAD",
+      "venue_name": "Bolsa de Madrid",
+      "admission_date": "2000-01-01",
+      "termination_date": null,
+      "regulatory_lei_role": "NORMAL_ISSUER"
+    },
+    {
+      "isin": "ES0113900J37",
+      "lei": null,
+      "segment_mic": "MAD4",
+      "operating_mic": "XMAD",
+      "venue_name": "SIBE",
+      "admission_date": "2000-01-01",
+      "termination_date": null,
+      "regulatory_lei_role": "NORMAL_ISSUER"
+    },
+    {
+      "isin": "ES0113900J37",
+      "lei": null,
+      "segment_mic": "XOLD",
+      "operating_mic": "XOLD",
+      "venue_name": "Venue historico cesado",
+      "admission_date": "1995-01-01",
+      "termination_date": "2005-12-31",
+      "regulatory_lei_role": "NORMAL_ISSUER"
+    }
+  ]
+}
