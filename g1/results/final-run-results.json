@@ -1,7 +1,7 @@
 {
   "results_version": "CA_ES_G1_DEV_RESULTS_V1",
   "phase": "final-run",
-  "parser_commit": "7c8ab66dae343da74f722ed79f84988511160d33",
+  "parser_commit": "1fe4b4feddbd02310cd645bf9a2c97b1ae2ba250",
   "parser_commit_dirty": false,
   "executed_at": "2026-09-14T00:00:00Z",
   "seeds": 25,
@@ -18,8 +18,8 @@
     "parser_available": 25,
     "document_parsed": 25,
     "event_detected": 25,
-    "critical_facts_extracted": 15,
-    "instrument_resolved": 7
+    "critical_facts_extracted": 19,
+    "instrument_resolved": 8
   },
   "funnel_actual_ca": {
     "seeds": 22,
@@ -28,8 +28,8 @@
     "parser_available": 22,
     "document_parsed": 22,
     "event_detected": 22,
-    "critical_facts_extracted": 15,
-    "instrument_resolved": 7
+    "critical_facts_extracted": 19,
+    "instrument_resolved": 8
   },
   "results": [
     {
@@ -83,7 +83,7 @@
         "critical_facts_extracted": true,
         "instrument_resolved": true
       },
-      "parser_commit": "7c8ab66dae343da74f722ed79f84988511160d33",
+      "parser_commit": "1fe4b4feddbd02310cd645bf9a2c97b1ae2ba250",
       "seed_verdict": "ACTUAL_CA",
       "first_run_result": {
         "frame_item_id": "BMEG-CapitalIncreases-ES0105425021-2026-02-23",
@@ -199,7 +199,7 @@
         "critical_facts_extracted": true,
         "instrument_resolved": true
       },
-      "parser_commit": "7c8ab66dae343da74f722ed79f84988511160d33",
+      "parser_commit": "1fe4b4feddbd02310cd645bf9a2c97b1ae2ba250",
       "seed_verdict": "ACTUAL_CA",
       "first_run_result": {
         "frame_item_id": "BMEG-Dividends-ES0105318002-2026-07-03",
@@ -306,7 +306,7 @@
         "critical_facts_extracted": true,
         "instrument_resolved": true
       },
-      "parser_commit": "7c8ab66dae343da74f722ed79f84988511160d33",
+      "parser_commit": "1fe4b4feddbd02310cd645bf9a2c97b1ae2ba250",
       "seed_verdict": "ACTUAL_CA",
       "first_run_result": {
         "frame_item_id": "BMEG-Dividends-ES0131172001-2026-07-07",
@@ -413,7 +413,7 @@
         "critical_facts_extracted": true,
         "instrument_resolved": true
       },
-      "parser_commit": "7c8ab66dae343da74f722ed79f84988511160d33",
+      "parser_commit": "1fe4b4feddbd02310cd645bf9a2c97b1ae2ba250",
       "seed_verdict": "ACTUAL_CA",
       "first_run_result": {
         "frame_item_id": "BMEG-NewListings-ES0105495008-2025-06-10",
@@ -520,7 +520,7 @@
         "critical_facts_extracted": true,
         "instrument_resolved": true
       },
-      "parser_commit": "7c8ab66dae343da74f722ed79f84988511160d33",
+      "parser_commit": "1fe4b4feddbd02310cd645bf9a2c97b1ae2ba250",
       "seed_verdict": "ACTUAL_CA",
       "first_run_result": {
         "frame_item_id": "BMEG-OtherPayments-ES0105421004-2025-03-18",
@@ -627,7 +627,7 @@
         "critical_facts_extracted": true,
         "instrument_resolved": true
       },
-      "parser_commit": "7c8ab66dae343da74f722ed79f84988511160d33",
+      "parser_commit": "1fe4b4feddbd02310cd645bf9a2c97b1ae2ba250",
       "seed_verdict": "ACTUAL_CA",
       "first_run_result": {
         "frame_item_id": "BMEG-OtherPayments-ES0105685004-2026-05-25",
@@ -722,7 +722,7 @@
         "critical_facts_extracted": false,
         "instrument_resolved": false
       },
-      "parser_commit": "7c8ab66dae343da74f722ed79f84988511160d33",
+      "parser_commit": "1fe4b4feddbd02310cd645bf9a2c97b1ae2ba250",
       "seed_verdict": "NOT_CA",
       "first_run_result": {
         "frame_item_id": "CNMV-IP-2864",
@@ -805,7 +805,7 @@
         "critical_facts_extracted": false,
         "instrument_resolved": false
       },
-      "parser_commit": "7c8ab66dae343da74f722ed79f84988511160d33",
+      "parser_commit": "1fe4b4feddbd02310cd645bf9a2c97b1ae2ba250",
       "seed_verdict": "ACTUAL_CA",
       "first_run_result": {
         "frame_item_id": "CNMV-OIR-33627",
@@ -864,7 +864,7 @@
       "event_detected": true,
       "instrument_resolved": true,
       "facts": {
-        "total": 8,
+        "total": 9,
         "populated_fields": [
           "affected_instrument.isin",
           "amount.coupon",
@@ -872,6 +872,7 @@
           "amount.nominal_unit",
           "amount.redemption_price_pct",
           "date.announcement_date",
+          "date.payment_date",
           "event_type",
           "instrument.isin"
         ]
@@ -881,7 +882,7 @@
       "conflicts": 0,
       "identity_status": "UNRESOLVED",
       "exception": null,
-      "result_sha": "95a9878b69fef4434dbf4428d4eff4ad90adbe8ca5611b7fd4bd50104bedb1b7",
+      "result_sha": "eae23c2bf80e79354d146dcb0dcbc1d66e703da8476faa0374163b8b0f32c8a7",
       "layers": {
         "seed_retrieved": true,
         "document_resolved": true,
@@ -891,7 +892,7 @@
         "critical_facts_extracted": true,
         "instrument_resolved": true
       },
-      "parser_commit": "7c8ab66dae343da74f722ed79f84988511160d33",
+      "parser_commit": "1fe4b4feddbd02310cd645bf9a2c97b1ae2ba250",
       "seed_verdict": "ACTUAL_CA",
       "first_run_result": {
         "frame_item_id": "CNMV-OIR-34234",
@@ -921,7 +922,7 @@
         "event_detected": true,
         "instrument_resolved": true,
         "facts": {
-          "total": 8,
+          "total": 9,
           "populated_fields": [
             "affected_instrument.isin",
             "amount.coupon",
@@ -929,6 +930,7 @@
             "amount.nominal_unit",
             "amount.redemption_price_pct",
             "date.announcement_date",
+            "date.payment_date",
             "event_type",
             "instrument.isin"
           ]
@@ -938,7 +940,7 @@
         "conflicts": 0,
         "identity_status": "UNRESOLVED",
         "exception": null,
-        "result_sha": "95a9878b69fef4434dbf4428d4eff4ad90adbe8ca5611b7fd4bd50104bedb1b7",
+        "result_sha": "eae23c2bf80e79354d146dcb0dcbc1d66e703da8476faa0374163b8b0f32c8a7",
         "layers": {
           "seed_retrieved": true,
           "document_resolved": true,
@@ -959,20 +961,23 @@
       "event_detected": true,
       "instrument_resolved": false,
       "facts": {
-        "total": 3,
+        "total": 7,
         "populated_fields": [
+          "amount.gross_per_share",
+          "amount.gross_total",
           "date.announcement_date",
-          "date.record_date"
+          "date.ex_date",
+          "date.payment_date",
+          "date.record_date",
+          "event_type"
         ]
       },
       "missing": [],
-      "unknown": [
-        "event_type"
-      ],
+      "unknown": [],
       "conflicts": 0,
       "identity_status": "UNRESOLVED",
       "exception": null,
-      "result_sha": "ec30a310588f0f5380885642102bff7dacc992545ab620dcbc5372f79aee4bfe",
+      "result_sha": "f80b7a6c010667a8e6a3ce38a38324a062667194a4eccf36f8b0066568aa483e",
       "layers": {
         "seed_retrieved": true,
         "document_resolved": true,
@@ -982,7 +987,7 @@
         "critical_facts_extracted": true,
         "instrument_resolved": false
       },
-      "parser_commit": "7c8ab66dae343da74f722ed79f84988511160d33",
+      "parser_commit": "1fe4b4feddbd02310cd645bf9a2c97b1ae2ba250",
       "seed_verdict": "ACTUAL_CA",
       "first_run_result": {
         "frame_item_id": "CNMV-OIR-34483",
@@ -1014,20 +1019,23 @@
         "event_detected": true,
         "instrument_resolved": false,
         "facts": {
-          "total": 3,
+          "total": 7,
           "populated_fields": [
+            "amount.gross_per_share",
+            "amount.gross_total",
             "date.announcement_date",
-            "date.record_date"
+            "date.ex_date",
+            "date.payment_date",
+            "date.record_date",
+            "event_type"
           ]
         },
         "missing": [],
-        "unknown": [
-          "event_type"
-        ],
+        "unknown": [],
         "conflicts": 0,
         "identity_status": "UNRESOLVED",
         "exception": null,
-        "result_sha": "ec30a310588f0f5380885642102bff7dacc992545ab620dcbc5372f79aee4bfe",
+        "result_sha": "f80b7a6c010667a8e6a3ce38a38324a062667194a4eccf36f8b0066568aa483e",
         "layers": {
           "seed_retrieved": true,
           "document_resolved": true,
@@ -1068,7 +1076,7 @@
         "critical_facts_extracted": false,
         "instrument_resolved": false
       },
-      "parser_commit": "7c8ab66dae343da74f722ed79f84988511160d33",
+      "parser_commit": "1fe4b4feddbd02310cd645bf9a2c97b1ae2ba250",
       "seed_verdict": "ACTUAL_CA",
       "first_run_result": {
         "frame_item_id": "CNMV-OIR-34753",
@@ -1129,10 +1137,13 @@
       "event_detected": true,
       "instrument_resolved": false,
       "facts": {
-        "total": 3,
+        "total": 6,
         "populated_fields": [
           "amount.gross_per_share",
           "amount.max_total",
+          "date.ex_date",
+          "date.payment_date",
+          "date.record_date",
           "event_type"
         ]
       },
@@ -1141,7 +1152,7 @@
       "conflicts": 0,
       "identity_status": "UNRESOLVED",
       "exception": null,
-      "result_sha": "772d3f3a75c7fcb20fc93f773883a42472a8463f6a4f534c3357a2942288bc17",
+      "result_sha": "959b80b638ad5513bead8c02ec16c5d4eeacc176530d708f95ddecd3939e8e9f",
       "layers": {
         "seed_retrieved": true,
         "document_resolved": true,
@@ -1151,7 +1162,7 @@
         "critical_facts_extracted": true,
         "instrument_resolved": false
       },
-      "parser_commit": "7c8ab66dae343da74f722ed79f84988511160d33",
+      "parser_commit": "1fe4b4feddbd02310cd645bf9a2c97b1ae2ba250",
       "seed_verdict": "ACTUAL_CA",
       "first_run_result": {
         "frame_item_id": "CNMV-OIR-35116",
@@ -1181,10 +1192,13 @@
         "event_detected": true,
         "instrument_resolved": false,
         "facts": {
-          "total": 3,
+          "total": 6,
           "populated_fields": [
             "amount.gross_per_share",
             "amount.max_total",
+            "date.ex_date",
+            "date.payment_date",
+            "date.record_date",
             "event_type"
           ]
         },
@@ -1193,7 +1207,7 @@
         "conflicts": 0,
         "identity_status": "UNRESOLVED",
         "exception": null,
-        "result_sha": "772d3f3a75c7fcb20fc93f773883a42472a8463f6a4f534c3357a2942288bc17",
+        "result_sha": "959b80b638ad5513bead8c02ec16c5d4eeacc176530d708f95ddecd3939e8e9f",
         "layers": {
           "seed_retrieved": true,
           "document_resolved": true,
@@ -1214,9 +1228,11 @@
       "event_detected": true,
       "instrument_resolved": false,
       "facts": {
-        "total": 3,
+        "total": 5,
         "populated_fields": [
           "amount.gross_per_share",
+          "date.ex_date",
+          "date.payment_date",
           "date.record_date",
           "event_type"
         ]
@@ -1226,7 +1242,7 @@
       "conflicts": 0,
       "identity_status": "UNRESOLVED",
       "exception": null,
-      "result_sha": "192f94177bddbec6efb7a57b93d8067dcecc69b3c2f2d30ab1e6327ed10de0a4",
+      "result_sha": "fb5739861a027fb1af41e4cfa99238ea2c7f87259bb4c675c8df387774364010",
       "layers": {
         "seed_retrieved": true,
         "document_resolved": true,
@@ -1236,7 +1252,7 @@
         "critical_facts_extracted": true,
         "instrument_resolved": false
       },
-      "parser_commit": "7c8ab66dae343da74f722ed79f84988511160d33",
+      "parser_commit": "1fe4b4feddbd02310cd645bf9a2c97b1ae2ba250",
       "seed_verdict": "ACTUAL_CA",
       "first_run_result": {
         "frame_item_id": "CNMV-OIR-38180",
@@ -1268,9 +1284,11 @@
         "event_detected": true,
         "instrument_resolved": false,
         "facts": {
-          "total": 3,
+          "total": 5,
           "populated_fields": [
             "amount.gross_per_share",
+            "date.ex_date",
+            "date.payment_date",
             "date.record_date",
             "event_type"
           ]
@@ -1280,7 +1298,7 @@
         "conflicts": 0,
         "identity_status": "UNRESOLVED",
         "exception": null,
-        "result_sha": "192f94177bddbec6efb7a57b93d8067dcecc69b3c2f2d30ab1e6327ed10de0a4",
+        "result_sha": "fb5739861a027fb1af41e4cfa99238ea2c7f87259bb4c675c8df387774364010",
         "layers": {
           "seed_retrieved": true,
           "document_resolved": true,
@@ -1321,7 +1339,7 @@
         "critical_facts_extracted": false,
         "instrument_resolved": false
       },
-      "parser_commit": "7c8ab66dae343da74f722ed79f84988511160d33",
+      "parser_commit": "1fe4b4feddbd02310cd645bf9a2c97b1ae2ba250",
       "seed_verdict": "NOT_CA",
       "first_run_result": {
         "frame_item_id": "CNMV-OIR-38198",
@@ -1402,7 +1420,7 @@
         "critical_facts_extracted": false,
         "instrument_resolved": false
       },
-      "parser_commit": "7c8ab66dae343da74f722ed79f84988511160d33",
+      "parser_commit": "1fe4b4feddbd02310cd645bf9a2c97b1ae2ba250",
       "seed_verdict": "ACTUAL_CA",
       "first_run_result": {
         "frame_item_id": "CNMV-OIR-38513",
@@ -1463,27 +1481,28 @@
       "event_detected": true,
       "instrument_resolved": false,
       "facts": {
-        "total": 1,
-        "populated_fields": []
+        "total": 2,
+        "populated_fields": [
+          "amount.gross_per_share",
+          "event_type"
+        ]
       },
       "missing": [],
-      "unknown": [
-        "event_type"
-      ],
+      "unknown": [],
       "conflicts": 0,
       "identity_status": "UNRESOLVED",
       "exception": null,
-      "result_sha": "12620d841954d9f1daa0ab2b10864030b091ea036265ef120a127e2d6f9bd8d0",
+      "result_sha": "ba28434f2662a0fc6596da0b01f316330aa2143124bd8297b8b15b4c3b2a93b2",
       "layers": {
         "seed_retrieved": true,
         "document_resolved": true,
         "parser_available": true,
         "document_parsed": true,
         "event_detected": true,
-        "critical_facts_extracted": false,
+        "critical_facts_extracted": true,
         "instrument_resolved": false
       },
-      "parser_commit": "7c8ab66dae343da74f722ed79f84988511160d33",
+      "parser_commit": "1fe4b4feddbd02310cd645bf9a2c97b1ae2ba250",
       "seed_verdict": "ACTUAL_CA",
       "first_run_result": {
         "frame_item_id": "CNMV-OIR-39905",
@@ -1513,24 +1532,25 @@
         "event_detected": true,
         "instrument_resolved": false,
         "facts": {
-          "total": 1,
-          "populated_fields": []
+          "total": 2,
+          "populated_fields": [
+            "amount.gross_per_share",
+            "event_type"
+          ]
         },
         "missing": [],
-        "unknown": [
-          "event_type"
-        ],
+        "unknown": [],
         "conflicts": 0,
         "identity_status": "UNRESOLVED",
         "exception": null,
-        "result_sha": "12620d841954d9f1daa0ab2b10864030b091ea036265ef120a127e2d6f9bd8d0",
+        "result_sha": "ba28434f2662a0fc6596da0b01f316330aa2143124bd8297b8b15b4c3b2a93b2",
         "layers": {
           "seed_retrieved": true,
           "document_resolved": true,
           "parser_available": true,
           "document_parsed": true,
           "event_detected": true,
-          "critical_facts_extracted": false,
+          "critical_facts_extracted": true,
           "instrument_resolved": false
         }
       },
@@ -1564,7 +1584,7 @@
         "critical_facts_extracted": false,
         "instrument_resolved": false
       },
-      "parser_commit": "7c8ab66dae343da74f722ed79f84988511160d33",
+      "parser_commit": "1fe4b4feddbd02310cd645bf9a2c97b1ae2ba250",
       "seed_verdict": "NOT_CA",
       "first_run_result": {
         "frame_item_id": "CNMV-OIR-40136",
@@ -1650,7 +1670,7 @@
         "critical_facts_extracted": true,
         "instrument_resolved": false
       },
-      "parser_commit": "7c8ab66dae343da74f722ed79f84988511160d33",
+      "parser_commit": "1fe4b4feddbd02310cd645bf9a2c97b1ae2ba250",
       "seed_verdict": "ACTUAL_CA",
       "first_run_result": {
         "frame_item_id": "POEX-DOC-36298",
@@ -1721,10 +1741,14 @@
       "event_detected": true,
       "instrument_resolved": false,
       "facts": {
-        "total": 3,
+        "total": 7,
         "populated_fields": [
           "amount.gross_per_share",
           "amount.gross_total",
+          "date.ex_date",
+          "date.last_trading_date",
+          "date.payment_date",
+          "date.record_date",
           "event_type"
         ]
       },
@@ -1733,7 +1757,7 @@
       "conflicts": 0,
       "identity_status": "UNRESOLVED",
       "exception": null,
-      "result_sha": "93fed9d3810936b8ff90e7e88e9886e869606dea1015b76ea0c36ef53df8c973",
+      "result_sha": "5bb84e5e6915d5efea315b12275a66558a901e37cbdfbdd8a741ae7904f7d51a",
       "layers": {
         "seed_retrieved": true,
         "document_resolved": true,
@@ -1743,7 +1767,7 @@
         "critical_facts_extracted": true,
         "instrument_resolved": false
       },
-      "parser_commit": "7c8ab66dae343da74f722ed79f84988511160d33",
+      "parser_commit": "1fe4b4feddbd02310cd645bf9a2c97b1ae2ba250",
       "seed_verdict": "ACTUAL_CA",
       "first_run_result": {
         "frame_item_id": "POEX-DOC-36615",
@@ -1775,10 +1799,14 @@
         "event_detected": true,
         "instrument_resolved": false,
         "facts": {
-          "total": 3,
+          "total": 7,
           "populated_fields": [
             "amount.gross_per_share",
             "amount.gross_total",
+            "date.ex_date",
+            "date.last_trading_date",
+            "date.payment_date",
+            "date.record_date",
             "event_type"
           ]
         },
@@ -1787,7 +1815,7 @@
         "conflicts": 0,
         "identity_status": "UNRESOLVED",
         "exception": null,
-        "result_sha": "93fed9d3810936b8ff90e7e88e9886e869606dea1015b76ea0c36ef53df8c973",
+        "result_sha": "5bb84e5e6915d5efea315b12275a66558a901e37cbdfbdd8a741ae7904f7d51a",
         "layers": {
           "seed_retrieved": true,
           "document_resolved": true,
@@ -1808,8 +1836,14 @@
       "event_detected": true,
       "instrument_resolved": false,
       "facts": {
-        "total": 1,
+        "total": 7,
         "populated_fields": [
+          "amount.gross_per_share",
+          "amount.gross_total",
+          "date.ex_date",
+          "date.last_trading_date",
+          "date.payment_date",
+          "date.record_date",
           "event_type"
         ]
       },
@@ -1818,17 +1852,17 @@
       "conflicts": 0,
       "identity_status": "UNRESOLVED",
       "exception": null,
-      "result_sha": "e49ea1a226b70afbf8a9472be889bfcb7089563a9b33dc8f9dbc4597db2e83d9",
+      "result_sha": "54105b20b22ead702237f8cdef6675cea55e8e64b03f76ba4e5acd67e2dceba3",
       "layers": {
         "seed_retrieved": true,
         "document_resolved": true,
         "parser_available": true,
         "document_parsed": true,
         "event_detected": true,
-        "critical_facts_extracted": false,
+        "critical_facts_extracted": true,
         "instrument_resolved": false
       },
-      "parser_commit": "7c8ab66dae343da74f722ed79f84988511160d33",
+      "parser_commit": "1fe4b4feddbd02310cd645bf9a2c97b1ae2ba250",
       "seed_verdict": "ACTUAL_CA",
       "first_run_result": {
         "frame_item_id": "POEX-DOC-39667",
@@ -1858,8 +1892,14 @@
         "event_detected": true,
         "instrument_resolved": false,
         "facts": {
-          "total": 1,
+          "total": 7,
           "populated_fields": [
+            "amount.gross_per_share",
+            "amount.gross_total",
+            "date.ex_date",
+            "date.last_trading_date",
+            "date.payment_date",
+            "date.record_date",
             "event_type"
           ]
         },
@@ -1868,14 +1908,14 @@
         "conflicts": 0,
         "identity_status": "UNRESOLVED",
         "exception": null,
-        "result_sha": "e49ea1a226b70afbf8a9472be889bfcb7089563a9b33dc8f9dbc4597db2e83d9",
+        "result_sha": "54105b20b22ead702237f8cdef6675cea55e8e64b03f76ba4e5acd67e2dceba3",
         "layers": {
           "seed_retrieved": true,
           "document_resolved": true,
           "parser_available": true,
           "document_parsed": true,
           "event_detected": true,
-          "critical_facts_extracted": false,
+          "critical_facts_extracted": true,
           "instrument_resolved": false
         }
       },
@@ -1914,7 +1954,7 @@
         "critical_facts_extracted": true,
         "instrument_resolved": false
       },
-      "parser_commit": "7c8ab66dae343da74f722ed79f84988511160d33",
+      "parser_commit": "1fe4b4feddbd02310cd645bf9a2c97b1ae2ba250",
       "seed_verdict": "ACTUAL_CA",
       "first_run_result": {
         "frame_item_id": "POEX-DOC-39954",
@@ -1985,19 +2025,22 @@
       "event_detected": true,
       "instrument_resolved": false,
       "facts": {
-        "total": 2,
+        "total": 6,
         "populated_fields": [
-          "amount.gross_per_share"
+          "amount.gross_per_share",
+          "date.ex_date",
+          "date.last_trading_date",
+          "date.payment_date",
+          "date.record_date",
+          "event_type"
         ]
       },
       "missing": [],
-      "unknown": [
-        "event_type"
-      ],
+      "unknown": [],
       "conflicts": 0,
       "identity_status": "UNRESOLVED",
       "exception": null,
-      "result_sha": "594c5fd341b35218eede4f53fb08dc0a304a57f38f93f440433586bb63e97ca0",
+      "result_sha": "22e6f6d4d0e18e36eed1419b2a8b5ec747c8f5b4eec2076f8e2b9fd17e585595",
       "layers": {
         "seed_retrieved": true,
         "document_resolved": true,
@@ -2007,7 +2050,7 @@
         "critical_facts_extracted": true,
         "instrument_resolved": false
       },
-      "parser_commit": "7c8ab66dae343da74f722ed79f84988511160d33",
+      "parser_commit": "1fe4b4feddbd02310cd645bf9a2c97b1ae2ba250",
       "seed_verdict": "ACTUAL_CA",
       "first_run_result": {
         "frame_item_id": "POEX-DOC-40270",
@@ -2039,19 +2082,22 @@
         "event_detected": true,
         "instrument_resolved": false,
         "facts": {
-          "total": 2,
+          "total": 6,
           "populated_fields": [
-            "amount.gross_per_share"
+            "amount.gross_per_share",
+            "date.ex_date",
+            "date.last_trading_date",
+            "date.payment_date",
+            "date.record_date",
+            "event_type"
           ]
         },
         "missing": [],
-        "unknown": [
-          "event_type"
-        ],
+        "unknown": [],
         "conflicts": 0,
         "identity_status": "UNRESOLVED",
         "exception": null,
-        "result_sha": "594c5fd341b35218eede4f53fb08dc0a304a57f38f93f440433586bb63e97ca0",
+        "result_sha": "22e6f6d4d0e18e36eed1419b2a8b5ec747c8f5b4eec2076f8e2b9fd17e585595",
         "layers": {
           "seed_retrieved": true,
           "document_resolved": true,
@@ -2070,29 +2116,32 @@
       "retrieval_status": "OK",
       "parse_status": "OK",
       "event_detected": true,
-      "instrument_resolved": false,
+      "instrument_resolved": true,
       "facts": {
-        "total": 1,
-        "populated_fields": []
+        "total": 4,
+        "populated_fields": [
+          "affected_instrument.isin",
+          "amount.reduction_total",
+          "event_type",
+          "instrument.isin"
+        ]
       },
       "missing": [],
-      "unknown": [
-        "event_type"
-      ],
+      "unknown": [],
       "conflicts": 0,
       "identity_status": "UNRESOLVED",
       "exception": null,
-      "result_sha": "6f00f418a2ac4da3989d9e735af987b956506543a1bf6609e8d0458360e857dc",
+      "result_sha": "66e1f238196ea59d93dbff10ce771f78910d278a29b5af76866857ec4666adb5",
       "layers": {
         "seed_retrieved": true,
         "document_resolved": true,
         "parser_available": true,
         "document_parsed": true,
         "event_detected": true,
-        "critical_facts_extracted": false,
-        "instrument_resolved": false
+        "critical_facts_extracted": true,
+        "instrument_resolved": true
       },
-      "parser_commit": "7c8ab66dae343da74f722ed79f84988511160d33",
+      "parser_commit": "1fe4b4feddbd02310cd645bf9a2c97b1ae2ba250",
       "seed_verdict": "ACTUAL_CA",
       "first_run_result": {
         "frame_item_id": "POEX-DOC-41986",
@@ -2120,27 +2169,30 @@
         "retrieval_status": "OK",
         "parse_status": "OK",
         "event_detected": true,
-        "instrument_resolved": false,
+        "instrument_resolved": true,
         "facts": {
-          "total": 1,
-          "populated_fields": []
+          "total": 4,
+          "populated_fields": [
+            "affected_instrument.isin",
+            "amount.reduction_total",
+            "event_type",
+            "instrument.isin"
+          ]
         },
         "missing": [],
-        "unknown": [
-          "event_type"
-        ],
+        "unknown": [],
         "conflicts": 0,
         "identity_status": "UNRESOLVED",
         "exception": null,
-        "result_sha": "6f00f418a2ac4da3989d9e735af987b956506543a1bf6609e8d0458360e857dc",
+        "result_sha": "66e1f238196ea59d93dbff10ce771f78910d278a29b5af76866857ec4666adb5",
         "layers": {
           "seed_retrieved": true,
           "document_resolved": true,
           "parser_available": true,
           "document_parsed": true,
           "event_detected": true,
-          "critical_facts_extracted": false,
-          "instrument_resolved": false
+          "critical_facts_extracted": true,
+          "instrument_resolved": true
         }
       },
       "reason_for_change": null
@@ -2153,9 +2205,14 @@
       "event_detected": true,
       "instrument_resolved": false,
       "facts": {
-        "total": 2,
+        "total": 7,
         "populated_fields": [
           "amount.gross_per_share",
+          "amount.gross_total",
+          "date.ex_date",
+          "date.last_trading_date",
+          "date.payment_date",
+          "date.record_date",
           "event_type"
         ]
       },
@@ -2164,7 +2221,7 @@
       "conflicts": 0,
       "identity_status": "UNRESOLVED",
       "exception": null,
-      "result_sha": "0025b2b38aa27c133601488359ff71be8bfd1150561925623332999e7f209742",
+      "result_sha": "df3d43b59d3f6807e6ade65856c54b233bd6d39096417320dd520881231383fc",
       "layers": {
         "seed_retrieved": true,
         "document_resolved": true,
@@ -2174,7 +2231,7 @@
         "critical_facts_extracted": true,
         "instrument_resolved": false
       },
-      "parser_commit": "7c8ab66dae343da74f722ed79f84988511160d33",
+      "parser_commit": "1fe4b4feddbd02310cd645bf9a2c97b1ae2ba250",
       "seed_verdict": "ACTUAL_CA",
       "first_run_result": {
         "frame_item_id": "POEX-DOC-4665",
@@ -2205,9 +2262,14 @@
         "event_detected": true,
         "instrument_resolved": false,
         "facts": {
-          "total": 2,
+          "total": 7,
           "populated_fields": [
             "amount.gross_per_share",
+            "amount.gross_total",
+            "date.ex_date",
+            "date.last_trading_date",
+            "date.payment_date",
+            "date.record_date",
             "event_type"
           ]
         },
@@ -2216,7 +2278,7 @@
         "conflicts": 0,
         "identity_status": "UNRESOLVED",
         "exception": null,
-        "result_sha": "0025b2b38aa27c133601488359ff71be8bfd1150561925623332999e7f209742",
+        "result_sha": "df3d43b59d3f6807e6ade65856c54b233bd6d39096417320dd520881231383fc",
         "layers": {
           "seed_retrieved": true,
           "document_resolved": true,
@@ -2237,27 +2299,28 @@
       "event_detected": true,
       "instrument_resolved": false,
       "facts": {
-        "total": 1,
-        "populated_fields": []
+        "total": 2,
+        "populated_fields": [
+          "amount.gross_per_share",
+          "event_type"
+        ]
       },
       "missing": [],
-      "unknown": [
-        "event_type"
-      ],
+      "unknown": [],
       "conflicts": 0,
       "identity_status": "UNRESOLVED",
       "exception": null,
-      "result_sha": "4ae8a9c7de062dbbf0921cf8ec5e5d4099a5fa2fe0b92aac570a020357cbb487",
+      "result_sha": "c5793e9b5b435b00272c252ff8469b4e96efb6ac5e7dcccc73ea4e373fd0b58c",
       "layers": {
         "seed_retrieved": true,
         "document_resolved": true,
         "parser_available": true,
         "document_parsed": true,
         "event_detected": true,
-        "critical_facts_extracted": false,
+        "critical_facts_extracted": true,
         "instrument_resolved": false
       },
-      "parser_commit": "7c8ab66dae343da74f722ed79f84988511160d33",
+      "parser_commit": "1fe4b4feddbd02310cd645bf9a2c97b1ae2ba250",
       "seed_verdict": "ACTUAL_CA",
       "first_run_result": {
         "frame_item_id": "POEX-DOC-7018",
@@ -2287,29 +2350,30 @@
         "event_detected": true,
         "instrument_resolved": false,
         "facts": {
-          "total": 1,
-          "populated_fields": []
+          "total": 2,
+          "populated_fields": [
+            "amount.gross_per_share",
+            "event_type"
+          ]
         },
         "missing": [],
-        "unknown": [
-          "event_type"
-        ],
+        "unknown": [],
         "conflicts": 0,
         "identity_status": "UNRESOLVED",
         "exception": null,
-        "result_sha": "4ae8a9c7de062dbbf0921cf8ec5e5d4099a5fa2fe0b92aac570a020357cbb487",
+        "result_sha": "c5793e9b5b435b00272c252ff8469b4e96efb6ac5e7dcccc73ea4e373fd0b58c",
         "layers": {
           "seed_retrieved": true,
           "document_resolved": true,
           "parser_available": true,
           "document_parsed": true,
           "event_detected": true,
-          "critical_facts_extracted": false,
+          "critical_facts_extracted": true,
           "instrument_resolved": false
         }
       },
       "reason_for_change": null
     }
   ],
-  "batch_sha256": "1034bdf8bb86fa0c68576dc3228548eb9760a932921943ce2d97678fb31e7e4f"
+  "batch_sha256": "e7f0785f4432236bca30835fc7a6eb980ebd91d49fa9c233f73263c102bad8f2"
 }
