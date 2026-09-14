@@ -25,6 +25,7 @@ sys.path.insert(0, str(REPO_ROOT / "scripts"))
 from ca_es.canonical import canonical_bytes, sha256_hex  # noqa: E402
 from ca_es.pipeline import run_pipeline  # noqa: E402
 from ca_es.reference.esma_firds import load_firds_listings  # noqa: E402
+from ca_es.sources.locators import resolve_locator  # noqa: E402
 from fetch_cnmv import build_opener, fetch_document  # noqa: E402
 
 DEV_HOLDOUT = REPO_ROOT / "g1" / "manifests" / "dev-holdout.json"
@@ -101,14 +102,14 @@ def acquire(item: dict, opener) -> dict:
             "retrieval_method": "BME_API_ROW_SNAPSHOT",
         }
 
-    url = item.get("source_locator")
+    url = resolve_locator(item["source"], item.get("source_locator"))
     if not url:
         return {
             "raw_relpath": None,
             "content_sha256": None,
             "media_type": None,
             "retrieval_status": "NO_URL",
-            "url": None,
+            "url": item.get("source_locator"),
             "retrieval_method": None,
         }
     try:
@@ -167,6 +168,34 @@ def write_manifest(item: dict, acq: dict) -> str:
     return str(path.relative_to(REPO_ROOT)).replace("\\", "/")
 
 
+_CRITICAL_FIELDS = (
+    "date.ex_date",
+    "date.record_date",
+    "date.payment_date",
+    "date.redemption_date",
+)
+
+
+def _layers(entry: dict) -> dict:
+    """Capas del funnel: nunca confundir candidato con parseo real."""
+    parsed = entry["parse_status"]
+    populated = entry["facts"]["populated_fields"]
+    return {
+        "seed_retrieved": entry["retrieval_status"] == "OK",
+        "document_resolved": entry["retrieval_status"] == "OK",
+        "parser_available": (
+            parsed is not None and not str(parsed).startswith("NO_PARSER")
+        ),
+        "document_parsed": parsed == "OK",
+        "event_detected": entry["event_detected"],
+        "critical_facts_extracted": bool(
+            set(populated) & set(_CRITICAL_FIELDS)
+            or any(f.startswith("amount.") for f in populated)
+        ),
+        "instrument_resolved": entry["instrument_resolved"],
+    }
+
+
 def seed_result(item: dict, acq: dict, run: dict | None, exc: str | None) -> dict:
     entry = {
         "frame_item_id": item["frame_item_id"],
@@ -174,6 +203,7 @@ def seed_result(item: dict, acq: dict, run: dict | None, exc: str | None) -> dic
         "retrieval_status": acq["retrieval_status"],
         "parse_status": None,
         "event_detected": False,
+        "instrument_resolved": False,
         "facts": {"total": 0, "populated_fields": []},
         "missing": [],
         "unknown": [],
@@ -183,6 +213,7 @@ def seed_result(item: dict, acq: dict, run: dict | None, exc: str | None) -> dic
         "result_sha": None,
     }
     if run is None:
+        entry["layers"] = _layers(entry)
         return entry
     body = run["body"]
     entry["result_sha"] = run["result_sha"]
@@ -211,7 +242,26 @@ def seed_result(item: dict, acq: dict, run: dict | None, exc: str | None) -> dic
     resolutions = body["identity"]["resolutions"]
     if resolutions:
         entry["identity_status"] = resolutions[0]["state"]
+    entry["instrument_resolved"] = any(e.get("isin") for e in events)
+    entry["layers"] = _layers(entry)
     return entry
+
+
+def funnel(entries: list[dict]) -> dict:
+    """Conteo por capa; n/N nunca esconde el denominador."""
+    layers = [
+        "seed_retrieved",
+        "document_resolved",
+        "parser_available",
+        "document_parsed",
+        "event_detected",
+        "critical_facts_extracted",
+        "instrument_resolved",
+    ]
+    out = {"seeds": len(entries)}
+    for layer in layers:
+        out[layer] = sum(1 for e in entries if e.get("layers", {}).get(layer))
+    return out
 
 
 def main(argv: list[str] | None = None) -> int:
@@ -219,15 +269,34 @@ def main(argv: list[str] | None = None) -> int:
     parser.add_argument(
         "--phase", choices=["first-run", "final-run"], default="first-run"
     )
+    parser.add_argument(
+        "--only",
+        nargs="*",
+        default=None,
+        help="limita la ejecucion a estos frame_item_id (verificacion Fase B)",
+    )
+    parser.add_argument(
+        "--out",
+        type=Path,
+        default=None,
+        help="nombre alternativo del artefacto (rerun parcial en Fase B)",
+    )
     args = parser.parse_args(argv)
 
     dev_holdout = json.loads(DEV_HOLDOUT.read_text(encoding="utf-8"))
     frame = json.loads(FRAME.read_text(encoding="utf-8"))
     items = {i["frame_item_id"]: i for i in frame["items"]}
     seed_ids = sorted(dev_holdout["development"])
+    if args.only:
+        wanted = set(args.only)
+        missing = wanted - set(seed_ids)
+        if missing:
+            print(f"ERROR: ids fuera de DEV: {sorted(missing)}", file=sys.stderr)
+            return 2
+        seed_ids = [s for s in seed_ids if s in wanted]
 
     commit, dirty = git_commit()
-    if dirty and args.phase == "first-run":
+    if dirty and args.phase == "first-run" and not args.only:
         print("ERROR: arbol sucio en src/ scripts/ docs/ — baseline exige commit limpio", file=sys.stderr)
         return 2
 
@@ -284,22 +353,23 @@ def main(argv: list[str] | None = None) -> int:
         "parser_commit_dirty": dirty,
         "executed_at": EXECUTED_AT,
         "seeds": len(entries),
+        "funnel": funnel(entries),
         "results": entries,
     }
     batch_sha = sha256_hex(body)
     body["batch_sha256"] = batch_sha
 
     RESULTS_DIR.mkdir(parents=True, exist_ok=True)
-    out = RESULTS_DIR / f"{args.phase}-results.json"
+    out = args.out or (RESULTS_DIR / f"{args.phase}-results.json")
     out.write_text(
         json.dumps(body, indent=2, ensure_ascii=False) + "\n", encoding="utf-8"
     )
-    (RESULTS_DIR / f"{args.phase}-results.sha256").write_text(
-        f"{batch_sha}  {out.name}\n", encoding="utf-8"
-    )
+    sha_path = out.with_suffix(".sha256")
+    sha_path.write_text(f"{batch_sha}  {out.name}\n", encoding="utf-8")
     detected = sum(1 for e in entries if e["event_detected"])
     exceptions = sum(1 for e in entries if e["exception"])
-    print(f"{args.phase}: {detected}/25 event_detected, {exceptions} exceptions")
+    print(f"{args.phase}: {detected}/{len(entries)} event_detected, {exceptions} exceptions")
+    print(f"funnel={body['funnel']}")
     print(f"batch_sha256={batch_sha}")
     print(f"out={out}")
     return 0

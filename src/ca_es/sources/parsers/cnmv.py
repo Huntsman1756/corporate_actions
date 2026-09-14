@@ -15,12 +15,13 @@ from ...numeric import FinancialAmount
 from ...source_policy import SourcePolicy
 from ..documents import SourceDocument
 from .base import Claim, DocumentReference, ParsedDocument, parse_structured
-from .html_text import spanish_date_to_iso
+from .html_text import decode as decode_html, html_to_text, spanish_date_to_iso
 from .pdf_text import extract_text, normalize_text
 
 SOURCE_ID = "CNMV"
-REAL_PARSER_VERSION = "CA_ES_CNMV_PDF_V2"
+REAL_PARSER_VERSION = "CA_ES_CNMV_DOC_V3"
 _AMOUNT = r"([\d.]+(?:,\d+)?)"
+_ISIN = r"\bES[A-Z0-9]{10}\b"
 
 
 def parse(
@@ -29,7 +30,9 @@ def parse(
     if document.source_id != SOURCE_ID:
         raise ValueError(f"parser CNMV recibio fuente {document.source_id}")
     if document.media_type == "application/pdf":
-        return _parse_pdf(payload, document)
+        return _parse_text(normalize_text(extract_text(payload)), document)
+    if document.media_type == "text/html":
+        return _parse_text(normalize_text(html_to_text(decode_html(payload))), document)
     raw = strict_json_loads(payload.decode("utf-8"))
     return parse_structured(raw, document, policy, parser_name="cnmv")
 
@@ -45,8 +48,7 @@ def _daymonth_to_iso(value: str, default_year: str) -> str | None:
     return spanish_date_to_iso(f"{match.group(1)} de {match.group(2)} de {default_year}")
 
 
-def _parse_pdf(payload: bytes, document: SourceDocument) -> ParsedDocument:
-    text = normalize_text(extract_text(payload))
+def _parse_text(text: str, document: SourceDocument) -> ParsedDocument:
     anchors: dict[str, dict] = {}
 
     def grab(name: str, pattern: str, *, group: int = 1, flags: int = 0) -> str | None:
@@ -73,13 +75,23 @@ def _parse_pdf(payload: bytes, document: SourceDocument) -> ParsedDocument:
     claims: list[Claim] = []
 
     # --- Clasificacion de evento ------------------------------------
+    # Deteccion generica por familia: cada ancla conserva el fragmento
+    # que la justifica. La precedencia es determinista (lista ordenada).
     capital = grab(
         "event_capital",
         r"aumento de capital[^.]{0,140}exclusi[oó]n del derecho de suscripci[oó]n preferente",
         flags=re.I | re.S,
     )
+    capital_generic = grab(
+        "event_capital_generic", r"aumento de capital", flags=re.I
+    )
     dividend_eur = grab(
         "dividend_eur", rf"dividendo (?:ordinario |bruto )*de {_AMOUNT} euros", flags=re.I
+    )
+    dividend_generic = grab(
+        "dividend_generic",
+        rf"dividendo\b[^.]{{0,60}}?de {_AMOUNT} euros(?:\s*(brutos|netos))?",
+        flags=re.I | re.S,
     )
     dividend_cents = grab(
         "dividend_cents",
@@ -91,13 +103,53 @@ def _parse_pdf(payload: bytes, document: SourceDocument) -> ParsedDocument:
     )
     dividend_context = grab(
         "event_dividend_context",
-        r"distribuci[oó]n del dividendo(?: ordinario bruto)?",
+        r"(?:distribuci[oó]n del dividendo(?: ordinario bruto)?|pago de (?:un )?dividendo|dividendo complementario|dividendo extraordinario|dividendo a cuenta)",
         flags=re.I,
     )
-    if dividend_cents or dividend_eur or dividend_effectivo or dividend_context:
+    redemption = grab(
+        "event_redemption",
+        r"(?:amortizaci[oó]n anticipada|reembolso anticipado|amortizaci[oó]n total anticipada)",
+        flags=re.I,
+    )
+    merger = grab(
+        "event_merger",
+        r"\bfusi[oó]n (?:por absorci[oó]n\b|societaria\b|de\b)",
+        flags=re.I,
+    )
+    takeover = grab(
+        "event_takeover",
+        r"(?:oferta p[úu]blica de (?:adquisici[oó]n|compra)|\bOPA\b)",
+        flags=re.I,
+    )
+    listing = grab(
+        "event_listing",
+        r"(?:admisi[oó]n a negociaci[oó]n|incorporaci[oó]n al (?:mercado|sistema)|salida a bolsa)",
+        flags=re.I,
+    )
+    delisting = grab(
+        "event_delisting",
+        r"exclusi[oó]n de (?:negociaci[oó]n|cotizaci[oó]n)",
+        flags=re.I,
+    )
+    capital_reduction = grab(
+        "event_capital_reduction", r"reducci[oó]n de capital", flags=re.I
+    )
+    if dividend_cents or dividend_eur or dividend_generic or dividend_effectivo or dividend_context:
         event_type = "CASH_DIVIDEND"
-    elif capital:
+    elif redemption:
+        event_type = "EARLY_REDEMPTION"
+    elif takeover:
+        event_type = "TAKEOVER_BID"
+    elif merger:
+        event_type = "MERGER_OR_EXCHANGE"
+    elif capital or capital_generic:
         event_type = "CAPITAL_INCREASE"
+    elif capital_reduction:
+        event_type = "CAPITAL_REDUCTION"
+    elif delisting:
+        event_type = "DELISTING"
+    elif listing:
+        event_type = "NEW_LISTING"
     else:
         event_type = "UNKNOWN"
 
@@ -161,11 +213,69 @@ def _parse_pdf(payload: bytes, document: SourceDocument) -> ParsedDocument:
                 raw_pointer="/anchors/dividend_eur/value",
             )
         )
+    generic = dividend_generic
+    if generic and not cents and not eur:
+        claims.append(
+            Claim(
+                field_path="amount.gross_per_share",
+                value=FinancialAmount.parse_localized(generic, currency="EUR"),
+                evidence_locator=cite("dividend_generic"),
+                raw_pointer="/anchors/dividend_generic/value",
+            )
+        )
+    # "X euros brutos y Y euros netos por accion" y variantes.
+    gross_net = grab(
+        "dividend_gross_net",
+        rf"{_AMOUNT} euros brutos y {_AMOUNT} euros netos por acci[oó]n",
+        flags=re.I,
+    )
+    if gross_net and not (cents or eur or generic):
+        match = re.search(
+            rf"{_AMOUNT} euros brutos y ({_AMOUNT}) euros netos por acci[oó]n",
+            anchors["dividend_gross_net"]["matched"],
+            re.I,
+        )
+        claims.append(
+            Claim(
+                field_path="amount.gross_per_share",
+                value=FinancialAmount.parse_localized(gross_net, currency="EUR"),
+                evidence_locator=cite("dividend_gross_net"),
+                raw_pointer="/anchors/dividend_gross_net/value",
+            )
+        )
+        if match:
+            claims.append(
+                Claim(
+                    field_path="amount.net_per_share",
+                    value=FinancialAmount.parse_localized(match.group(1), currency="EUR"),
+                    evidence_locator=cite("dividend_gross_net"),
+                    raw_pointer="/anchors/dividend_gross_net/matched",
+                )
+            )
+
+    # Importes genericos de emision/amortizacion (transcripcion literal).
+    for name, field, pattern in (
+        ("issue_total", "amount.issue_total", rf"importe de la emisi[oó]n:\s*{_AMOUNT} euros"),
+        ("coupon_amount", "amount.coupon", rf"importe del cup[oó]n[^:]*?:\s*{_AMOUNT} euros"),
+        ("nominal_unit", "amount.nominal_unit", rf"nominal unitario:\s*{_AMOUNT} euros"),
+        ("max_amount", "amount.max_total", rf"importe m[aá]ximo de {_AMOUNT} euros"),
+    ):
+        add_amount(name, field, grab_amount(name, pattern))
+    pct = grab("redemption_price_pct", rf"precio de amortizaci[oó]n:\s*{_AMOUNT}%", flags=re.I)
+    if pct:
+        claims.append(
+            Claim(
+                field_path="amount.redemption_price_pct",
+                value=FinancialAmount.parse_localized(pct),
+                evidence_locator=cite("redemption_price_pct"),
+                raw_pointer="/anchors/redemption_price_pct/value",
+            )
+        )
 
     # Fecha de pago explicita (con anio).
     payment = grab(
         "payment_date",
-        r"(?:pagader[oa][^.]{0,40}?|pago del dividendo[^.]{0,200}?|tenga lugar el |para el )(\d{1,2} de \w+ de \d{4})",
+        r"(?:pagader[oa][^.]{0,40}?|pago del dividendo[^.]{0,200}?|tenga lugar el |para el |fecha valor[,.]?\s*(?:el d[ií]a\s*)?)(\d{1,2} de \w+ de \d{4})",
         flags=re.I | re.S,
     )
     payment_iso = spanish_date_to_iso(payment) if payment else None
@@ -217,8 +327,52 @@ def _parse_pdf(payload: bytes, document: SourceDocument) -> ParsedDocument:
         "RECORD_DATE",
     )
 
+    # --- Fecha de efecto de amortizacion/redencion -------------------
+    redemption_date = grab(
+        "redemption_date",
+        r"(?:amortizaci[oó]n se realizar[aá]|se realizar[aá]n? con fecha[^.]{0,40}?)(\d{1,2} de \w+ de \d{4})",
+        flags=re.I | re.S,
+    )
+    if redemption_date:
+        iso = spanish_date_to_iso(redemption_date)
+        if iso:
+            claims.append(
+                Claim(
+                    field_path="date.redemption_date",
+                    value=iso,
+                    date_kind="REDEMPTION_DATE",
+                    evidence_locator=cite("redemption_date"),
+                    raw_pointer="/anchors/redemption_date/value",
+                )
+            )
+
+    # --- ISIN explicito ----------------------------------------------
+    isins = sorted(set(re.findall(_ISIN, text)))
+    isin = None
+    for index, value in enumerate(isins):
+        match = re.search(re.escape(value), text)
+        claims.append(
+            Claim(
+                field_path="instrument.isin",
+                value=value,
+                evidence_locator=(
+                    f"{reference}: «{text[max(0, match.start() - 60):match.end() + 40]}»"
+                    if match
+                    else f"{reference}: ISIN {value}"
+                ),
+                raw_pointer=f"/isins/{index}",
+            )
+        )
+    if len(isins) == 1:
+        isin = isins[0]
+
     # --- Fecha del documento ----------------------------------------
-    doc_date = grab("document_date", r"Barcelona, (\d{1,2} de \w+ de \d{4})")
+    # Firma "<ciudad>, <d> de <mes> de <yyyy>" al inicio de linea, con
+    # fallback al patron historico de Barcelona.
+    doc_date = grab(
+        "document_date",
+        r"(?m)^\s*[A-ZÁÉÍÓÚÑ][\wÁ-ÿ.\- ]{1,40},\s*(\d{1,2} de \w+ de \d{4})",
+    ) or grab("document_date", r"Barcelona, (\d{1,2} de \w+ de \d{4})")
     if doc_date:
         iso = spanish_date_to_iso(doc_date)
         if iso:
@@ -260,12 +414,17 @@ def _parse_pdf(payload: bytes, document: SourceDocument) -> ParsedDocument:
 
     return ParsedDocument(
         document=document,
-        parser="cnmv_pdf",
+        parser="cnmv_doc",
         parser_version=REAL_PARSER_VERSION,
-        raw_record={"text": text, "anchors": anchors, "text_sha256": sha256_text(text)},
+        raw_record={
+            "text": text,
+            "anchors": anchors,
+            "isins": isins,
+            "text_sha256": sha256_text(text),
+        },
         event_type=event_type,
         issuer_name=issuer,
-        isin=None,
+        isin=isin,
         lei=None,
         claims=tuple(claims),
         references=tuple(references),
@@ -278,10 +437,26 @@ def _parse_pdf(payload: bytes, document: SourceDocument) -> ParsedDocument:
             if dividend_cents
             else cite("dividend_eur")
             if dividend_eur
+            else cite("dividend_generic")
+            if dividend_generic
             else cite("event_dividend_context")
             if dividend_context
+            else cite("event_redemption")
+            if redemption
+            else cite("event_takeover")
+            if takeover
+            else cite("event_merger")
+            if merger
             else cite("event_capital")
             if capital
+            else cite("event_capital_generic")
+            if capital_generic
+            else cite("event_capital_reduction")
+            if capital_reduction
+            else cite("event_delisting")
+            if delisting
+            else cite("event_listing")
+            if listing
             else None
         ),
     )

@@ -1,0 +1,203 @@
+"""Tests de los fixes genericos de G1 Fase B: locators, BME Growth, CNMV."""
+from __future__ import annotations
+
+import json
+
+from ca_es.sources.documents import SourceDocument
+from ca_es.sources.locators import resolve_locator
+from ca_es.sources.parsers import bme_growth, cnmv
+
+
+def _doc(source_id: str, media_type: str = "application/json") -> SourceDocument:
+    return SourceDocument(
+        source_id=source_id,
+        official_document_id="TEST-001",
+        content_sha256="0" * 64,
+        retrieved_at="2026-09-14",
+        media_type=media_type,
+    )
+
+
+# --- locators -------------------------------------------------------
+
+
+def test_locator_absolute_passthrough():
+    url = "https://www.cnmv.es/webservices/verdocumento/ver?t=%7babc%7d"
+    assert resolve_locator("CNMV_OIR", url) == url
+
+
+def test_locator_relative_resolves_against_portal():
+    assert resolve_locator(
+        "CNMV_OIR", "../otra-informacion-regulada-corporativa/x.aspx?Nif=A-1"
+    ) == (
+        "https://www.cnmv.es/portal/otra-informacion-regulada-corporativa/"
+        "x.aspx?Nif=A-1"
+    )
+
+
+def test_locator_invalid_returns_none():
+    assert resolve_locator("CNMV_OIR", None) is None
+    assert resolve_locator("CNMV_OIR", "") is None
+    assert resolve_locator("CNMV_OIR", "javascript:void(0)") is None
+    assert resolve_locator("UNKNOWN_SOURCE", "rel/path.aspx") is None
+
+
+# --- BME Growth ------------------------------------------------------
+
+
+def _bmeg_doc() -> SourceDocument:
+    return _doc("BME_GROWTH", "application/json")
+
+
+def _bmeg_payload(category: str, metadata: dict) -> bytes:
+    return json.dumps(
+        {
+            "frame_item_id": "BMEG-TEST",
+            "official_category": category,
+            "issuer_raw": metadata.get("issuerName"),
+            "instrument_isin": metadata.get("isin"),
+            "publication_date": "2025-07-01",
+            "metadata": metadata,
+        }
+    ).encode("utf-8")
+
+
+def test_bmeg_dividend_maps_dates_and_amounts():
+    parsed = bme_growth.parse(
+        _bmeg_payload(
+            "Dividends",
+            {
+                "exDate": "20250701",
+                "paymentDate": "20250703",
+                "grossAmount": "1.08828849",
+                "netAmount": "0.88151368",
+                "currency": "EUR",
+                "isin": "ES0105030003",
+                "company": "MERCAL INMUEBLES, SOCIMI, S.A.",
+            },
+        ),
+        _bmeg_doc(),
+        {},
+    )
+    assert parsed.event_type == "CASH_DIVIDEND"
+    assert parsed.isin == "ES0105030003"
+    by_field = {c.field_path: c for c in parsed.claims}
+    assert by_field["date.ex_date"].value == "2025-07-01"
+    assert by_field["date.payment_date"].value == "2025-07-03"
+    gross = by_field["amount.gross_per_share"].value
+    assert gross.raw_lexeme == "1.08828849"
+    assert gross.scale == 8
+
+
+def test_bmeg_capital_increase_with_rights_is_rights_issue():
+    parsed = bme_growth.parse(
+        _bmeg_payload(
+            "CapitalIncreases",
+            {
+                "rightsIndicator": "S",
+                "price": "0.8",
+                "currency": "EUR",
+                "isin": "ES0105425021",
+                "issuerName": "PLASTICOS COMPUESTOS, S.A.",
+                "startingDate": "20260223",
+                "finishDate": "20260308",
+            },
+        ),
+        _bmeg_doc(),
+        {},
+    )
+    assert parsed.event_type == "RIGHTS_ISSUE"
+
+
+def test_bmeg_takeover_price_text_stays_raw():
+    parsed = bme_growth.parse(
+        _bmeg_payload(
+            "TakeoverBids",
+            {
+                "priceText": "1 ACC. BBVA + 0,70 EUR",
+                "startingDate": "20250908",
+                "companyName": "BANCO DE SABADELL, S.A.",
+            },
+        ),
+        _bmeg_doc(),
+        {},
+    )
+    assert parsed.event_type == "TAKEOVER_BID"
+    by_field = {c.field_path: c for c in parsed.claims}
+    assert by_field["takeover.price_text"].value == "1 ACC. BBVA + 0,70 EUR"
+
+
+def test_bmeg_rejects_other_source():
+    import pytest
+
+    with pytest.raises(ValueError):
+        bme_growth.parse(b"{}", _doc("CNMV"), {})
+
+
+# --- CNMV generico ---------------------------------------------------
+
+
+def _cnmv_html(text: str) -> bytes:
+    return f"<html><body><p>{text}</p></body></html>".encode("utf-8")
+
+
+def test_cnmv_dividendo_complementario_generico():
+    parsed = cnmv.parse(
+        _cnmv_html(
+            "La Junta General ha aprobado el pago de un dividendo "
+            "complementario de 0,025 euros brutos por accion. "
+            "LIBERTAS 7, S.A."
+        ),
+        _doc("CNMV", "text/html"),
+        {},
+    )
+    assert parsed.event_type == "CASH_DIVIDEND"
+    gross = [c for c in parsed.claims if c.field_path == "amount.gross_per_share"]
+    assert gross and gross[0].value.raw_lexeme == "0,025"
+
+
+def test_cnmv_amortizacion_anticipada_con_isin_y_fecha():
+    parsed = cnmv.parse(
+        _cnmv_html(
+            "BBVA comunica que va a proceder a la amortizacion anticipada "
+            "total de la emision con codigo ISIN ES0413211A18, siendo la "
+            "fecha valor el dia 29 de abril de 2025."
+        ),
+        _doc("CNMV", "text/html"),
+        {},
+    )
+    assert parsed.event_type == "EARLY_REDEMPTION"
+    assert parsed.isin == "ES0413211A18"
+    dates = {c.field_path for c in parsed.claims if c.date_kind}
+    assert "date.payment_date" in dates
+
+
+def test_cnmv_document_date_cualquier_ciudad():
+    parsed = cnmv.parse(
+        _cnmv_html(
+            "Bilbao, 31 de julio de 2025 A la Comision Nacional del "
+            "Mercado de Valores comunicacion de informacion privilegiada"
+        ),
+        _doc("CNMV", "text/html"),
+        {},
+    )
+    ann = [c for c in parsed.claims if c.field_path == "date.announcement_date"]
+    assert ann and ann[0].value == "2025-07-31"
+
+
+def test_cnmv_opa_detectada():
+    parsed = cnmv.parse(
+        _cnmv_html("Se ha presentado una oferta publica de adquisicion sobre la sociedad."),
+        _doc("CNMV", "text/html"),
+        {},
+    )
+    assert parsed.event_type == "TAKEOVER_BID"
+
+
+def test_cnmv_unknown_cuando_no_hay_patron():
+    parsed = cnmv.parse(
+        _cnmv_html("Composicion de las comisiones del consejo de administracion."),
+        _doc("CNMV", "text/html"),
+        {},
+    )
+    assert parsed.event_type == "UNKNOWN"

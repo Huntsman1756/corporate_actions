@@ -11,6 +11,7 @@ from __future__ import annotations
 from collections.abc import Callable
 
 from .parsers.base import PARSER_VERSION, parse_structured
+from .parsers.bme_growth import parse as parse_bme_growth
 from .parsers.borme import parse as parse_borme
 from .parsers.cnmv import parse as parse_cnmv
 from .parsers.issuer import parse as parse_issuer
@@ -19,6 +20,7 @@ from .parsers.portfolio import parse as parse_portfolio
 ParserFn = Callable[..., object]
 
 PARSERS: dict[str, ParserFn] = {
+    "BME_GROWTH": parse_bme_growth,
     "CNMV": parse_cnmv,
     "BOE_BORME": parse_borme,
     "PORTFOLIO_STOCK_EXCHANGE": parse_portfolio,
