@@ -1,0 +1,18 @@
+{
+  "manifest_version": "CA_ES_G1_APPLICABILITY_V1",
+  "frozen_at": "2026-09-14",
+  "note": "Matriz family x field. APPLICABLE = entra en el denominador siempre; CONDITIONAL = depende del evento (p.ej. CAPITAL_INCREASE sin derechos no tiene ex_date); NOT_APPLICABLE = nunca entra. CONDITIONAL se resuelve por evento a APPLICABLE/NOT_APPLICABLE/UNDETERMINED en la revision de missingness.",
+  "fields": ["event_type", "ex_date", "record_date", "payment_date", "amount_or_ratio", "currency"],
+  "matrix": {
+    "CASH_DIVIDEND":     {"event_type": "APPLICABLE", "ex_date": "APPLICABLE", "record_date": "APPLICABLE", "payment_date": "APPLICABLE", "amount_or_ratio": "APPLICABLE", "currency": "APPLICABLE"},
+    "SCRIP_DIVIDEND":    {"event_type": "APPLICABLE", "ex_date": "APPLICABLE", "record_date": "APPLICABLE", "payment_date": "APPLICABLE", "amount_or_ratio": "APPLICABLE", "currency": "CONDITIONAL"},
+    "RIGHTS_ISSUE":      {"event_type": "APPLICABLE", "ex_date": "APPLICABLE", "record_date": "APPLICABLE", "payment_date": "APPLICABLE", "amount_or_ratio": "APPLICABLE", "currency": "APPLICABLE"},
+    "CAPITAL_INCREASE":  {"event_type": "APPLICABLE", "ex_date": "CONDITIONAL", "record_date": "CONDITIONAL", "payment_date": "CONDITIONAL", "amount_or_ratio": "APPLICABLE", "currency": "CONDITIONAL"},
+    "CAPITAL_REDUCTION": {"event_type": "APPLICABLE", "ex_date": "CONDITIONAL", "record_date": "CONDITIONAL", "payment_date": "CONDITIONAL", "amount_or_ratio": "APPLICABLE", "currency": "CONDITIONAL"},
+    "SPLIT":             {"event_type": "APPLICABLE", "ex_date": "APPLICABLE", "record_date": "CONDITIONAL", "payment_date": "NOT_APPLICABLE", "amount_or_ratio": "APPLICABLE", "currency": "NOT_APPLICABLE"},
+    "REVERSE_SPLIT":     {"event_type": "APPLICABLE", "ex_date": "APPLICABLE", "record_date": "CONDITIONAL", "payment_date": "NOT_APPLICABLE", "amount_or_ratio": "APPLICABLE", "currency": "NOT_APPLICABLE"},
+    "MERGER":            {"event_type": "APPLICABLE", "ex_date": "CONDITIONAL", "record_date": "CONDITIONAL", "payment_date": "CONDITIONAL", "amount_or_ratio": "APPLICABLE", "currency": "CONDITIONAL"},
+    "TENDER":            {"event_type": "APPLICABLE", "ex_date": "NOT_APPLICABLE", "record_date": "CONDITIONAL", "payment_date": "APPLICABLE", "amount_or_ratio": "APPLICABLE", "currency": "APPLICABLE"},
+    "REDEMPTION":        {"event_type": "APPLICABLE", "ex_date": "CONDITIONAL", "record_date": "CONDITIONAL", "payment_date": "APPLICABLE", "amount_or_ratio": "APPLICABLE", "currency": "APPLICABLE"}
+  }
+}

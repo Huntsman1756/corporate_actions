@@ -1,0 +1,70 @@
+{
+  "manifest_version": "CA_ES_G1_ELIGIBILITY_V1",
+  "frozen_at": "2026-09-14",
+  "note": "Reglas deterministicas aplicadas sobre la enumeracion cruda para construir el frame. Normalizacion: minusculas, sin acentos, espacios colapsados. Evaluacion: primero exclusiones, luego inclusion por categoria o por keyword de titulo.",
+  "rules": [
+    {
+      "id": "EXCL_TITULIZACION",
+      "applies_to": ["CNMV_OIR", "CNMV_IP"],
+      "type": "EXCLUDE",
+      "match": {
+        "category_regex": ["titulizaci[o\u00f3]n"],
+        "issuer_regex": ["fondo de titulizaci", "\\bayt\\b", "\\bfta\\b", "\\bftpy\\b", "\\btda\\b", "\\bcedulas\\b", "\\brmbs\\b"]
+      }
+    },
+    {
+      "id": "EXCL_PUBLIC_DEBT_ISSUER",
+      "applies_to": ["CNMV_OIR", "CNMV_IP"],
+      "type": "EXCLUDE",
+      "match": {
+        "issuer_regex": ["tesoro publico", "comunidad autonoma", "ayuntamiento", "reino de espa"]
+      }
+    },
+    {
+      "id": "EXCL_BUYBACK_LIQUIDITY",
+      "applies_to": ["CNMV_OIR", "CNMV_IP"],
+      "type": "EXCLUDE",
+      "match": {
+        "category_regex": ["recompra de acciones", "contratos de liquidez", "estabilizaci[o\u00f3]n y autocartera"]
+      },
+      "note": "Buybacks/liquidez no estan entre las familias G1."
+    },
+    {
+      "id": "INCL_OIR_CATEGORY_CA",
+      "applies_to": ["CNMV_OIR"],
+      "type": "INCLUDE_CATEGORY",
+      "categories": ["Sobre operaciones corporativas"]
+    },
+    {
+      "id": "INCL_IP_CATEGORY_CA",
+      "applies_to": ["CNMV_IP"],
+      "type": "INCLUDE_CATEGORY",
+      "categories": ["Sobre operaciones corporativas: fusiones, adquisiciones y otros"]
+    },
+    {
+      "id": "INCL_TITLE_KEYWORDS",
+      "applies_to": ["CNMV_OIR", "CNMV_IP", "PORTFOLIO_PRODUCT_DOCUMENTS"],
+      "type": "INCLUDE_TITLE_REGEX",
+      "patterns": [
+        "dividendo",
+        "retribuci[o\u00f3]n al accionista|remuneraci[o\u00f3]n al accionista",
+        "ampliaci[o\u00f3]n de capital|aumento de capital",
+        "reducci[o\u00f3]n de capital|devoluci[o\u00f3]n de (aportaciones|prima)",
+        "desdoblamiento|contrasplit|\\bsplit\\b|agrupaci[o\u00f3]n de acciones|canje de acciones",
+        "suscripci[o\u00f3]n preferente|derechos? de suscripci[o\u00f3]n",
+        "scrip",
+        "\\bopa\\b|\\bops\\b|oferta p[u\u00fa]blica de (adquisici[o\u00f3]n|suscripci[o\u00f3]n|compra)",
+        "fusi[o\u00f3]n|escisi[o\u00f3]n|absorci[o\u00f3]n",
+        "reembolso|redenci[o\u00f3]n|amortizaci[o\u00f3]n anticipada"
+      ],
+      "field": "title"
+    },
+    {
+      "id": "INCL_BME_GROWTH_ALL",
+      "applies_to": ["BME_GROWTH_OPERACIONES_FINANCIERAS"],
+      "type": "INCLUDE_ALL",
+      "note": "La tabla oficial de operaciones financieras ya es un registro de corporate actions (fuente: emisora).",
+      "types": ["Dividends", "CapitalIncreases", "Splits", "Mergers", "OtherPayments", "NewListings", "Delistings", "PublicOfferings", "TakeoverBids"]
+    }
+  ]
+}

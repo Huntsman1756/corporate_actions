@@ -1,0 +1,73 @@
+{
+  "manifest_version": "CA_ES_G1_SAMPLING_SOURCES_V1",
+  "frozen_at": "2026-09-14",
+  "window": {"from": "2025-01-01", "to": "2026-09-13"},
+  "strata": {
+    "MAIN_MARKET": {
+      "sources": [
+        {
+          "id": "CNMV_OIR",
+          "name": "CNMV - Otra Informacion Relevante",
+          "listing_url_template": "https://www.cnmv.es/portal/otra-informacion-relevante/resultado-oir.aspx?fechaDesde={DD/MM/YYYY}&fechaHasta={DD/MM/YYYY}&page={N}",
+          "search_url": "https://www.cnmv.es/portal/Otra-Informacion-Relevante/Consulta-OIR.aspx",
+          "item_id_scheme": "CNMV-OIR-{registration_number}",
+          "id_fields": ["registration_number", "document_url"],
+          "terms_source": "https://www.cnmv.es/portal/inversor/aviso-legal.aspx",
+          "redistribution": "NOT_REDISTRIBUTED"
+        },
+        {
+          "id": "CNMV_IP",
+          "name": "CNMV - Informacion Privilegiada",
+          "listing_url_template": "https://www.cnmv.es/portal/informacion-privilegiada/resultado-ip.aspx?fechaDesde={DD/MM/YYYY}&fechaHasta={DD/MM/YYYY}&page={N}",
+          "search_url": "https://www.cnmv.es/portal/Informacion-Privilegiada/Consulta-IP.aspx",
+          "item_id_scheme": "CNMV-IP-{registration_number}",
+          "id_fields": ["registration_number", "document_url"],
+          "terms_source": "https://www.cnmv.es/portal/inversor/aviso-legal.aspx",
+          "redistribution": "NOT_REDISTRIBUTED"
+        }
+      ],
+      "external_benchmark": {
+        "id": "BME_EXCHANGE_CA_SIBE",
+        "name": "BME Exchange - Corporate Actions (mercado principal, SIBE)",
+        "api_base": "https://apiweb.bolsasymercados.es/Market/v1/EQ/CorporateActions",
+        "trading_system": "SIBE",
+        "role": "EXTERNAL_BENCHMARK_ONLY",
+        "availability_note": "~ultimo ano; splits ~ultimo mes. Eligible acotado a disponibilidad en fecha de adquisicion.",
+        "redistribution": "NOT_REDISTRIBUTED"
+      }
+    },
+    "BME_GROWTH_MTF": {
+      "sources": [
+        {
+          "id": "BME_GROWTH_OPERACIONES_FINANCIERAS",
+          "name": "BME Growth - Operaciones financieras",
+          "page_url": "https://www.bolsasymercados.es/es/bme-growth/cotizaciones-e-indices/empresas-cotizadas/operaciones-financieras.html",
+          "api_base": "https://apiweb.bolsasymercados.es/Market/v1/EQ/CorporateActions",
+          "trading_system": "MTF",
+          "mtf_segment": "BMEGrowth",
+          "item_id_scheme": "BMEG-{type}-{isin}-{date}",
+          "source_declaration": "Fuente: Emisora (declarado por BME).",
+          "redistribution": "NOT_REDISTRIBUTED"
+        }
+      ]
+    },
+    "PORTFOLIO": {
+      "sources": [
+        {
+          "id": "PORTFOLIO_PRODUCT_DOCUMENTS",
+          "name": "Portfolio Stock Exchange - documentos de producto",
+          "index_url": "https://portfolio.exchange/es/portfolio-market",
+          "document_url_template": "https://api.portfolio.exchange/poex/document/{id}",
+          "item_id_scheme": "POEX-DOC-{document_id}",
+          "id_fields": ["document_id", "product_url"],
+          "redistribution": "NOT_REDISTRIBUTED"
+        }
+      ]
+    },
+    "ADVERSARIAL": {
+      "sources": [],
+      "selection": "PURPOSIVE_REGISTRY",
+      "registry": "g1/manifests/adversarial-registry.json"
+    }
+  }
+}

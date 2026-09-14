@@ -1,0 +1,16 @@
+{
+  "manifest_version": "CA_ES_G1_EXCLUDED_V1",
+  "frozen_at": "2026-09-14",
+  "reason": "G0_REGRESSION_FIXTURE",
+  "note": "Casos reales G0 (regression fixtures). Se excluyen del frame ANTES del hashing de sample_score. Identificados por official_document_id del manifest real G0.",
+  "excluded": [
+    {"official_document_id": "CNMV-IP-1884", "frame_item_id": "CNMV-IP-1884", "case": "Almirall"},
+    {"official_document_id": "CNMV-IP-1885", "frame_item_id": "CNMV-IP-1885", "case": "Almirall"},
+    {"official_document_id": "CNMV-OIR-40280", "frame_item_id": "CNMV-OIR-40280", "case": "MFE"},
+    {"official_document_id": "CNMV-OIR-40319", "frame_item_id": "CNMV-OIR-40319", "case": "MFE"},
+    {"official_document_id": "CNMV-SAN-DIV-2026", "frame_item_id": null, "case": "Santander"},
+    {"official_document_id": "SAN-IR-REMUNERATION", "frame_item_id": null, "case": "Santander"},
+    {"official_document_id": "BORME-C-2026-4914", "frame_item_id": null, "case": "Parlem"},
+    {"official_document_id": "PORTFOLIO-4733", "frame_item_id": "POEX-DOC-4733", "case": "P3"}
+  ]
+}

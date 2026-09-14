@@ -166,9 +166,12 @@ def extract_results(html: str) -> list[dict]:
 
 
 def paginate_links(html: str) -> list[str]:
+    import html as html_mod
+
     return sorted(
         set(
-            re.findall(
+            html_mod.unescape(link)
+            for link in re.findall(
                 r'href="([^"]*resultado-[a-z]+\.aspx\?[^"]*page=[0-9]+[^"]*)"',
                 html,
                 re.I,

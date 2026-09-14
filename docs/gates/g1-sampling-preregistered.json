@@ -1,0 +1,77 @@
+{
+  "preregistration_version": "CA_ES_G1_SAMPLING_V1",
+  "frozen_at": "2026-09-14",
+  "parent": "CA_ES_G1_PREREG_V1",
+  "status": "FROZEN_BEFORE_FRAME_BUILD",
+  "freeze_note": "La fuente del frame se cierra antes de generar el manifiesto. El SHA-256 del frame resultante es el nuevo punto de congelacion de G1. No se reabre la fuente tras la construccion del frame.",
+  "sampling_unit": "OFFICIAL_NOTICE_OR_SOURCE_DOCUMENT_SEED",
+  "sampling_unit_note": "El frame contiene seeds de documento/noticia oficial, no corporate actions. La identidad del evento la resuelve el pipeline (seed -> event candidate -> corporate action).",
+  "strata_sources": {
+    "MAIN_MARKET": {
+      "frame_sources": ["CNMV_OIR", "CNMV_IP"],
+      "external_benchmark": "BME_EXCHANGE_CA_SIBE",
+      "benchmark_metric": "bme_reference_events_matched_in_cnmv_frame / bme_reference_events_eligible",
+      "benchmark_limitation": "BME Exchange publica ~ultimo ano (splits ~ultimo mes); eligible acotado a disponibilidad en fecha de adquisicion."
+    },
+    "BME_GROWTH_MTF": {
+      "frame_sources": ["BME_GROWTH_OPERACIONES_FINANCIERAS"],
+      "source_declaration": "Fuente declarada por BME: emisora.",
+      "raw_storage": "LOCAL_ONLY",
+      "redistribution": "NOT_REDISTRIBUTED"
+    },
+    "PORTFOLIO": {
+      "frame_sources": ["PORTFOLIO_PRODUCT_DOCUMENTS"],
+      "raw_storage": "LOCAL_ONLY",
+      "redistribution": "NOT_REDISTRIBUTED"
+    },
+    "ADVERSARIAL": {
+      "frame_sources": [],
+      "selection": "PURPOSIVE_REGISTRY",
+      "criteria_frozen_before_selection": true,
+      "excluded_from_global_rates": true,
+      "criteria": [
+        "EXPLICIT_REVISION",
+        "MULTI_SOURCE_CONFLICT",
+        "NON_IBERCLEAR_INFRASTRUCTURE",
+        "MUTABLE_ENTITLEMENT",
+        "PRECISION_GT_4_DECIMALS",
+        "MULTI_MIC",
+        "ISIN_CHANGE",
+        "EVENT_WITH_OPTIONS"
+      ]
+    }
+  },
+  "selection_algorithm": {
+    "sample_score": "SHA256(\"CA_ES_G1_SAMPLE_V1\" + stratum + frame_item_id)",
+    "rule": "sort(sample_score) ascending, take N per stratum",
+    "targets": {"MAIN_MARKET": 20, "BME_GROWTH_MTF": 10, "PORTFOLIO": 10},
+    "quota_policy": "No se fuerzan cuotas; la ausencia es un resultado de cobertura."
+  },
+  "split_algorithm": {
+    "split_score": "SHA256(\"CA_ES_G1_SPLIT_V1\" + frame_item_id)",
+    "rule": "sort(split_score) ascending sobre los seleccionados; primeros 15 = HOLDOUT",
+    "holdout_count": 15
+  },
+  "exclusions": {
+    "applied_before_hashing": true,
+    "registry": "g1/manifests/excluded-known-cases.json",
+    "reason": "G0_REGRESSION_FIXTURE"
+  },
+  "dedup_rule": "Si dos seeds seleccionados son la misma CA por evidencia determinista: conservar el de mejor sample_score, rellenar con el siguiente del frame, registrar la operacion.",
+  "eligibility_rules": "g1/manifests/eligibility-rules.json",
+  "missingness_adjudication": {
+    "registry": "g1/adjudication/missingness-review.jsonl",
+    "scope": "cada campo critico aplicable no poblado",
+    "mapping": {
+      "PUBLISHED+empty_pipeline": "MISSING",
+      "NOT_PUBLISHED": "UNKNOWN",
+      "AMBIGUOUS": "UNKNOWN_SOURCE_AMBIGUOUS"
+    },
+    "constraint": "El revisor solo determina si el dato estaba publicado; nunca introduce el valor."
+  },
+  "applicability_matrix": "g1/manifests/metric-applicability.json",
+  "reporting": {
+    "always": ["n/N", "rate", "wilson_95_ci"],
+    "claim": "G1 estimates are directional. Not population estimates."
+  }
+}

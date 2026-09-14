@@ -22,6 +22,16 @@
       "ingestion_status": "ACTIVE",
       "notes": "Documento oficial. Se conservan hash y locator; el raw permanece local."
     },
+    "BME_GROWTH": {
+      "role": ["VENUE_DISCLOSURE"],
+      "authority": "BME Growth / BME MTF Equity (Bolsas y Mercados Espanoles)",
+      "raw_storage": "LOCAL_ONLY",
+      "redistribution": "NOT_REDISTRIBUTED",
+      "terms_reviewed_at": "2026-09-14",
+      "terms_source": "https://www.bolsasymercados.es/es/bme-growth/cotizaciones-e-indices/empresas-cotizadas/operaciones-financieras.html",
+      "ingestion_status": "ACTIVE",
+      "notes": "Tabla oficial de operaciones financieras; fuente declarada: emisora. BME limita usos/redifusion; raw LOCAL_ONLY."
+    },
     "PORTFOLIO_STOCK_EXCHANGE": {
       "role": ["VENUE_DISCLOSURE"],
       "authority": "Portfolio Stock Exchange (BME Growth / BME MTF Equity)",
