@@ -1,6 +1,7 @@
 # G1-R — Extraction Safety & Generalization (remediation)
 
-Status: **PROTOCOL FROZEN before any parser change** (2026-09-14).
+Status: **DRAFT — PENDING APPROVAL, NOT YET TAGGED** (2026-09-14).
+El tag `g1r-protocol` solo se crea tras aprobación humana del diff final.
 Parent: G1 cerrado en FAIL — `docs/gates/g1-closure-report.md`
 (`b1b79c1`, rama `g1-audit-review`). Parser congelado de referencia:
 `c431830 / g1-parser-freeze`.
@@ -9,149 +10,264 @@ Parent: G1 cerrado en FAIL — `docs/gates/g1-closure-report.md`
 
 > ¿Puede `ca-es` eliminar los false financial facts y los errores de
 > atribución observados en G1 y **mantener** ese comportamiento en un
-> nuevo holdout virgen?
+> nuevo holdout virgen — **sin comprar la seguridad por abstención**?
 
-G1 demostró feasibility (G0) y falsó generalización (G1). G1-R no es
-una fase de cobertura: es la remediación de **seguridad de extracción**.
+G1 demostró feasibility (G0) y falsó generalización (G1). G1-R es la
+remediación de **seguridad de extracción**, no una fase de cobertura.
 
-## Lo que G1 falsó — catálogo empírico de fallos
+## Catálogo empírico de fallos (especificación del problema)
 
 Fuente: `g1/results/post-freeze-findings.jsonl` (30 findings).
-Este catálogo es la especificación del problema, no una lista
-hipotética:
 
 ```
-FALSE FACTS (P0)
+FALSE FACTS / P0 — hard-fail si aparece UNA vez en holdout
   DECIMAL_SPLIT_PDF          "0. 53 euros"->53 ; "0, 47 euros"->47
   WRONG_VALUE                nominal de accion (0,01) promovido a dividendo
   WRONG_ATTRIBUTION          755M del buyback asignado al dividendo
   WRONG_EVENT_TYPE           fusion clasificada CASH_DIVIDEND
   DATE_MISBINDING            fecha de anuncio previsto capturada como ex_date
+  FALSE_POSITIVE_EVENT       event_type emitido sobre un seed NOT_CA
 
-MISSED FACTS (P1)
-  LABEL_VARIANT              "Fecha ex date", "Fecha Ex-Date", "ex -date"
-  UNLABELED_DATE             "a satisfacer en efectivo el", "con fecha de efectos"
-  EURO_SYMBOL_FORMAT         "EUR 0,15", "100.000 EUR"
-  MAGNITUDE_ANCHOR_GAP       "por un importe total de N millones de euros"
-  RATIO_NOT_EXTRACTED        "19,916 acciones por cada (1) accion"
-  BOUND_AMOUNT_NOT_MAPPED    "hasta 29.678.964,75 EUR" (precio/cotas)
-  LEXEME_VARIANT_EVENT_TYPE  "oferta publica voluntaria de adquisicion",
-                             avisos de calendario POEX
+MISSED FACTS / P1 — medidos, sujetos al NON_DEGRADATION_GUARD
+  LABEL_VARIANT / UNLABELED_DATE / EURO_SYMBOL_FORMAT
+  MAGNITUDE_ANCHOR_GAP / RATIO_NOT_EXTRACTED
+  BOUND_AMOUNT_NOT_MAPPED / LEXEME_VARIANT_EVENT_TYPE
 
-LIMITACIONES DE FUENTE/ARTEFACTO (no son bugs)
-  REGISTRY_ARTIFACT_NO_LEXEME   paginas derechos de voto/capital
-  INSTRUMENT_BINDING_ABSENT     ISIN no publicado en el documento
+LIMITACIONES DE FUENTE — no son bugs
+  REGISTRY_ARTIFACT_NO_LEXEME / INSTRUMENT_BINDING_ABSENT
 ```
 
-## Prioridades (orden estricto)
+## Prioridades
 
 ```
-P0  false financial value      -> 0   (hard-fail)
-P0  wrong attribution          -> 0   (hard-fail)
-P0  wrong event type           -> 0   (hard-fail)
-P0  date misbinding            -> 0   (hard-fail)
-P1  published-but-missed facts -> bajar (medido, sin umbral duro)
-P2  instrument resolution      -> subir (medido)
-P3  discovery recall           -> FUERA DE SCOPE (fase posterior propia)
+P0  false_financial_facts    -> 0   (hard-fail)
+P0  wrong_attribution        -> 0   (hard-fail)
+P0  wrong_event_type         -> 0   (hard-fail)
+P0  date_misbinding          -> 0   (hard-fail)
+P0  false_positive_event     -> 0   (hard-fail)
+P1  published-but-missed     -> mejorar, SIN empeorar el baseline
+P2  instrument resolution    -> subir, manteniendo ADR-013
+P3  discovery recall         -> FUERA DE SCOPE (fase posterior propia)
 ```
 
-**Seguridad antes que cobertura.** Un `53 EUR` donde la fuente decía
-`0,53 EUR` es peor que un `UNKNOWN`. El `11 %` de FN del negative
-control NO se aborda en G1-R.
+**Seguridad antes que cobertura, pero no seguridad-por-abstención.**
 
-## Dirección arquitectónica (a evaluar en DEV, no preregistrada como diseño)
+## Guards anti-abstención (la debilidad principal del draft v1)
 
-El cambio de fondo que G1-R debe explorar:
+Un parser que devuelva `UNKNOWN` casi siempre obtendría todos los
+P0=0. Por tanto se congela un hard gate separado:
 
 ```
-ANTES (G1):     text -> regex -> canonical fact
+NON_DEGRADATION_GUARD (hard-fail en holdout virgen)
 
-G1-R:           document
-                -> evidence spans / blocks
-                -> candidate facts
-                -> semantic attribution + validation
-                -> canonical facts
+  parser_miss_rate_holdout      <= 38,33 %   (baseline G1)
+
+equivalentemente:
+
+  correct_published_critical_fact_recall >= 61,67 %   (= 37/60)
 ```
 
-Principio: ningún fact financiero se emite sin (a) evidencia textual
-acotada al enunciado del evento, (b) validación de consistencia
-(rango, unidad, rol semántico del importe), (c) atribución demostrada
-al evento correcto. La capa exacta la decide el desarrollo; lo que se
-congela es el **criterio de aceptación**, no la implementación.
+P1 sigue teniendo como objetivo mejorar el 38,33 %, pero **no se permite
+empeorar** para conseguir seguridad.
+
+## Cobertura de revisión P0
+
+G1 cayó por valores **poblados pero incorrectos**, que el missingness
+clásico no veía. Por tanto, demostrar P0=0 exige revisar contra fuente
+el 100 % de los facts emitidos relevantes para P0:
+
+```
+p0_relevant_emitted_facts =
+  event_type + fechas de evento + amounts + ratios + currencies
+  + cualquier otro fact financiero emitido
+
+p0_review_coverage =
+  reviewed_p0_relevant_emitted_facts / p0_relevant_emitted_facts
+
+PASS requires = 1.0
+```
+
+Las anotaciones humanas pueden registrar el valor esperado y la
+evidencia como **evaluation oracle**; nunca entran como facts del
+producto (`human_fact_entry = FORBIDDEN` sigue intacto).
+
+### Semántica de ejes ortogonales
+
+`FALSE_FINANCIAL_FACT` **no** es un estado alternativo a `MISSING`:
+son ejes ortogonales. Un `53` donde correspondía `0,53` es
+simultáneamente `MISSING` para completeness y `FALSE_FINANCIAL_FACT`
+para safety — exactamente como se adjudicó en G1.
+
+`false_positive_event`: un seed adjudicado `NOT_CA` con `event_type`
+emitido (p. ej. `CASH_DIVIDEND`) es hard-fail propio; no encaja en
+ninguno de los otros cuatro P0.
 
 ## Corpus — tres conjuntos, roles distintos
 
 ```
-G1 SEALED (25)     -> REGRESSION ONLY
-                      sirven para verificar que la remediación corrige
-                      los fallos conocidos; NUNCA cuentan como evidencia
-                      de generalización
-
-G1-R DEV           -> documentos NUEVOS para desarrollar las clases
-                      de fallo del catálogo
-
-G1-R HOLDOUT       -> completamente virgen, congelado ANTES de tocar
-                      el parser; es la única evidencia de generalización
+G1 SEALED (25)     -> REGRESSION ONLY. Nunca evidencia de generalización.
+G1-R DEV (25)      -> documentos nuevos para desarrollar las clases P0.
+G1-R HOLDOUT (15)  -> virgen, sellado ANTES de tocar el parser.
 ```
 
-Reglas de muestreo G1-R (deterministas, mismo esquema que G1):
+### Frame y muestreo (algoritmo congelado, literal de G1)
 
 ```
-sample_score = SHA256("CA_ES_G1R_SAMPLE_V1" + stratum + frame_item_id)
-split_score  = SHA256("CA_ES_G1R_SPLIT_V1"  + frame_item_id)
+parent_frame = g1/manifests/sampling-frame.json
+sha256       = edc785ebbe007ad5eec000edc06abaff15b2c674698c27e726cc41253dc94188
 ```
 
-- Mismos estratos que G1 (MAIN_MARKET, BME_GROWTH_MTF, PORTFOLIO).
-- **Excluidos de la selección**: todos los `frame_item_id` ya usados en
-  el corpus G1 (DEV, HOLDOUT, ADVERSARIAL, NO_MATCH).
-- Tamaños objetivo: **25 DEV + 15 HOLDOUT** (suficiente para cubrir las
-  clases P0 con margen).
-- Sin cuotas forzadas de familia; la composición es lo que es.
-- Set adversarial: opcional, misma mecánica `PRESELECTED_ADVERSARIAL`;
-  si se usa, reportado separado, nunca combinado.
+Se reutiliza el **frame G1 congelado** (mismo universo temporal; sin
+frame drift). Algoritmo:
+
+```
+1. eliminar del frame TODOS los frame_item_id usados por G1
+   (DEV, HOLDOUT, ADVERSARIAL, NO_MATCH) antes de cualquier hash
+2. sample_score = SHA256("CA_ES_G1R_SAMPLE_V1" + stratum + frame_item_id)
+3. ordenar por score y tomar 20 MAIN / 10 BMEG / 10 PORTFOLIO
+4. dedup misma CA + backfill por orden de score (misma regla que G1)
+5. split_score = SHA256("CA_ES_G1R_SPLIT_V1" + frame_item_id)
+6. ordenar los 40 por split_score; los 15 primeros -> HOLDOUT
+7. los 25 restantes -> DEV
+```
+
+Sellado del holdout:
+
+```
+holdout_content_sealed_until = G1R_PARSER_FREEZE
+no_manual_holdout_inspection = true
+```
+
+Los documentos pueden adquirirse automáticamente para fijar
+`content_sha256` antes del desarrollo, pero nadie abre su contenido ni
+deriva estadísticas de él antes del parser freeze.
+
+### Sin promesa de cobertura de clases
+
+Un muestreo hash sin cuotas de familia **no** garantiza cubrir todas las
+clases P0. Un PASS será evidencia direccional, no prueba de tasa cero
+verdadera: `0/n` errores con n pequeño deja un límite Wilson 95 % alto
+(p. ej. `0/15` eventos → ~20 %). El informe G1-R reportará `n`
+(oportunidades), errores, tasa e IC95 **por evento y por fact**.
+
+## Regression oracle (congelado)
+
+`g1r/manifests/g1-regression-oracle.json`
+(`oracle_sha256 = 035d3d31…`):
+
+```
+49 known_correct_critical_fields   (37 HOLDOUT + 12 ADVERSARIAL)
+   -> todos deben seguir correctos
+
+7  known_p0_incorrect_fields
+   -> ninguno puede seguir emitiéndose incorrectamente;
+      valor correcto o abstención segura permitidos
+```
+
+“No empeorar” deja de ser interpretable: es una comparación contra
+oracle con sha256.
+
+## Determinismo — definición congelada
+
+```
+RUN 1 + RUN 2 sobre:
+  mismo g1r-parser-freeze
+  mismos raw bytes (content_sha256 fijado en manifest)
+  mismo entorno
+  sin cambios de código ni config entre runs
+  ANTES de la adjudicación humana
+
+comparar:
+  canonical facts, statuses, relations, conflicts, result_sha
+
+ignorar SOLO (metadata volátil preregistrada):
+  executed_at, run_id, parser_commit (si solo cambia por HEAD),
+  timestamps de adquisición ya fijados en manifest
+```
+
+`second_run_determinism = 1.0` se exige de verdad esta vez — en G1
+quedó `NOT_PROVEN` para los sellados. La reproducibilidad de
+re-adquisición de raws es otra métrica y no se confunde con el
+determinismo del parser.
+
+## Cambios de código — solo reglas genéricas
+
+Prohibido condicionar comportamiento a `frame_item_id`, issuer,
+URL, hash o documento concreto. Cada entrada de
+`g1r/results/g1r-changes.jsonl` exige:
+
+```
+generic_rule: true
+trigger_failure_class
+root_cause
+tests_added
+commit
+```
+
+## Secuencia de ejecución (congelada)
+
+```
+1. aprobación humana de este protocolo -> tag g1r-protocol
+2. construir los 40 seeds y sellar los 15 HOLDOUT (misma operación)
+3. run baseline de c431830 sobre los 25 DEV
+   -> congelar baseline results (evita medir "first run" después)
+4. solo entonces modificar src/
+5. desarrollar en DEV; cada cambio -> g1r-changes.jsonl
+6. regression set (25 sealed) tras cada iteración; diff vs oracle
+7. freeze parser -> tag g1r-parser-freeze
+8. ejecutar HOLDOUT virgen + segunda pasada (determinism)
+9. adjudicación humana: p0_review_coverage=1.0 + missingness;
+   PROPOSED hasta firma
+10. veredicto G1-R
+```
+
+## Invariantes heredados (hard-fail)
+
+```
+field_provenance_rate      = 1.0
+silent_conflicts           = 0
+unproven_auto_merges       = 0
+human_authored_facts       = 0   (relaciones adjudicables, facts no)
+second_run_determinism     = 1.0
+```
+
+`human_authored_facts` cubre cualquier business fact, no solo
+financieros: la arquitectura permite adjudicar relaciones, no inventar
+facts.
+
+## P2 y ADR-013
+
+La mejora de instrument resolution **no** puede relajar identidad:
+name-only nunca se convierte automáticamente en binding canónico
+(ADR-013). P2 se mide; nunca a costa de `unproven_auto_merges`.
+
+## Out of scope
+
+- discovery recall / FN del negative control (fase propia posterior).
+- expansión de producto, fuentes nuevas, generación ISO.
+- reescribir el veredicto G1 (FAIL permanente).
 
 ## Veredicto G1-R
 
 ```
-G1-R PASS requiere, EN EL HOLDOUT VIRGEN:
+PASS requiere, en el HOLDOUT VIRGEN:
 
   false_financial_facts   = 0
   wrong_attribution       = 0
   wrong_event_type        = 0
   date_misbinding         = 0
+  false_positive_event    = 0
+  p0_review_coverage      = 1.0
+  parser_miss_rate        <= 38,33 %        (NON_DEGRADATION_GUARD)
+  + invariantes heredados + determinism 1.0
 
-Y además (invariantes heredados, se miden de verdad):
+Y en el regression oracle:
 
-  field_provenance_rate   = 1.0
-  silent_conflicts        = 0
-  unproven_auto_merges    = 0
-  human_authored_facts    = 0
-  second_run_determinism  = 1.0   <- esta vez SE EJECUTA el re-run
-
-Y en el regression set (25 sellados G1):
-
-  los fallos P0 conocidos quedan corregidos o reclasificados
-  documentalmente; no se permite empeorar lo que ya era correcto
-  (regression guard sobre los 37 campos correctos).
+  49 correctos siguen correctos
+  7 incorrectos dejan de emitirse incorrectamente
 ```
 
-`parser_miss_rate` y `source_completeness` se **miden** en el holdout
-virgen y se reportan contra el baseline G1 (38,33 % / 77,92 %); no son
-hard-fail en G1-R porque la prioridad congelada es seguridad.
-
-## Disciplina de ejecución
-
-1. Congelar este protocolo + `g1r-preregistered.json` (commit/tag
-   `g1r-protocol`) **antes** de modificar `src/`.
-2. Construir G1-R DEV y congelar G1-R HOLDOUT en la misma operación.
-3. Desarrollar la capa de extracción/atribución en DEV; cada cambio
-   queda en `g1r/results/g1r-changes.jsonl` con `reason_for_change`.
-4. Ejecutar el regression set (25 sellados) tras cada iteración;
-   publicar diff de facts.
-5. Al congelar el parser G1-R: tag `g1r-parser-freeze`, ejecutar
-   holdout virgen + segunda pasada completa (determinism).
-6. Adjudicación humana: mismas reglas que G1 — veredictos,
-   missingness, `PROPOSED` hasta firma.
-7. `human_fact_entry` sigue FORBIDDEN.
-8. El FAIL de G1 no se reescribe nunca; G1-R produce su propio
-   veredicto.
+`source_completeness` se mide y reporta vs baseline (77,92 %) sin ser
+hard-fail. `instrument_resolved` se mide (P2). Todo lo demás
+(`observed_field_accuracy`, tasas por clase de fallo, IC95) es
+reporte, no gate.

@@ -1,15 +1,17 @@
 {
-  "preregistration_version": "CA_ES_G1R_PREREG_V1",
-  "frozen_at": "2026-09-14",
+  "preregistration_version": "CA_ES_G1R_PREREG_V2",
+  "status": "DRAFT_PENDING_APPROVAL",
+  "drafted_at": "2026-09-14",
+  "note": "El tag g1r-protocol solo se crea tras aprobacion humana del diff final.",
   "parent_g1": "G1 FAIL — docs/gates/g1-closure-report.md (b1b79c1, g1-audit-review)",
   "parser_reference_freeze": "c431830de42acef3d108525edb575ed83be4fc13 / g1-parser-freeze",
-  "question": "Puede ca-es eliminar los false financial facts y errores de atribucion observados en G1 y mantener ese comportamiento en un nuevo holdout virgen?",
+  "question": "Puede ca-es eliminar los false financial facts y errores de atribucion observados en G1 y mantener ese comportamiento en un nuevo holdout virgen, sin comprar la seguridad por abstencion?",
   "failure_catalog_source": "g1/results/post-freeze-findings.jsonl (30 findings, empirico)",
   "priorities": {
-    "P0": ["false_financial_value=0", "wrong_attribution=0", "wrong_event_type=0", "date_misbinding=0"],
-    "P1": ["published_but_missed_facts=decrease_vs_baseline"],
-    "P2": ["instrument_resolution=increase_vs_baseline"],
-    "P3": ["discovery_recrawl=OUT_OF_SCOPE"]
+    "P0": ["false_financial_facts=0", "wrong_attribution=0", "wrong_event_type=0", "date_misbinding=0", "false_positive_event=0"],
+    "P1": ["published_but_missed_facts=improve WITHOUT degradation"],
+    "P2": ["instrument_resolution=increase, sujeto a ADR-013"],
+    "P3": ["discovery_recall=OUT_OF_SCOPE"]
   },
   "corpora": {
     "g1_sealed_25": {"role": "REGRESSION_ONLY", "usable_as_generalization_evidence": false},
@@ -17,12 +19,31 @@
     "g1r_holdout": {"role": "virgin_evaluation", "target": 15, "frozen_before_parser_changes": true}
   },
   "sampling": {
-    "sample_score": "SHA256(CA_ES_G1R_SAMPLE_V1 + stratum + frame_item_id)",
-    "split_score": "SHA256(CA_ES_G1R_SPLIT_V1 + frame_item_id)",
-    "strata": ["MAIN_MARKET", "BME_GROWTH_MTF", "PORTFOLIO"],
-    "excluded_frame_item_ids": "todos los usados en el corpus G1 (DEV, HOLDOUT, ADVERSARIAL, NO_MATCH)",
-    "quota_policy": "sin cuotas forzadas de familia",
+    "parent_frame": "g1/manifests/sampling-frame.json",
+    "parent_frame_sha256": "edc785ebbe007ad5eec000edc06abaff15b2c674698c27e726cc41253dc94188",
+    "algorithm": [
+      "1. eliminar del frame TODOS los frame_item_id usados por G1 (DEV, HOLDOUT, ADVERSARIAL, NO_MATCH) antes de cualquier hash",
+      "2. sample_score = SHA256(CA_ES_G1R_SAMPLE_V1 + stratum + frame_item_id)",
+      "3. ordenar por score; 20 MAIN_MARKET / 10 BME_GROWTH_MTF / 10 PORTFOLIO",
+      "4. dedup misma CA + backfill por orden de score (misma regla que G1)",
+      "5. split_score = SHA256(CA_ES_G1R_SPLIT_V1 + frame_item_id)",
+      "6. ordenar los 40 por split_score; los 15 primeros -> HOLDOUT",
+      "7. los 25 restantes -> DEV"
+    ],
+    "quota_policy": "sin cuotas forzadas de familia; no se promete cobertura de todas las clases P0",
+    "holdout_sealing": {
+      "holdout_content_sealed_until": "G1R_PARSER_FREEZE",
+      "no_manual_holdout_inspection": true,
+      "auto_acquisition_for_sha_allowed": true
+    },
     "adversarial": {"optional": true, "selection_class": "PRESELECTED_ADVERSARIAL", "reported": "separado, nunca combinado"}
+  },
+  "regression_oracle": {
+    "path": "g1r/manifests/g1-regression-oracle.json",
+    "oracle_sha256": "035d3d312f8695ca1af0f88acff44c40b5e71934cd65086dc0e36a6f0289cde0",
+    "known_correct_critical_fields": 49,
+    "known_p0_incorrect_fields": 7,
+    "rule": "los 49 siguen correctos; los 7 dejan de emitirse incorrectamente (valor correcto o abstencion segura)"
   },
   "verdict": {
     "PASS_requires_on_virgin_holdout": {
@@ -30,16 +51,20 @@
       "wrong_attribution": 0,
       "wrong_event_type": 0,
       "date_misbinding": 0,
+      "false_positive_event": 0,
+      "p0_review_coverage": 1.0,
+      "parser_miss_rate": {"operator": "<=", "value": 0.3833, "name": "NON_DEGRADATION_GUARD"},
       "field_provenance_rate": 1.0,
       "silent_conflicts": 0,
       "unproven_auto_merges": 0,
-      "human_authored_financial_facts": 0,
+      "human_authored_facts": 0,
       "second_run_determinism": 1.0
     },
-    "regression_guard": "los fallos P0 conocidos corregidos; sin empeorar los 37 campos correctos del holdout G1",
     "measured_not_binding": {
-      "parser_miss_rate": "reportar vs baseline G1 38.33%",
-      "source_completeness": "reportar vs baseline G1 77.92%"
+      "source_completeness": "reportar vs baseline G1 77.92%",
+      "instrument_resolved": "P2, sujeto a ADR-013",
+      "observed_field_accuracy": "diagnostico, no gate",
+      "rates_with_wilson_ci95": "por evento y por fact; n, errores, tasa, IC"
     }
   },
   "hard_fail_criteria": {
@@ -47,21 +72,38 @@
     "wrong_attribution": {"operator": ">", "value": 0},
     "wrong_event_type": {"operator": ">", "value": 0},
     "date_misbinding": {"operator": ">", "value": 0},
+    "false_positive_event": {"operator": ">", "value": 0},
+    "p0_review_coverage": {"operator": "<", "value": 1.0},
+    "parser_miss_rate": {"operator": ">", "value": 0.3833, "name": "NON_DEGRADATION_GUARD"},
     "field_provenance_rate": {"operator": "<", "value": 1.0},
     "silent_conflicts": {"operator": ">", "value": 0},
     "unproven_auto_merges": {"operator": ">", "value": 0},
-    "human_authored_financial_facts": {"operator": ">", "value": 0},
+    "human_authored_facts": {"operator": ">", "value": 0},
     "second_run_determinism": {"operator": "!=", "value": 1.0}
   },
-  "state_semantics": {
+  "definitions": {
     "UNKNOWN": "La fuente se proceso correctamente, pero el dato no estaba publicado.",
-    "MISSING": "Publicado en la evidencia revisada pero no extraido (incluye extraido con valor incorrecto).",
-    "FALSE_FACT": "Fact emitido con valor incorrecto o atribucion incorrecta; clase P0."
+    "MISSING": "Publicado en la evidencia revisada pero no correctamente extraido.",
+    "FALSE_FINANCIAL_FACT": "Eje ortogonal a MISSING: fact emitido con valor incorrecto o atribucion incorrecta; el mismo campo puede ser MISSING (completeness) y FALSE_FACT (safety).",
+    "false_positive_event": "seed adjudicado NOT_CA con event_type emitido.",
+    "p0_review_coverage": "reviewed_p0_relevant_emitted_facts / all_p0_relevant_emitted_facts; revisar el 100% de facts emitidos relevantes para P0 contra fuente.",
+    "p0_relevant_emitted_facts": "event_type + fechas de evento + amounts + ratios + currencies + cualquier otro fact financiero emitido",
+    "second_run_determinism": {
+      "setup": "RUN1+RUN2, mismo g1r-parser-freeze, mismos raw bytes (content_sha256 de manifest), mismo entorno, sin cambios, antes de adjudicacion humana",
+      "compare": ["canonical facts", "statuses", "relations", "conflicts", "result_sha"],
+      "ignore_only": ["executed_at", "run_id", "parser_commit si solo cambia por HEAD", "timestamps de adquisicion fijados en manifest"]
+    }
   },
   "human_intervention": {
     "human_relation_adjudication": "ALLOWED",
     "human_fact_entry": "FORBIDDEN",
+    "evaluation_oracle_annotations": "ALLOWED (valores esperados/evidencia; nunca facts del producto)",
     "metric": "manual_adjudication_rate = manual_adjudications / events"
+  },
+  "code_change_policy": {
+    "generic_rule_only": true,
+    "forbidden_conditions": ["frame_item_id", "issuer", "url", "document_hash", "document_specific"],
+    "g1r_changes_required_fields": ["generic_rule", "trigger_failure_class", "root_cause", "tests_added", "commit"]
   },
   "out_of_scope": [
     "discovery recall / negative control 11% FN (fase posterior propia)",
@@ -69,12 +111,15 @@
     "rescribir el veredicto G1"
   ],
   "execution": [
-    "congelar protocolo (tag g1r-protocol) antes de modificar src/",
-    "construir G1-R DEV y congelar G1-R HOLDOUT en la misma operacion",
-    "desarrollar en DEV; cada cambio en g1r/results/g1r-changes.jsonl con reason_for_change",
-    "regression set 25 sellados tras cada iteracion; publicar diff de facts",
-    "freeze: tag g1r-parser-freeze; ejecutar holdout virgen + segunda pasada completa",
-    "adjudicacion humana: PROPOSED hasta firma; human_fact_entry FORBIDDEN"
+    "aprobacion humana -> tag g1r-protocol",
+    "construir 40 seeds y sellar 15 HOLDOUT (misma operacion)",
+    "run baseline c431830 sobre los 25 DEV -> congelar baseline results",
+    "solo entonces modificar src/",
+    "desarrollar en DEV; cada cambio en g1r/results/g1r-changes.jsonl",
+    "regression set 25 sellados tras cada iteracion; diff vs oracle",
+    "freeze: tag g1r-parser-freeze; ejecutar holdout virgen + segunda pasada",
+    "adjudicacion humana: p0_review_coverage=1.0 + missingness; PROPOSED hasta firma",
+    "veredicto G1-R"
   ],
   "metrics_status": "NOT_RUN"
 }

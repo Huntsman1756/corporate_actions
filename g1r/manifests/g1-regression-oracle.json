@@ -1,0 +1,495 @@
+{
+ "oracle_version": "CA_ES_G1_REGRESSION_ORACLE_V1",
+ "frozen_at": "2026-09-14",
+ "source": "adjudicacion firmada G1 sealed (holdout-missingness CONFIRMED + adversarial-missingness verificado)",
+ "known_correct_critical_fields": [
+  {
+   "frame_item_id": "BMEG-CapitalIncreases-ES0105606190-2025-03-27",
+   "set": "holdout",
+   "field": "event_type",
+   "required": "REMAIN_CORRECT",
+   "observed_claims": {
+    "event_type": "CAPITAL_INCREASE"
+   }
+  },
+  {
+   "frame_item_id": "BMEG-CapitalIncreases-ES0105606190-2025-03-27",
+   "set": "holdout",
+   "field": "amount_or_ratio",
+   "required": "REMAIN_CORRECT",
+   "observed_claims": {
+    "amount.disbursement_per_share": "0.15",
+    "amount.effective_total": "0.0",
+    "amount.liberated_percentage": "0.0",
+    "amount.nominal_total": "83333.3",
+    "amount.price": "0.15",
+    "amount.rights_price": "0.0"
+   }
+  },
+  {
+   "frame_item_id": "BMEG-CapitalIncreases-ES0105606190-2025-03-27",
+   "set": "holdout",
+   "field": "currency",
+   "required": "REMAIN_CORRECT",
+   "observed_claims": {
+    "instrument.currency": "EUR",
+    "amount.disbursement_per_share": "0.15",
+    "amount.effective_total": "0.0",
+    "amount.liberated_percentage": "0.0",
+    "amount.nominal_total": "83333.3",
+    "amount.price": "0.15",
+    "amount.rights_price": "0.0"
+   }
+  },
+  {
+   "frame_item_id": "BMEG-Dividends-ES0105448007-2026-07-08",
+   "set": "holdout",
+   "field": "event_type",
+   "required": "REMAIN_CORRECT",
+   "observed_claims": {
+    "event_type": "CASH_DIVIDEND"
+   }
+  },
+  {
+   "frame_item_id": "BMEG-Dividends-ES0105448007-2026-07-08",
+   "set": "holdout",
+   "field": "ex_date",
+   "required": "REMAIN_CORRECT",
+   "observed_claims": {}
+  },
+  {
+   "frame_item_id": "BMEG-Dividends-ES0105448007-2026-07-08",
+   "set": "holdout",
+   "field": "payment_date",
+   "required": "REMAIN_CORRECT",
+   "observed_claims": {}
+  },
+  {
+   "frame_item_id": "BMEG-Dividends-ES0105448007-2026-07-08",
+   "set": "holdout",
+   "field": "amount_or_ratio",
+   "required": "REMAIN_CORRECT",
+   "observed_claims": {
+    "amount.gross_per_share": "0.08690661",
+    "amount.net_per_share": "0.07039435"
+   }
+  },
+  {
+   "frame_item_id": "BMEG-Dividends-ES0105448007-2026-07-08",
+   "set": "holdout",
+   "field": "currency",
+   "required": "REMAIN_CORRECT",
+   "observed_claims": {
+    "instrument.currency": "EUR",
+    "amount.gross_per_share": "0.08690661",
+    "amount.net_per_share": "0.07039435"
+   }
+  },
+  {
+   "frame_item_id": "BMEG-OtherPayments-ES0105273009-2026-01-02",
+   "set": "holdout",
+   "field": "event_type",
+   "required": "REMAIN_CORRECT",
+   "observed_claims": {
+    "event_type": "OTHER_PAYMENT"
+   }
+  },
+  {
+   "frame_item_id": "BMEG-OtherPayments-ES0105273009-2026-01-02",
+   "set": "holdout",
+   "field": "ex_date",
+   "required": "REMAIN_CORRECT",
+   "observed_claims": {}
+  },
+  {
+   "frame_item_id": "BMEG-OtherPayments-ES0105273009-2026-01-02",
+   "set": "holdout",
+   "field": "payment_date",
+   "required": "REMAIN_CORRECT",
+   "observed_claims": {}
+  },
+  {
+   "frame_item_id": "BMEG-OtherPayments-ES0105273009-2026-01-02",
+   "set": "holdout",
+   "field": "amount_or_ratio",
+   "required": "REMAIN_CORRECT",
+   "observed_claims": {
+    "amount.effective_total": "0.0",
+    "amount.gross_per_share": "0.25",
+    "amount.net_per_share": "0.0"
+   }
+  },
+  {
+   "frame_item_id": "BMEG-OtherPayments-ES0105273009-2026-01-02",
+   "set": "holdout",
+   "field": "currency",
+   "required": "REMAIN_CORRECT",
+   "observed_claims": {
+    "instrument.currency": "EUR",
+    "amount.effective_total": "0.0",
+    "amount.gross_per_share": "0.25",
+    "amount.net_per_share": "0.0"
+   }
+  },
+  {
+   "frame_item_id": "BMEG-OtherPayments-ES0105389003-2025-05-22",
+   "set": "holdout",
+   "field": "event_type",
+   "required": "REMAIN_CORRECT",
+   "observed_claims": {
+    "event_type": "OTHER_PAYMENT"
+   }
+  },
+  {
+   "frame_item_id": "BMEG-OtherPayments-ES0105389003-2025-05-22",
+   "set": "holdout",
+   "field": "ex_date",
+   "required": "REMAIN_CORRECT",
+   "observed_claims": {}
+  },
+  {
+   "frame_item_id": "BMEG-OtherPayments-ES0105389003-2025-05-22",
+   "set": "holdout",
+   "field": "payment_date",
+   "required": "REMAIN_CORRECT",
+   "observed_claims": {}
+  },
+  {
+   "frame_item_id": "BMEG-OtherPayments-ES0105389003-2025-05-22",
+   "set": "holdout",
+   "field": "amount_or_ratio",
+   "required": "REMAIN_CORRECT",
+   "observed_claims": {
+    "amount.effective_total": "4701159.24",
+    "amount.gross_per_share": "0.06",
+    "amount.net_per_share": "0.0"
+   }
+  },
+  {
+   "frame_item_id": "BMEG-OtherPayments-ES0105389003-2025-05-22",
+   "set": "holdout",
+   "field": "currency",
+   "required": "REMAIN_CORRECT",
+   "observed_claims": {
+    "instrument.currency": "EUR",
+    "amount.effective_total": "4701159.24",
+    "amount.gross_per_share": "0.06",
+    "amount.net_per_share": "0.0"
+   }
+  },
+  {
+   "frame_item_id": "CNMV-IP-2594",
+   "set": "holdout",
+   "field": "event_type",
+   "required": "REMAIN_CORRECT",
+   "observed_claims": {
+    "event_type": "CASH_DIVIDEND"
+   }
+  },
+  {
+   "frame_item_id": "CNMV-OIR-35466",
+   "set": "holdout",
+   "field": "event_type",
+   "required": "REMAIN_CORRECT",
+   "observed_claims": {
+    "event_type": "MERGER_OR_EXCHANGE"
+   }
+  },
+  {
+   "frame_item_id": "CNMV-OIR-35946",
+   "set": "holdout",
+   "field": "event_type",
+   "required": "REMAIN_CORRECT",
+   "observed_claims": {
+    "event_type": "CAPITAL_INCREASE"
+   }
+  },
+  {
+   "frame_item_id": "CNMV-OIR-36141",
+   "set": "holdout",
+   "field": "event_type",
+   "required": "REMAIN_CORRECT",
+   "observed_claims": {
+    "event_type": "CASH_DIVIDEND"
+   }
+  },
+  {
+   "frame_item_id": "CNMV-OIR-36141",
+   "set": "holdout",
+   "field": "record_date",
+   "required": "REMAIN_CORRECT",
+   "observed_claims": {}
+  },
+  {
+   "frame_item_id": "CNMV-OIR-36141",
+   "set": "holdout",
+   "field": "payment_date",
+   "required": "REMAIN_CORRECT",
+   "observed_claims": {}
+  },
+  {
+   "frame_item_id": "CNMV-OIR-38190",
+   "set": "holdout",
+   "field": "event_type",
+   "required": "REMAIN_CORRECT",
+   "observed_claims": {
+    "event_type": "CASH_DIVIDEND"
+   }
+  },
+  {
+   "frame_item_id": "CNMV-OIR-41467",
+   "set": "holdout",
+   "field": "event_type",
+   "required": "REMAIN_CORRECT",
+   "observed_claims": {
+    "event_type": "CASH_DIVIDEND"
+   }
+  },
+  {
+   "frame_item_id": "CNMV-OIR-41467",
+   "set": "holdout",
+   "field": "record_date",
+   "required": "REMAIN_CORRECT",
+   "observed_claims": {}
+  },
+  {
+   "frame_item_id": "CNMV-OIR-41467",
+   "set": "holdout",
+   "field": "payment_date",
+   "required": "REMAIN_CORRECT",
+   "observed_claims": {}
+  },
+  {
+   "frame_item_id": "CNMV-OIR-41942",
+   "set": "holdout",
+   "field": "event_type",
+   "required": "REMAIN_CORRECT",
+   "observed_claims": {
+    "event_type": "EARLY_REDEMPTION"
+   }
+  },
+  {
+   "frame_item_id": "POEX-DOC-18666",
+   "set": "holdout",
+   "field": "event_type",
+   "required": "REMAIN_CORRECT",
+   "observed_claims": {
+    "event_type": "CAPITAL_REDUCTION"
+   }
+  },
+  {
+   "frame_item_id": "POEX-DOC-18666",
+   "set": "holdout",
+   "field": "amount_or_ratio",
+   "required": "REMAIN_CORRECT",
+   "observed_claims": {
+    "amount.reduction_total": "2389825.92"
+   }
+  },
+  {
+   "frame_item_id": "POEX-DOC-18666",
+   "set": "holdout",
+   "field": "currency",
+   "required": "REMAIN_CORRECT",
+   "observed_claims": {
+    "amount.reduction_total": "2389825.92"
+   }
+  },
+  {
+   "frame_item_id": "POEX-DOC-4662",
+   "set": "holdout",
+   "field": "ex_date",
+   "required": "REMAIN_CORRECT",
+   "observed_claims": {}
+  },
+  {
+   "frame_item_id": "POEX-DOC-4662",
+   "set": "holdout",
+   "field": "record_date",
+   "required": "REMAIN_CORRECT",
+   "observed_claims": {}
+  },
+  {
+   "frame_item_id": "POEX-DOC-4662",
+   "set": "holdout",
+   "field": "payment_date",
+   "required": "REMAIN_CORRECT",
+   "observed_claims": {}
+  },
+  {
+   "frame_item_id": "POEX-DOC-4662",
+   "set": "holdout",
+   "field": "amount_or_ratio",
+   "required": "REMAIN_CORRECT",
+   "observed_claims": {
+    "amount.gross_per_share": "0.00305805",
+    "amount.gross_total": "26128"
+   }
+  },
+  {
+   "frame_item_id": "POEX-DOC-4662",
+   "set": "holdout",
+   "field": "currency",
+   "required": "REMAIN_CORRECT",
+   "observed_claims": {
+    "amount.gross_per_share": "0.00305805",
+    "amount.gross_total": "26128"
+   }
+  },
+  {
+   "frame_item_id": "CNMV-IP-2670",
+   "set": "adversarial",
+   "field": "event_type",
+   "required": "REMAIN_CORRECT",
+   "observed_claims": {
+    "event_type": "CAPITAL_INCREASE"
+   }
+  },
+  {
+   "frame_item_id": "CNMV-IP-2670",
+   "set": "adversarial",
+   "field": "amount_or_ratio",
+   "required": "REMAIN_CORRECT",
+   "observed_claims": {
+    "amount.gross_per_share": "0.37"
+   }
+  },
+  {
+   "frame_item_id": "CNMV-IP-2670",
+   "set": "adversarial",
+   "field": "currency",
+   "required": "REMAIN_CORRECT",
+   "observed_claims": {
+    "amount.gross_per_share": "0.37"
+   }
+  },
+  {
+   "frame_item_id": "CNMV-OIR-32583",
+   "set": "adversarial",
+   "field": "event_type",
+   "required": "REMAIN_CORRECT",
+   "observed_claims": {
+    "event_type": "TAKEOVER_BID"
+   }
+  },
+  {
+   "frame_item_id": "CNMV-OIR-37214",
+   "set": "adversarial",
+   "field": "event_type",
+   "required": "REMAIN_CORRECT",
+   "observed_claims": {
+    "event_type": "CASH_DIVIDEND"
+   }
+  },
+  {
+   "frame_item_id": "CNMV-OIR-37214",
+   "set": "adversarial",
+   "field": "ex_date",
+   "required": "REMAIN_CORRECT",
+   "observed_claims": {}
+  },
+  {
+   "frame_item_id": "CNMV-OIR-37214",
+   "set": "adversarial",
+   "field": "record_date",
+   "required": "REMAIN_CORRECT",
+   "observed_claims": {}
+  },
+  {
+   "frame_item_id": "CNMV-OIR-37214",
+   "set": "adversarial",
+   "field": "payment_date",
+   "required": "REMAIN_CORRECT",
+   "observed_claims": {}
+  },
+  {
+   "frame_item_id": "CNMV-OIR-37547",
+   "set": "adversarial",
+   "field": "event_type",
+   "required": "REMAIN_CORRECT",
+   "observed_claims": {
+    "event_type": "EARLY_REDEMPTION"
+   }
+  },
+  {
+   "frame_item_id": "CNMV-OIR-40729",
+   "set": "adversarial",
+   "field": "event_type",
+   "required": "REMAIN_CORRECT",
+   "observed_claims": {
+    "event_type": "CASH_DIVIDEND"
+   }
+  },
+  {
+   "frame_item_id": "CNMV-OIR-40729",
+   "set": "adversarial",
+   "field": "record_date",
+   "required": "REMAIN_CORRECT",
+   "observed_claims": {}
+  },
+  {
+   "frame_item_id": "CNMV-OIR-40729",
+   "set": "adversarial",
+   "field": "payment_date",
+   "required": "REMAIN_CORRECT",
+   "observed_claims": {}
+  }
+ ],
+ "known_p0_incorrect_fields": [
+  {
+   "frame_item_id": "CNMV-OIR-37214",
+   "set": "adversarial",
+   "field": "amount_or_ratio",
+   "observed": "amount.gross_per_share=0.01 (nominal accion)",
+   "required": "NOT_EMITTED_AS_IS (correct value or safe abstention)"
+  },
+  {
+   "frame_item_id": "CNMV-OIR-40729",
+   "set": "adversarial",
+   "field": "amount_or_ratio",
+   "observed": "amount.gross_per_share=0.01 (nominal accion)",
+   "required": "NOT_EMITTED_AS_IS (correct value or safe abstention)"
+  },
+  {
+   "frame_item_id": "CNMV-OIR-40729",
+   "set": "adversarial",
+   "field": "ex_date",
+   "observed": "2026-05-15",
+   "required": "NOT_EMITTED_AS_IS (correct value or safe abstention)"
+  },
+  {
+   "frame_item_id": "CNMV-IP-2594",
+   "set": "holdout",
+   "field": "amount_or_ratio",
+   "observed": "amount.max_total=755000000 (programa de recompra, no dividendo)",
+   "required": "NOT_EMITTED_AS_IS (correct value or safe abstention)"
+  },
+  {
+   "frame_item_id": "CNMV-OIR-36680",
+   "set": "holdout",
+   "field": "event_type",
+   "observed": "CASH_DIVIDEND",
+   "required": "NOT_EMITTED_AS_IS (correct value or safe abstention)"
+  },
+  {
+   "frame_item_id": "CNMV-OIR-38190",
+   "set": "holdout",
+   "field": "amount_or_ratio",
+   "observed": "amount.gross_per_share=53",
+   "required": "NOT_EMITTED_AS_IS (correct value or safe abstention)"
+  },
+  {
+   "frame_item_id": "CNMV-OIR-41467",
+   "set": "holdout",
+   "field": "amount_or_ratio",
+   "observed": "amount.gross_per_share=47",
+   "required": "NOT_EMITTED_AS_IS (correct value or safe abstention)"
+  }
+ ],
+ "counts": {
+  "correct": 49,
+  "p0_incorrect": 7
+ },
+ "note": "49 = 37 HOLDOUT + 12 ADVERSARIAL campos criticos correctos; 7 campos poblados incorrectos conocidos. El regression guard exige: los 49 siguen correctos; los 7 no se emiten incorrectamente (corregidos o abstencion segura).",
+ "oracle_sha256": "035d3d312f8695ca1af0f88acff44c40b5e71934cd65086dc0e36a6f0289cde0"
+}
