@@ -27,3 +27,6 @@ build/
 # OS / editor
 .DS_Store
 Thumbs.db
+!g1/results/holdout-results.json
+!g1/results/adversarial-results.json
+!g1/results/sealed-field-accuracy.json

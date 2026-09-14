@@ -1,0 +1,30 @@
+{
+ "metric_status": "PROPOSED_DIAGNOSTIC_POST_FREEZE_NOT_A_GATE",
+ "note": "observed_field_accuracy = correct populated / reviewed populated, sobre los 6 campos criticos y seeds ACTUAL_CA. Los campos incorrectos se contabilizan ademas como MISSING en la revision (publicado y no correctamente extraido).",
+ "sets": {
+  "holdout": {
+   "reviewed_populated_critical_fields": 41,
+   "correct_populated_fields": 37,
+   "incorrect_populated_fields": 4,
+   "incorrect_detail": {
+    "CNMV-IP-2594": "amount_or_ratio: max_total=755000000 pertenece a recompra",
+    "CNMV-OIR-36680": "event_type: CASH_DIVIDEND en documento de fusion",
+    "CNMV-OIR-38190": "amount_or_ratio: 53 en lugar de 0,53 (decimal split)",
+    "CNMV-OIR-41467": "amount_or_ratio: 47 en lugar de 0,47 (decimal split)"
+   },
+   "observed_field_accuracy": "37/41 = 90.24%"
+  },
+  "adversarial": {
+   "reviewed_populated_critical_fields": 16,
+   "correct_populated_fields": 13,
+   "incorrect_populated_fields": 3,
+   "incorrect_detail": {
+    "CNMV-OIR-37214": "amount_or_ratio: 0,01 nominal promovido a dividendo",
+    "CNMV-OIR-40729": "amount_or_ratio: 0,01 nominal promovido a dividendo"
+   },
+   "observed_field_accuracy": "13/16 = 81.25%"
+  }
+ },
+ "g1_parser_unchanged": true,
+ "parser_commit": "c431830de42acef3d108525edb575ed83be4fc13 (src byte-identico; results registran HEAD del runner 1ac372e)"
+}

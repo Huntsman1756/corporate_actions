@@ -1,0 +1,362 @@
+{
+  "results_version": "CA_ES_G1_DEV_RESULTS_V1",
+  "phase": "adversarial-run",
+  "seed_set": "adversarial",
+  "parser_commit": "1ac372e5bf4825cefd8ee16aaec9323f978eda91",
+  "parser_commit_dirty": false,
+  "executed_at": "2026-09-14T00:00:00Z",
+  "seeds": 10,
+  "seed_verdicts": {
+    "ACTUAL_CA": 0,
+    "NOT_CA": 0,
+    "AMBIGUOUS": 0,
+    "UNADJUDICATED": 10
+  },
+  "funnel": {
+    "seeds": 10,
+    "seed_retrieved": 10,
+    "document_resolved": 10,
+    "parser_available": 10,
+    "document_parsed": 10,
+    "event_detected": 10,
+    "critical_facts_extracted": 3,
+    "instrument_resolved": 0
+  },
+  "funnel_actual_ca": {
+    "seeds": 0,
+    "seed_retrieved": 0,
+    "document_resolved": 0,
+    "parser_available": 0,
+    "document_parsed": 0,
+    "event_detected": 0,
+    "critical_facts_extracted": 0,
+    "instrument_resolved": 0
+  },
+  "results": [
+    {
+      "frame_item_id": "CNMV-IP-2670",
+      "stratum": "MAIN_MARKET",
+      "retrieval_status": "OK",
+      "parse_status": "OK",
+      "event_detected": true,
+      "instrument_resolved": false,
+      "facts": {
+        "total": 3,
+        "populated_fields": [
+          "amount.gross_per_share",
+          "date.announcement_date",
+          "event_type"
+        ]
+      },
+      "missing": [],
+      "unknown": [],
+      "conflicts": 0,
+      "identity_status": "UNRESOLVED",
+      "exception": null,
+      "result_sha": "07632b6ad938caf067306443b82bb7da708e035ae1912d69680d78c09fddc544",
+      "layers": {
+        "seed_retrieved": true,
+        "document_resolved": true,
+        "parser_available": true,
+        "document_parsed": true,
+        "event_detected": true,
+        "critical_facts_extracted": true,
+        "instrument_resolved": false
+      },
+      "parser_commit": "1ac372e5bf4825cefd8ee16aaec9323f978eda91",
+      "seed_verdict": null
+    },
+    {
+      "frame_item_id": "CNMV-OIR-32583",
+      "stratum": "MAIN_MARKET",
+      "retrieval_status": "OK",
+      "parse_status": "OK",
+      "event_detected": true,
+      "instrument_resolved": false,
+      "facts": {
+        "total": 2,
+        "populated_fields": [
+          "date.announcement_date",
+          "event_type"
+        ]
+      },
+      "missing": [],
+      "unknown": [],
+      "conflicts": 0,
+      "identity_status": "UNRESOLVED",
+      "exception": null,
+      "result_sha": "38fc651c213ef26010b6200633dad920411e6af39cae0922b8e2c86f569c79c5",
+      "layers": {
+        "seed_retrieved": true,
+        "document_resolved": true,
+        "parser_available": true,
+        "document_parsed": true,
+        "event_detected": true,
+        "critical_facts_extracted": false,
+        "instrument_resolved": false
+      },
+      "parser_commit": "1ac372e5bf4825cefd8ee16aaec9323f978eda91",
+      "seed_verdict": null
+    },
+    {
+      "frame_item_id": "CNMV-OIR-33825",
+      "stratum": "MAIN_MARKET",
+      "retrieval_status": "OK",
+      "parse_status": "OK",
+      "event_detected": true,
+      "instrument_resolved": false,
+      "facts": {
+        "total": 2,
+        "populated_fields": [
+          "date.announcement_date",
+          "event_type"
+        ]
+      },
+      "missing": [],
+      "unknown": [],
+      "conflicts": 0,
+      "identity_status": "UNRESOLVED",
+      "exception": null,
+      "result_sha": "a4329825a44982d5b2e62e77e81b64f487b8983de43afe741581aad7bcde438f",
+      "layers": {
+        "seed_retrieved": true,
+        "document_resolved": true,
+        "parser_available": true,
+        "document_parsed": true,
+        "event_detected": true,
+        "critical_facts_extracted": false,
+        "instrument_resolved": false
+      },
+      "parser_commit": "1ac372e5bf4825cefd8ee16aaec9323f978eda91",
+      "seed_verdict": null
+    },
+    {
+      "frame_item_id": "CNMV-OIR-35482",
+      "stratum": "MAIN_MARKET",
+      "retrieval_status": "OK",
+      "parse_status": "OK",
+      "event_detected": true,
+      "instrument_resolved": false,
+      "facts": {
+        "total": 1,
+        "populated_fields": []
+      },
+      "missing": [],
+      "unknown": [
+        "event_type"
+      ],
+      "conflicts": 0,
+      "identity_status": "UNRESOLVED",
+      "exception": null,
+      "result_sha": "4af564275253398c271a291daed2892dade3f42d2525154ea3d46588855cb920",
+      "layers": {
+        "seed_retrieved": true,
+        "document_resolved": true,
+        "parser_available": true,
+        "document_parsed": true,
+        "event_detected": true,
+        "critical_facts_extracted": false,
+        "instrument_resolved": false
+      },
+      "parser_commit": "1ac372e5bf4825cefd8ee16aaec9323f978eda91",
+      "seed_verdict": null
+    },
+    {
+      "frame_item_id": "CNMV-OIR-37214",
+      "stratum": "MAIN_MARKET",
+      "retrieval_status": "OK",
+      "parse_status": "OK",
+      "event_detected": true,
+      "instrument_resolved": false,
+      "facts": {
+        "total": 6,
+        "populated_fields": [
+          "amount.gross_per_share",
+          "date.announcement_date",
+          "date.ex_date",
+          "date.payment_date",
+          "date.record_date",
+          "event_type"
+        ]
+      },
+      "missing": [],
+      "unknown": [],
+      "conflicts": 0,
+      "identity_status": "UNRESOLVED",
+      "exception": null,
+      "result_sha": "04fd60488224ab83a684151b3d8b8cc563ca6fc4eb60afe0a32d0305064e3880",
+      "layers": {
+        "seed_retrieved": true,
+        "document_resolved": true,
+        "parser_available": true,
+        "document_parsed": true,
+        "event_detected": true,
+        "critical_facts_extracted": true,
+        "instrument_resolved": false
+      },
+      "parser_commit": "1ac372e5bf4825cefd8ee16aaec9323f978eda91",
+      "seed_verdict": null
+    },
+    {
+      "frame_item_id": "CNMV-OIR-37252",
+      "stratum": "MAIN_MARKET",
+      "retrieval_status": "OK",
+      "parse_status": "OK",
+      "event_detected": true,
+      "instrument_resolved": false,
+      "facts": {
+        "total": 1,
+        "populated_fields": []
+      },
+      "missing": [],
+      "unknown": [
+        "event_type"
+      ],
+      "conflicts": 0,
+      "identity_status": "UNRESOLVED",
+      "exception": null,
+      "result_sha": "c838f790a7d8a893d392bd0207cbf007148a35d829c283c12ae092947b9aa4bb",
+      "layers": {
+        "seed_retrieved": true,
+        "document_resolved": true,
+        "parser_available": true,
+        "document_parsed": true,
+        "event_detected": true,
+        "critical_facts_extracted": false,
+        "instrument_resolved": false
+      },
+      "parser_commit": "1ac372e5bf4825cefd8ee16aaec9323f978eda91",
+      "seed_verdict": null
+    },
+    {
+      "frame_item_id": "CNMV-OIR-37547",
+      "stratum": "MAIN_MARKET",
+      "retrieval_status": "OK",
+      "parse_status": "OK",
+      "event_detected": true,
+      "instrument_resolved": false,
+      "facts": {
+        "total": 1,
+        "populated_fields": [
+          "event_type"
+        ]
+      },
+      "missing": [],
+      "unknown": [],
+      "conflicts": 0,
+      "identity_status": "UNRESOLVED",
+      "exception": null,
+      "result_sha": "7a09fce1d4cf43823fb49ea2f074c14ec218c564e61b64d9478ed21ae7ca910a",
+      "layers": {
+        "seed_retrieved": true,
+        "document_resolved": true,
+        "parser_available": true,
+        "document_parsed": true,
+        "event_detected": true,
+        "critical_facts_extracted": false,
+        "instrument_resolved": false
+      },
+      "parser_commit": "1ac372e5bf4825cefd8ee16aaec9323f978eda91",
+      "seed_verdict": null
+    },
+    {
+      "frame_item_id": "CNMV-OIR-40729",
+      "stratum": "MAIN_MARKET",
+      "retrieval_status": "OK",
+      "parse_status": "OK",
+      "event_detected": true,
+      "instrument_resolved": false,
+      "facts": {
+        "total": 6,
+        "populated_fields": [
+          "amount.gross_per_share",
+          "date.announcement_date",
+          "date.ex_date",
+          "date.payment_date",
+          "date.record_date",
+          "event_type"
+        ]
+      },
+      "missing": [],
+      "unknown": [],
+      "conflicts": 0,
+      "identity_status": "UNRESOLVED",
+      "exception": null,
+      "result_sha": "52b971aa756cc76e8a7c7d5eeee5a9013322a39f3553f836cbfa39647060c9d6",
+      "layers": {
+        "seed_retrieved": true,
+        "document_resolved": true,
+        "parser_available": true,
+        "document_parsed": true,
+        "event_detected": true,
+        "critical_facts_extracted": true,
+        "instrument_resolved": false
+      },
+      "parser_commit": "1ac372e5bf4825cefd8ee16aaec9323f978eda91",
+      "seed_verdict": null
+    },
+    {
+      "frame_item_id": "CNMV-OIR-41850",
+      "stratum": "MAIN_MARKET",
+      "retrieval_status": "OK",
+      "parse_status": "OK",
+      "event_detected": true,
+      "instrument_resolved": false,
+      "facts": {
+        "total": 1,
+        "populated_fields": []
+      },
+      "missing": [],
+      "unknown": [
+        "event_type"
+      ],
+      "conflicts": 0,
+      "identity_status": "UNRESOLVED",
+      "exception": null,
+      "result_sha": "d58c1c579d16500832cacec6314fa3dba4e94c667b5bda8a9ebd579c0342c821",
+      "layers": {
+        "seed_retrieved": true,
+        "document_resolved": true,
+        "parser_available": true,
+        "document_parsed": true,
+        "event_detected": true,
+        "critical_facts_extracted": false,
+        "instrument_resolved": false
+      },
+      "parser_commit": "1ac372e5bf4825cefd8ee16aaec9323f978eda91",
+      "seed_verdict": null
+    },
+    {
+      "frame_item_id": "CNMV-OIR-42668",
+      "stratum": "MAIN_MARKET",
+      "retrieval_status": "OK",
+      "parse_status": "OK",
+      "event_detected": true,
+      "instrument_resolved": false,
+      "facts": {
+        "total": 1,
+        "populated_fields": []
+      },
+      "missing": [],
+      "unknown": [
+        "event_type"
+      ],
+      "conflicts": 0,
+      "identity_status": "UNRESOLVED",
+      "exception": null,
+      "result_sha": "dd93ecd7cf6a797b12b428ad2217ff3fc3efe798ce117124c287cdc70365426f",
+      "layers": {
+        "seed_retrieved": true,
+        "document_resolved": true,
+        "parser_available": true,
+        "document_parsed": true,
+        "event_detected": true,
+        "critical_facts_extracted": false,
+        "instrument_resolved": false
+      },
+      "parser_commit": "1ac372e5bf4825cefd8ee16aaec9323f978eda91",
+      "seed_verdict": null
+    }
+  ],
+  "batch_sha256": "c270fedeea09bebed6e112dca7bcc8eced86d242bd25eea2a9d9b57914fc79df"
+}
