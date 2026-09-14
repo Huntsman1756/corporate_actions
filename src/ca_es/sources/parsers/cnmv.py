@@ -192,6 +192,84 @@ def _parse_text(text: str, document: SourceDocument) -> ParsedDocument:
                     )
                 )
 
+    # --- Compatibilidad evento<->rol del importe ---------------------
+    # Los importes anclados a lexico de dividendo ("dividendo de X
+    # euros", "cantidad bruta de X centimos") solo pueden promoverse
+    # cuando el evento detectado es de familia dividendo (o no hay
+    # tipo): en eventos de otra familia el lexema describe otro rol.
+    _DIVIDEND_LEXEME_EVENTS = {"CASH_DIVIDEND", "SCRIP_DIVIDEND", "UNKNOWN"}
+    dividend_lexeme_ok = event_type in _DIVIDEND_LEXEME_EVENTS
+
+    # "X euros por accion" es consideracion unitaria generica (precio de
+    # suscripcion en aumentos, precio de amortizacion, dividendo...). En
+    # una OPA la contraprestacion exige ancla propia ("precio de la
+    # OPA/oferta", "contraprestacion"), porque el documento contiene
+    # otros precios por accion (cotizacion, rango...) que no son la
+    # oferta. El resto de roles incompatibles se filtran por contexto.
+    per_share_ok = event_type != "TAKEOVER_BID"
+
+    # Contextos de rol incompatibles con "importe del evento por accion":
+    # el lexema pertenece a nominal, recompra, cotizacion, canje u
+    # oferta, no a la contraprestacion/dividendo.
+    _AMOUNT_ROLE_BLOCKERS = re.compile(
+        r"(?:valor\s+nominal|de\s+nominal|nominal\s+de|recompra"
+        r"|autocartera|acciones\s+propias|buyback|cotizaci[oó]n)",
+        re.I,
+    )
+
+    def _role_blocked(name: str) -> bool:
+        """True si la frase que contiene el ancla es rol-incompatible.
+
+        La frase se delimita por puntos a ambos lados del match (con cota
+        de 160 chars). Un marcador de rol ("valor nominal", "recompra",
+        "cotizacion"...) solo bloquea cuando se liga al importe del
+        ancla: si otro importe numerico se interpone entre el marcador y
+        el ancla, el marcador describe a ese otro importe
+        ("0,37 euros por accion, de los que 0,10 euros corresponden a
+        valor nominal" no bloquea 0,37; "valor nominal de dichas
+        acciones (que asciende a 0,01 euros por accion)" si bloquea
+        0,01).
+        """
+        anchor = anchors.get(name)
+        if not anchor:
+            return False
+        start = anchor["offset"]
+        end = start + len(anchor["matched"])
+        prev = text.rfind(".", max(0, start - 160), start)
+        nxt = text.find(".", end, end + 160)
+        lo = prev + 1 if prev >= 0 else max(0, start - 160)
+        hi = nxt if nxt >= 0 else end + 160
+        sentence = text[lo:hi]
+        for blocker in _AMOUNT_ROLE_BLOCKERS.finditer(sentence):
+            b_lo, b_hi = lo + blocker.start(), lo + blocker.end()
+            gap = text[b_hi:start] if b_hi <= start else text[end:b_lo]
+            if not re.search(r"\d", gap):
+                return True
+        return False
+
+    # --- Contraprestacion de oferta (TENDER) -------------------------
+    # En una OPA "X euros por accion" describe la contraprestacion; el
+    # lexico de dividendo no se promueve. El precio de la oferta exige
+    # ancla propia ("precio de la OPA/oferta", "contraprestacion").
+    if event_type == "TAKEOVER_BID":
+        offer_price = grab(
+            "offer_price",
+            rf"precio de la (?:OPA|oferta)[^.]*?{_AMOUNT} euros"
+            rf"|contraprestaci[oó]n[^.]{{0,60}}?{_AMOUNT} euros",
+            flags=re.I,
+        )
+        if offer_price and not _role_blocked("offer_price"):
+            claims.append(
+                Claim(
+                    field_path="amount.gross_per_share",
+                    value=FinancialAmount.parse_localized(
+                        offer_price, currency="EUR"
+                    ),
+                    evidence_locator=cite("offer_price"),
+                    raw_pointer="/anchors/offer_price/value",
+                )
+            )
+
     # --- Dividendo --------------------------------------------------
     # Importe por accion generico: "X euros brutos por accion",
     # "X euros brutos por cada accion", "importe fijo unitario de X euros".
@@ -205,7 +283,8 @@ def _parse_text(text: str, document: SourceDocument) -> ParsedDocument:
     cents = dividend_cents
     eur = dividend_eur
     generic = dividend_generic
-    if per_share:
+    if per_share and per_share_ok \
+            and not _role_blocked("dividend_per_share"):
         claims.append(
             Claim(
                 field_path="amount.gross_per_share",
@@ -214,7 +293,8 @@ def _parse_text(text: str, document: SourceDocument) -> ParsedDocument:
                 raw_pointer="/anchors/dividend_per_share/value",
             )
         )
-    if cents and not per_share:
+    if cents and not per_share and dividend_lexeme_ok \
+            and not _role_blocked("dividend_cents"):
         claims.append(
             Claim(
                 field_path="amount.gross_per_share",
@@ -225,7 +305,8 @@ def _parse_text(text: str, document: SourceDocument) -> ParsedDocument:
                 fact_origin="DETERMINISTIC_DERIVATION",
             )
         )
-    if eur and not cents and not per_share:
+    if eur and not cents and not per_share and dividend_lexeme_ok \
+            and not _role_blocked("dividend_eur"):
         claims.append(
             Claim(
                 field_path="amount.gross_per_share",
@@ -234,7 +315,9 @@ def _parse_text(text: str, document: SourceDocument) -> ParsedDocument:
                 raw_pointer="/anchors/dividend_eur/value",
             )
         )
-    if generic and not cents and not eur and not per_share:
+    if generic and not cents and not eur and not per_share \
+            and dividend_lexeme_ok \
+            and not _role_blocked("dividend_generic"):
         claims.append(
             Claim(
                 field_path="amount.gross_per_share",
@@ -249,7 +332,9 @@ def _parse_text(text: str, document: SourceDocument) -> ParsedDocument:
         rf"{_AMOUNT} euros brutos y {_AMOUNT} euros netos por acci[oó]n",
         flags=re.I,
     )
-    if gross_net and not (cents or eur or generic or per_share):
+    if gross_net and not (cents or eur or generic or per_share) \
+            and dividend_lexeme_ok and per_share_ok \
+            and not _role_blocked("dividend_gross_net"):
         match = re.search(
             rf"{_AMOUNT} euros brutos y ({_AMOUNT}) euros netos por acci[oó]n",
             anchors["dividend_gross_net"]["matched"],
@@ -278,7 +363,8 @@ def _parse_text(text: str, document: SourceDocument) -> ParsedDocument:
         rf"(?:dividendos?[^.]{{0,40}}?ascendente a|importe (?:bruto )?total de)\s*{_AMOUNT} euros",
         flags=re.I,
     )
-    if gross_total:
+    if gross_total and dividend_lexeme_ok \
+            and not _role_blocked("dividend_gross_total"):
         claims.append(
             Claim(
                 field_path="amount.gross_total",

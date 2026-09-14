@@ -46,6 +46,16 @@ _QUALIFIERS = re.compile(
     re.I,
 )
 
+# Contextos de rol incompatibles con "importe del evento": la magnitud
+# pertenece a un programa de recompra, autocartera o cotizacion, no al
+# evento. El marcador solo bloquea cuando se liga al importe del ancla:
+# si otro importe numerico se interpone, describe a ese otro importe.
+_ROLE_BLOCKERS = re.compile(
+    r"(?:recompra|autocartera|acciones\s+propias|buyback"
+    r"|cotizaci[oó]n|valor\s+nominal)",
+    re.I,
+)
+
 
 def _normalized(coefficient: str, magnitude_word: str) -> tuple[Decimal, int] | None:
     try:
@@ -72,6 +82,21 @@ def find_magnitude_amounts(text: str) -> list[dict]:
         ):
             before = text[max(0, match.start() - 40):match.start()]
             if _QUALIFIERS.search(before):
+                continue
+            prev = text.rfind(".", max(0, match.start() - 160), match.start())
+            nxt = text.find(".", match.end(), match.end() + 160)
+            lo = prev + 1 if prev >= 0 else max(0, match.start() - 160)
+            hi = nxt if nxt >= 0 else match.end() + 160
+            sentence = text[lo:hi]
+            if any(
+                not re.search(
+                    r"\d",
+                    text[lo + b.end():match.start()]
+                    if lo + b.end() <= match.start()
+                    else text[match.end():lo + b.start()],
+                )
+                for b in _ROLE_BLOCKERS.finditer(sentence)
+            ):
                 continue
             full = match.group(0)
             lexeme = full[full.find(match.group(1)):]
