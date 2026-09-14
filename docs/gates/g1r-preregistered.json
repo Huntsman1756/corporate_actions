@@ -21,15 +21,26 @@
   "sampling": {
     "parent_frame": "g1/manifests/sampling-frame.json",
     "parent_frame_sha256": "edc785ebbe007ad5eec000edc06abaff15b2c674698c27e726cc41253dc94188",
+    "excluded_g1_items": {
+      "path": "g1r/manifests/excluded-g1-frame-items.json",
+      "excluded_ids_sha256": "74f216cda7d4de32d841386a1d99e6aefcad3bc33ac1a01b62ef2b42bbaad2b3",
+      "total_excluded": 150
+    },
     "algorithm": [
-      "1. eliminar del frame TODOS los frame_item_id usados por G1 (DEV, HOLDOUT, ADVERSARIAL, NO_MATCH) antes de cualquier hash",
+      "1. eliminar del frame los 150 frame_item_id de excluded-g1-frame-items.json (DEV+HOLDOUT+ADVERSARIAL+NO_MATCH de G1) antes de cualquier hash",
       "2. sample_score = SHA256(CA_ES_G1R_SAMPLE_V1 + stratum + frame_item_id)",
       "3. ordenar por score; 20 MAIN_MARKET / 10 BME_GROWTH_MTF / 10 PORTFOLIO",
-      "4. dedup misma CA + backfill por orden de score (misma regla que G1)",
+      "4. dedup misma CA + backfill por orden de score (misma regla que G1; ver pre_split_dedup)",
       "5. split_score = SHA256(CA_ES_G1R_SPLIT_V1 + frame_item_id)",
       "6. ordenar los 40 por split_score; los 15 primeros -> HOLDOUT",
       "7. los 25 restantes -> DEV"
     ],
+    "pre_split_dedup": {
+      "automated_only": true,
+      "manual_document_inspection": false,
+      "permitted_evidence": ["structured source identifiers", "exact official cross-references", "already-frozen metadata"],
+      "default_when_not_determinable": "ambos seeds permanecen (duplicado documentado > contaminacion del holdout)"
+    },
     "quota_policy": "sin cuotas forzadas de familia; no se promete cobertura de todas las clases P0",
     "holdout_sealing": {
       "holdout_content_sealed_until": "G1R_PARSER_FREEZE",
@@ -40,10 +51,10 @@
   },
   "regression_oracle": {
     "path": "g1r/manifests/g1-regression-oracle.json",
-    "oracle_sha256": "035d3d312f8695ca1af0f88acff44c40b5e71934cd65086dc0e36a6f0289cde0",
+    "oracle_sha256": "6c300cbb34c1052209b3e99c462c8b0331cfde73780c5e76be035ed5c6f55725",
     "known_correct_critical_fields": 49,
     "known_p0_incorrect_fields": 7,
-    "rule": "los 49 siguen correctos; los 7 dejan de emitirse incorrectamente (valor correcto o abstencion segura)"
+    "rule": "REMAIN_CORRECT: todos los expected_claims siguen emitidos y semanticamente iguales (claims adicionales permitidos, sujetos a p0_review). CORRECT_OR_ABSTAIN: ningun forbidden_claim se emite; el claim-set del campo es vacio o igual a un allowed_outcome."
   },
   "verdict": {
     "PASS_requires_on_virgin_holdout": {
@@ -53,7 +64,7 @@
       "date_misbinding": 0,
       "false_positive_event": 0,
       "p0_review_coverage": 1.0,
-      "parser_miss_rate": {"operator": "<=", "value": 0.3833, "name": "NON_DEGRADATION_GUARD"},
+      "parser_miss_rate": {"operator": "<=", "baseline_fraction": {"numerator": 23, "denominator": 60}, "comparison": "missing * 60 <= published * 23", "display": "38,33%", "name": "NON_DEGRADATION_GUARD"},
       "field_provenance_rate": 1.0,
       "silent_conflicts": 0,
       "unproven_auto_merges": 0,
@@ -74,7 +85,7 @@
     "date_misbinding": {"operator": ">", "value": 0},
     "false_positive_event": {"operator": ">", "value": 0},
     "p0_review_coverage": {"operator": "<", "value": 1.0},
-    "parser_miss_rate": {"operator": ">", "value": 0.3833, "name": "NON_DEGRADATION_GUARD"},
+    "parser_miss_rate": {"operator": ">", "baseline_fraction": {"numerator": 23, "denominator": 60}, "comparison": "FAIL si missing * 60 > published * 23", "display": "38,33%", "name": "NON_DEGRADATION_GUARD"},
     "field_provenance_rate": {"operator": "<", "value": 1.0},
     "silent_conflicts": {"operator": ">", "value": 0},
     "unproven_auto_merges": {"operator": ">", "value": 0},
@@ -89,9 +100,9 @@
     "p0_review_coverage": "reviewed_p0_relevant_emitted_facts / all_p0_relevant_emitted_facts; revisar el 100% de facts emitidos relevantes para P0 contra fuente.",
     "p0_relevant_emitted_facts": "event_type + fechas de evento + amounts + ratios + currencies + cualquier otro fact financiero emitido",
     "second_run_determinism": {
-      "setup": "RUN1+RUN2, mismo g1r-parser-freeze, mismos raw bytes (content_sha256 de manifest), mismo entorno, sin cambios, antes de adjudicacion humana",
+      "setup": "RUN1+RUN2 desde el MISMO commit/worktree exacto (parser_commit RUN1 == parser_commit RUN2, parser_commit_dirty = false), mismo g1r-parser-freeze, mismos raw bytes (content_sha256 de manifest), mismo entorno, sin cambios, antes de adjudicacion humana",
       "compare": ["canonical facts", "statuses", "relations", "conflicts", "result_sha"],
-      "ignore_only": ["executed_at", "run_id", "parser_commit si solo cambia por HEAD", "timestamps de adquisicion fijados en manifest"]
+      "ignore_only": ["executed_at", "run_id", "timestamps de adquisicion fijados en manifest"]
     }
   },
   "human_intervention": {

@@ -60,15 +60,21 @@ P0=0. Por tanto se congela un hard gate separado:
 ```
 NON_DEGRADATION_GUARD (hard-fail en holdout virgen)
 
-  parser_miss_rate_holdout      <= 38,33 %   (baseline G1)
+  baseline G1 = 23 / 60   (fraccion exacta, no decimal redondeado)
+
+  PASS iff:   missing * 60 <= published * 23
+
+  display:    parser_miss_rate <= 38,33 %   (solo presentacion)
 
 equivalentemente:
 
-  correct_published_critical_fact_recall >= 61,67 %   (= 37/60)
+  correct_published_critical_fact_recall >= 37/60   (fraccion exacta)
 ```
 
-P1 sigue teniendo como objetivo mejorar el 38,33 %, pero **no se permite
-empeorar** para conseguir seguridad.
+El umbral se compara como **racional** — `0.3833` jamás entra en la
+comparación, así que un parser que iguale exactamente el baseline G1
+pasa el guard. P1 sigue teniendo como objetivo mejorar el 38,33 %, pero
+**no se permite empeorar** para conseguir seguridad.
 
 ## Cobertura de revisión P0
 
@@ -121,15 +127,36 @@ Se reutiliza el **frame G1 congelado** (mismo universo temporal; sin
 frame drift). Algoritmo:
 
 ```
-1. eliminar del frame TODOS los frame_item_id usados por G1
-   (DEV, HOLDOUT, ADVERSARIAL, NO_MATCH) antes de cualquier hash
+1. eliminar del frame los 150 frame_item_id de
+   g1r/manifests/excluded-g1-frame-items.json
+   (DEV+HOLDOUT+ADVERSARIAL+NO_MATCH de G1;
+    excluded_ids_sha256 = 74f216cda7d4de32d841386a1d99e6aefcad3bc33ac1a01b62ef2b42bbaad2b3)
+   antes de cualquier hash
 2. sample_score = SHA256("CA_ES_G1R_SAMPLE_V1" + stratum + frame_item_id)
 3. ordenar por score y tomar 20 MAIN / 10 BMEG / 10 PORTFOLIO
-4. dedup misma CA + backfill por orden de score (misma regla que G1)
+4. dedup misma CA + backfill por orden de score (misma regla que G1;
+   ver pre_split_dedup)
 5. split_score = SHA256("CA_ES_G1R_SPLIT_V1" + frame_item_id)
 6. ordenar los 40 por split_score; los 15 primeros -> HOLDOUT
 7. los 25 restantes -> DEV
 ```
+
+El dedup del paso 4 ocurre **antes** del split, así que está sujeto a la
+misma restricción de sellado que el holdout:
+
+```
+pre_split_dedup:
+  automated_only: true
+  manual_document_inspection: false
+  permitted_evidence:
+    - structured source identifiers
+    - exact official cross-references
+    - already-frozen metadata
+```
+
+Si no puede determinarse automáticamente que dos seeds son la misma CA,
+**ambos permanecen**: preferible un duplicado documentado que contaminar
+un futuro holdout inspeccionando su contenido.
 
 Sellado del holdout:
 
@@ -153,24 +180,41 @@ verdadera: `0/n` errores con n pequeño deja un límite Wilson 95 % alto
 ## Regression oracle (congelado)
 
 `g1r/manifests/g1-regression-oracle.json`
-(`oracle_sha256 = 035d3d31…`):
+(`oracle_sha256 = 6c300cbb34c1052209b3e99c462c8b0331cfde73780c5e76be035ed5c6f55725`):
 
 ```
 49 known_correct_critical_fields   (37 HOLDOUT + 12 ADVERSARIAL)
-   -> todos deben seguir correctos
+   required = REMAIN_CORRECT
+   expected_claims: claims semanticos ejecutables por campo
+     (p. ej. date.ex_date: "2026-07-08",
+            amount.gross_per_share: {normalized: "0.08690661",
+                                     currency: "EUR"})
+   -> todos los expected_claims deben seguir emitidos y
+      semanticamente iguales; se permiten claims adicionales,
+      siempre sujetos a p0_review
 
 7  known_p0_incorrect_fields
-   -> ninguno puede seguir emitiéndose incorrectamente;
-      valor correcto o abstención segura permitidos
+   required = CORRECT_OR_ABSTAIN
+   forbidden_claims: los valores erroneos observados en G1
+   allowed_outcomes: ABSENT o un claim-set semánticamente
+     correcto definido (p. ej. gross_per_share 0,53 EUR)
+   -> ningun forbidden_claim se emite; el claim-set del campo
+      es vacio o igual a un allowed_outcome
 ```
 
-“No empeorar” deja de ser interpretable: es una comparación contra
-oracle con sha256.
+Los valores se extrajeron re-ejecutando `c431830` sobre los manifests
+sellados (mismos raw bytes), así que cada uno de los 49 registros es
+ejecutable — el comparador sabe exactamente qué valor debe preservar.
+“No empeorar” es una comparación mecánica contra oracle con sha256, no
+una frase interpretable.
 
 ## Determinismo — definición congelada
 
 ```
 RUN 1 + RUN 2 sobre:
+  el MISMO commit/worktree exacto
+    parser_commit RUN1 == parser_commit RUN2
+    parser_commit_dirty = false
   mismo g1r-parser-freeze
   mismos raw bytes (content_sha256 fijado en manifest)
   mismo entorno
@@ -181,9 +225,13 @@ comparar:
   canonical facts, statuses, relations, conflicts, result_sha
 
 ignorar SOLO (metadata volátil preregistrada):
-  executed_at, run_id, parser_commit (si solo cambia por HEAD),
+  executed_at, run_id,
   timestamps de adquisición ya fijados en manifest
 ```
+
+`parser_commit` **no** es ignorable: como las dos corridas salen del
+mismo commit exacto, debe ser idéntico en ambas — no repetimos la
+ambigüedad de procedencia de G1.
 
 `second_run_determinism = 1.0` se exige de verdad esta vez — en G1
 quedó `NOT_PROVEN` para los sellados. La reproducibilidad de
@@ -258,7 +306,7 @@ PASS requiere, en el HOLDOUT VIRGEN:
   date_misbinding         = 0
   false_positive_event    = 0
   p0_review_coverage      = 1.0
-  parser_miss_rate        <= 38,33 %        (NON_DEGRADATION_GUARD)
+  parser_miss_rate        <= 23/60          (NON_DEGRADATION_GUARD)
   + invariantes heredados + determinism 1.0
 
 Y en el regression oracle:
