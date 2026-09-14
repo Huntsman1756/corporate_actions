@@ -184,19 +184,20 @@ def seed_result(item: dict, acq: dict, run: dict | None, exc: str | None) -> dic
     }
     if run is None:
         return entry
+    body = run["body"]
     entry["result_sha"] = run["result_sha"]
-    document = run["documents"][0]
+    document = body["documents"][0]
     entry["retrieval_status"] = document["retrieval_status"]
-    parse_errors = run.get("parse_errors") or {}
+    parse_errors = body.get("parse_errors") or {}
     if document["document_id"] in parse_errors:
         entry["parse_status"] = parse_errors[document["document_id"]]
     elif document["retrieval_status"] != "OK":
         entry["parse_status"] = "SKIPPED:NO_RAW"
     else:
         entry["parse_status"] = "OK"
-    events = run["events"]
+    events = body["events"]
     entry["event_detected"] = bool(events)
-    facts = run["facts"]
+    facts = body["facts"]
     entry["facts"] = {
         "total": len(facts),
         "populated_fields": sorted(
@@ -206,8 +207,8 @@ def seed_result(item: dict, acq: dict, run: dict | None, exc: str | None) -> dic
     entry["unknown"] = sorted(
         {f["field_path"] for f in facts if f["value"] == "UNKNOWN"}
     )
-    entry["conflicts"] = len(run["conflicts"])
-    resolutions = run["identity"]["resolutions"]
+    entry["conflicts"] = len(body["conflicts"])
+    resolutions = body["identity"]["resolutions"]
     if resolutions:
         entry["identity_status"] = resolutions[0]["state"]
     return entry
@@ -252,7 +253,9 @@ def main(argv: list[str] | None = None) -> int:
         except Exception as error:  # noqa: BLE001 - el fallo es el resultado
             exc = f"{type(error).__name__}: {error}"
         results.append(seed_result(item, acq, run, exc))
-        status = "EXC" if exc else ("OK" if run and run["events"] else "EMPTY")
+        status = (
+            "EXC" if exc else ("OK" if run and run["body"]["events"] else "EMPTY")
+        )
         print(f"  [{index:02d}/25] {frame_item_id} -> {status}")
 
     first_run = None
