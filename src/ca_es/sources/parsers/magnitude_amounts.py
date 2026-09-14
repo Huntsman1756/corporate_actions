@@ -18,6 +18,7 @@ import re
 from decimal import Decimal
 
 from ...numeric import FinancialAmount
+from .span_integrity import interrupted_decimal
 
 _MAGNITUDES = {
     "mil": Decimal(1_000),
@@ -82,6 +83,11 @@ def find_magnitude_amounts(text: str) -> list[dict]:
         ):
             before = text[max(0, match.start() - 40):match.start()]
             if _QUALIFIERS.search(before):
+                continue
+            # La extraccion puede romper el decimal del coeficiente
+            # ("1. 088,2 millones" -> capturaria "088,2"): la cola de
+            # un importe fracturado no es un valor promocionable.
+            if interrupted_decimal(text, match.start(1)):
                 continue
             prev = text.rfind(".", max(0, match.start() - 160), match.start())
             nxt = text.find(".", match.end(), match.end() + 160)

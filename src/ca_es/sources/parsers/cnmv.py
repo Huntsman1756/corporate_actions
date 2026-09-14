@@ -18,6 +18,7 @@ from .base import Claim, DocumentReference, ParsedDocument, parse_structured
 from .html_text import decode as decode_html, html_to_text, spanish_date_to_iso
 from .labeled_dates import find_labeled_date
 from .magnitude_amounts import find_magnitude_amounts
+from .span_integrity import interrupted_decimal
 from .pdf_text import extract_text, normalize_text
 
 SOURCE_ID = "CNMV"
@@ -167,9 +168,23 @@ def _parse_text(text: str, document: SourceDocument) -> ParsedDocument:
             )
         )
 
+    def _span_corrupted(name: str) -> bool:
+        """True si el valor capturado es la cola de un decimal roto
+        por la extraccion ("0. 53" -> captura "53"). El ancla se
+        conserva como evidencia; el valor no es promocionable."""
+        anchor = anchors.get(name)
+        if not anchor:
+            return False
+        idx = anchor["matched"].find(str(anchor["value"]))
+        pos = anchor["offset"] + (idx if idx >= 0 else 0)
+        return interrupted_decimal(text, pos)
+
+    def _intact(name: str, value: str | None) -> str | None:
+        return None if (value and _span_corrupted(name)) else value
+
     # --- Aumento de capital -----------------------------------------
     def grab_amount(name: str, pattern: str, currency: str = "EUR") -> FinancialAmount | None:
-        value = grab(name, pattern, flags=re.I)
+        value = _intact(name, grab(name, pattern, flags=re.I))
         return FinancialAmount.parse_localized(value, currency=currency) if value else None
 
     if capital:
@@ -260,12 +275,12 @@ def _parse_text(text: str, document: SourceDocument) -> ParsedDocument:
     # lexico de dividendo no se promueve. El precio de la oferta exige
     # ancla propia ("precio de la OPA/oferta", "contraprestacion").
     if event_type == "TAKEOVER_BID":
-        offer_price = grab(
+        offer_price = _intact("offer_price", grab(
             "offer_price",
             rf"precio de la (?:OPA|oferta)[^.]*?{_AMOUNT} euros"
             rf"|contraprestaci[oó]n[^.]{{0,60}}?{_AMOUNT} euros",
             flags=re.I,
-        )
+        ))
         if offer_price and not _role_blocked("offer_price"):
             claims.append(
                 Claim(
@@ -283,14 +298,14 @@ def _parse_text(text: str, document: SourceDocument) -> ParsedDocument:
     # "X euros brutos por cada accion", "importe fijo unitario de X euros".
     # Tiene precedencia sobre los patrones sin ancla "por accion" para no
     # confundir el total del reparto con el importe unitario.
-    per_share = grab(
+    per_share = _intact("dividend_per_share", grab(
         "dividend_per_share",
         rf"(?:equivalente a |importe fijo unitario de |de )?{_AMOUNT} euros(?:\s*brutos)? por (?:cada )?acci[oó]n",
         flags=re.I,
-    )
-    cents = dividend_cents
-    eur = dividend_eur
-    generic = dividend_generic
+    ))
+    cents = _intact("dividend_cents", dividend_cents)
+    eur = _intact("dividend_eur", dividend_eur)
+    generic = _intact("dividend_generic", dividend_generic)
     claimed_fields = {c.field_path for c in claims}
     if per_share and per_share_ok and per_share_field not in claimed_fields \
             and not _role_blocked("dividend_per_share"):
@@ -336,11 +351,11 @@ def _parse_text(text: str, document: SourceDocument) -> ParsedDocument:
             )
         )
     # "X euros brutos y Y euros netos por accion" y variantes.
-    gross_net = grab(
+    gross_net = _intact("dividend_gross_net", grab(
         "dividend_gross_net",
         rf"{_AMOUNT} euros brutos y {_AMOUNT} euros netos por acci[oó]n",
         flags=re.I,
-    )
+    ))
     if gross_net and not (cents or eur or generic or per_share) \
             and dividend_lexeme_ok and per_share_ok \
             and not _role_blocked("dividend_gross_net"):
@@ -367,11 +382,33 @@ def _parse_text(text: str, document: SourceDocument) -> ParsedDocument:
                 )
             )
 
-    gross_total = grab(
+    gross_total = _intact("dividend_gross_total", grab(
         "dividend_gross_total",
         rf"(?:dividendos?[^.]{{0,40}}?ascendente a|importe (?:bruto )?total de)\s*{_AMOUNT} euros",
         flags=re.I,
-    )
+    ))
+
+    # Campo etiquetado del emisor ("Importe bruto unitario: X Euros"):
+    # canal estructurado del propio documento; promueve solo si el
+    # evento es de familia dividendo y ninguna ancla de prosa ya
+    # emitio el importe por accion.
+    unit_gross = _intact("unit_gross", grab(
+        "unit_gross",
+        rf"importe bruto unitario[^0-9]{{0,15}}{_AMOUNT}\s*euros",
+        flags=re.I,
+    ))
+    if unit_gross and dividend_lexeme_ok \
+            and not _role_blocked("unit_gross") \
+            and not any(
+                c.field_path == "amount.gross_per_share" for c in claims):
+        claims.append(
+            Claim(
+                field_path="amount.gross_per_share",
+                value=FinancialAmount.parse_localized(unit_gross, currency="EUR"),
+                evidence_locator=cite("unit_gross"),
+                raw_pointer="/anchors/unit_gross/value",
+            )
+        )
     if gross_total and dividend_lexeme_ok \
             and not _role_blocked("dividend_gross_total"):
         claims.append(
