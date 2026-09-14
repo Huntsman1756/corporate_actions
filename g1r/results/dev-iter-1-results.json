@@ -2,7 +2,7 @@
   "results_version": "CA_ES_G1R_RESULTS_V1",
   "phase": "dev-iter-1",
   "seed_set": "development",
-  "parser_commit": "b0103d2c5ab735591e0646bd16b83cdd7b5de995",
+  "parser_commit": "3f5a68fa7e85dfcac771b9057b993e09a1d19a1d",
   "parser_commit_dirty": false,
   "executed_at": "2026-09-14T00:00:00Z",
   "seeds": 25,
@@ -75,7 +75,7 @@
         "critical_facts_extracted": true,
         "instrument_resolved": true
       },
-      "parser_commit": "b0103d2c5ab735591e0646bd16b83cdd7b5de995"
+      "parser_commit": "3f5a68fa7e85dfcac771b9057b993e09a1d19a1d"
     },
     {
       "frame_item_id": "BMEG-CapitalIncreases-ES0105606190-2025-04-07",
@@ -129,7 +129,7 @@
         "critical_facts_extracted": true,
         "instrument_resolved": true
       },
-      "parser_commit": "b0103d2c5ab735591e0646bd16b83cdd7b5de995"
+      "parser_commit": "3f5a68fa7e85dfcac771b9057b993e09a1d19a1d"
     },
     {
       "frame_item_id": "BMEG-Dividends-ES0105224002-2025-05-08",
@@ -173,7 +173,7 @@
         "critical_facts_extracted": true,
         "instrument_resolved": true
       },
-      "parser_commit": "b0103d2c5ab735591e0646bd16b83cdd7b5de995"
+      "parser_commit": "3f5a68fa7e85dfcac771b9057b993e09a1d19a1d"
     },
     {
       "frame_item_id": "BMEG-Dividends-ES0105290003-2025-06-25",
@@ -217,7 +217,7 @@
         "critical_facts_extracted": true,
         "instrument_resolved": true
       },
-      "parser_commit": "b0103d2c5ab735591e0646bd16b83cdd7b5de995"
+      "parser_commit": "3f5a68fa7e85dfcac771b9057b993e09a1d19a1d"
     },
     {
       "frame_item_id": "BMEG-Dividends-ES0105407003-2026-09-11",
@@ -261,7 +261,7 @@
         "critical_facts_extracted": true,
         "instrument_resolved": true
       },
-      "parser_commit": "b0103d2c5ab735591e0646bd16b83cdd7b5de995"
+      "parser_commit": "3f5a68fa7e85dfcac771b9057b993e09a1d19a1d"
     },
     {
       "frame_item_id": "BMEG-Dividends-ES0105659009-2025-07-03",
@@ -305,7 +305,7 @@
         "critical_facts_extracted": true,
         "instrument_resolved": true
       },
-      "parser_commit": "b0103d2c5ab735591e0646bd16b83cdd7b5de995"
+      "parser_commit": "3f5a68fa7e85dfcac771b9057b993e09a1d19a1d"
     },
     {
       "frame_item_id": "BMEG-NewListings-ES0105650008-2026-03-06",
@@ -349,7 +349,7 @@
         "critical_facts_extracted": true,
         "instrument_resolved": true
       },
-      "parser_commit": "b0103d2c5ab735591e0646bd16b83cdd7b5de995"
+      "parser_commit": "3f5a68fa7e85dfcac771b9057b993e09a1d19a1d"
     },
     {
       "frame_item_id": "BMEG-OtherPayments-ES0105323002-2025-01-08",
@@ -393,7 +393,7 @@
         "critical_facts_extracted": true,
         "instrument_resolved": true
       },
-      "parser_commit": "b0103d2c5ab735591e0646bd16b83cdd7b5de995"
+      "parser_commit": "3f5a68fa7e85dfcac771b9057b993e09a1d19a1d"
     },
     {
       "frame_item_id": "CNMV-IP-3011",
@@ -424,7 +424,7 @@
         "critical_facts_extracted": true,
         "instrument_resolved": false
       },
-      "parser_commit": "b0103d2c5ab735591e0646bd16b83cdd7b5de995"
+      "parser_commit": "3f5a68fa7e85dfcac771b9057b993e09a1d19a1d"
     },
     {
       "frame_item_id": "CNMV-OIR-32783",
@@ -457,7 +457,7 @@
         "critical_facts_extracted": true,
         "instrument_resolved": false
       },
-      "parser_commit": "b0103d2c5ab735591e0646bd16b83cdd7b5de995"
+      "parser_commit": "3f5a68fa7e85dfcac771b9057b993e09a1d19a1d"
     },
     {
       "frame_item_id": "CNMV-OIR-35005",
@@ -493,7 +493,7 @@
         "critical_facts_extracted": true,
         "instrument_resolved": true
       },
-      "parser_commit": "b0103d2c5ab735591e0646bd16b83cdd7b5de995"
+      "parser_commit": "3f5a68fa7e85dfcac771b9057b993e09a1d19a1d"
     },
     {
       "frame_item_id": "CNMV-OIR-35263",
@@ -523,7 +523,7 @@
         "critical_facts_extracted": false,
         "instrument_resolved": false
       },
-      "parser_commit": "b0103d2c5ab735591e0646bd16b83cdd7b5de995"
+      "parser_commit": "3f5a68fa7e85dfcac771b9057b993e09a1d19a1d"
     },
     {
       "frame_item_id": "CNMV-OIR-36798",
@@ -554,7 +554,7 @@
         "critical_facts_extracted": false,
         "instrument_resolved": false
       },
-      "parser_commit": "b0103d2c5ab735591e0646bd16b83cdd7b5de995"
+      "parser_commit": "3f5a68fa7e85dfcac771b9057b993e09a1d19a1d"
     },
     {
       "frame_item_id": "CNMV-OIR-37702",
@@ -588,7 +588,7 @@
         "critical_facts_extracted": true,
         "instrument_resolved": false
       },
-      "parser_commit": "b0103d2c5ab735591e0646bd16b83cdd7b5de995"
+      "parser_commit": "3f5a68fa7e85dfcac771b9057b993e09a1d19a1d"
     },
     {
       "frame_item_id": "CNMV-OIR-37970",
@@ -619,7 +619,7 @@
         "critical_facts_extracted": false,
         "instrument_resolved": false
       },
-      "parser_commit": "b0103d2c5ab735591e0646bd16b83cdd7b5de995"
+      "parser_commit": "3f5a68fa7e85dfcac771b9057b993e09a1d19a1d"
     },
     {
       "frame_item_id": "CNMV-OIR-39819",
@@ -653,7 +653,7 @@
         "critical_facts_extracted": true,
         "instrument_resolved": false
       },
-      "parser_commit": "b0103d2c5ab735591e0646bd16b83cdd7b5de995"
+      "parser_commit": "3f5a68fa7e85dfcac771b9057b993e09a1d19a1d"
     },
     {
       "frame_item_id": "CNMV-OIR-40758",
@@ -686,7 +686,7 @@
         "critical_facts_extracted": true,
         "instrument_resolved": false
       },
-      "parser_commit": "b0103d2c5ab735591e0646bd16b83cdd7b5de995"
+      "parser_commit": "3f5a68fa7e85dfcac771b9057b993e09a1d19a1d"
     },
     {
       "frame_item_id": "CNMV-OIR-41381",
@@ -717,7 +717,7 @@
         "critical_facts_extracted": false,
         "instrument_resolved": false
       },
-      "parser_commit": "b0103d2c5ab735591e0646bd16b83cdd7b5de995"
+      "parser_commit": "3f5a68fa7e85dfcac771b9057b993e09a1d19a1d"
     },
     {
       "frame_item_id": "CNMV-OIR-41640",
@@ -747,7 +747,7 @@
         "critical_facts_extracted": false,
         "instrument_resolved": false
       },
-      "parser_commit": "b0103d2c5ab735591e0646bd16b83cdd7b5de995"
+      "parser_commit": "3f5a68fa7e85dfcac771b9057b993e09a1d19a1d"
     },
     {
       "frame_item_id": "CNMV-OIR-41981",
@@ -777,7 +777,7 @@
         "critical_facts_extracted": false,
         "instrument_resolved": false
       },
-      "parser_commit": "b0103d2c5ab735591e0646bd16b83cdd7b5de995"
+      "parser_commit": "3f5a68fa7e85dfcac771b9057b993e09a1d19a1d"
     },
     {
       "frame_item_id": "POEX-DOC-21984",
@@ -810,7 +810,7 @@
         "critical_facts_extracted": false,
         "instrument_resolved": true
       },
-      "parser_commit": "b0103d2c5ab735591e0646bd16b83cdd7b5de995"
+      "parser_commit": "3f5a68fa7e85dfcac771b9057b993e09a1d19a1d"
     },
     {
       "frame_item_id": "POEX-DOC-22422",
@@ -845,7 +845,7 @@
         "critical_facts_extracted": true,
         "instrument_resolved": false
       },
-      "parser_commit": "b0103d2c5ab735591e0646bd16b83cdd7b5de995"
+      "parser_commit": "3f5a68fa7e85dfcac771b9057b993e09a1d19a1d"
     },
     {
       "frame_item_id": "POEX-DOC-36171",
@@ -875,7 +875,7 @@
         "critical_facts_extracted": false,
         "instrument_resolved": false
       },
-      "parser_commit": "b0103d2c5ab735591e0646bd16b83cdd7b5de995"
+      "parser_commit": "3f5a68fa7e85dfcac771b9057b993e09a1d19a1d"
     },
     {
       "frame_item_id": "POEX-DOC-4666",
@@ -911,7 +911,7 @@
         "critical_facts_extracted": true,
         "instrument_resolved": false
       },
-      "parser_commit": "b0103d2c5ab735591e0646bd16b83cdd7b5de995"
+      "parser_commit": "3f5a68fa7e85dfcac771b9057b993e09a1d19a1d"
     },
     {
       "frame_item_id": "POEX-DOC-7021",
@@ -947,8 +947,8 @@
         "critical_facts_extracted": true,
         "instrument_resolved": false
       },
-      "parser_commit": "b0103d2c5ab735591e0646bd16b83cdd7b5de995"
+      "parser_commit": "3f5a68fa7e85dfcac771b9057b993e09a1d19a1d"
     }
   ],
-  "batch_sha256": "d72eaead8862b684c7d66c8ac2b68876b1839a7d3cddd09c00ddb5647e4dc600"
+  "batch_sha256": "ca41464d32be3643101d5531a1578b7645f9fa42029f7cb0c38a12cd76a83813"
 }
