@@ -1,14 +1,14 @@
 {
- "oracle_version": "CA_ES_G1_REGRESSION_ORACLE_V2",
+ "oracle_version": "CA_ES_G1_REGRESSION_ORACLE_V2.1",
  "frozen_at": "2026-09-14",
- "source": "adjudicacion firmada G1 sealed + re-ejecucion determinista del parser c431830 sobre manifests sellados (mismos raw bytes; valores = facts emitidos reales)",
+ "source": "adjudicacion firmada G1 sealed + re-ejecucion determinista del parser c431830 sobre manifests sellados",
  "claim_semantics": {
   "financial": "igualdad semantica sobre {normalized, currency}; raw_lexeme/scale no comparan",
   "scalar": "igualdad exacta de string (event_type, date.*, instrument.currency)"
  },
  "evaluation_rule": {
   "REMAIN_CORRECT": "todos los expected_claims deben seguir emitidos y semanticamente iguales; se permiten claims adicionales, siempre sujetos a p0_review",
-  "CORRECT_OR_ABSTAIN": "ningun forbidden_claim puede emitirse; el claim-set emitido del campo debe ser vacio (ABSENT) o semanticamente igual a uno de allowed_outcomes; cualquier otro claim en el campo = FAIL del regression guard"
+  "CORRECT_OR_ABSTAIN": "ningun forbidden_claim puede emitirse; el claim-set emitido del campo debe ser vacio (ABSENT) o semanticamente igual a uno de allowed_outcomes"
  },
  "known_correct_critical_fields": [
   {
@@ -436,11 +436,12 @@
    "field": "amount_or_ratio",
    "required": "REMAIN_CORRECT",
    "expected_claims": {
-    "amount.gross_per_share": {
+    "amount.issue_price_per_share": {
      "normalized": "0.37",
      "currency": "EUR"
     }
-   }
+   },
+   "erratum": true
   },
   {
    "frame_item_id": "CNMV-IP-2670",
@@ -448,8 +449,9 @@
    "field": "currency",
    "required": "REMAIN_CORRECT",
    "expected_claims": {
-    "amount.gross_per_share.currency": "EUR"
-   }
+    "amount.issue_price_per_share.currency": "EUR"
+   },
+   "erratum": true
   },
   {
    "frame_item_id": "CNMV-OIR-32583",
@@ -677,10 +679,35 @@
    "note": "DECIMAL_SPLIT_PDF: \"0, 47 euros\" se emitio como 47."
   }
  ],
+ "errata": [
+  {
+   "frame_item_id": "CNMV-IP-2670",
+   "set": "adversarial",
+   "field": "amount_or_ratio",
+   "expected_claims": {
+    "amount.issue_price_per_share": {
+     "normalized": "0.37",
+     "currency": "EUR"
+    }
+   },
+   "reason": "GT heredado de c431830: el lexema \"0,37 euros por accion\" es el precio de emision del CAPITAL_INCREASE (field amount.issue_price_per_share), no una contraprestacion generica gross_per_share. Detectado en revision de iter-1; aprobado por revisor humano.",
+   "applied_at": "2026-09-14"
+  },
+  {
+   "frame_item_id": "CNMV-IP-2670",
+   "set": "adversarial",
+   "field": "currency",
+   "expected_claims": {
+    "amount.issue_price_per_share.currency": "EUR"
+   },
+   "reason": "consecuencia del erratum de amount_or_ratio (mismo lexema, mismo campo).",
+   "applied_at": "2026-09-14"
+  }
+ ],
  "counts": {
   "correct": 49,
   "p0_incorrect": 7
  },
  "note": "49 = 37 HOLDOUT + 12 ADVERSARIAL campos criticos correctos; 7 campos poblados incorrectos conocidos.",
- "oracle_sha256": "6c300cbb34c1052209b3e99c462c8b0331cfde73780c5e76be035ed5c6f55725"
+ "oracle_sha256": "0f6ef737f2cc1d3e2eb72aaff956b214476d77da16588d5f4eb6ed616ec18a0a"
 }

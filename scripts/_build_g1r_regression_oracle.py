@@ -94,19 +94,70 @@ INCORRECT = [
      'note': 'DECIMAL_SPLIT_PDF: "0, 47 euros" se emitio como 47.'},
 ]
 
+# Errata firmada: GT heredado de la re-ejecucion de c431830 que la
+# adjudicacion posterior identifica como field_path semantico erroneo.
+# Cada entrada sustituye expected_claims tras la regeneracion y queda
+# documentada en el bloque 'errata' del oracle.
+ERRATA = [
+    {
+        'frame_item_id': 'CNMV-IP-2670',
+        'set': 'adversarial',
+        'field': 'amount_or_ratio',
+        'expected_claims': {
+            'amount.issue_price_per_share': {'normalized': '0.37', 'currency': 'EUR'}},
+        'reason': ('GT heredado de c431830: el lexema "0,37 euros por accion" es el '
+                   'precio de emision del CAPITAL_INCREASE (field amount.issue_price_per_share), '
+                   'no una contraprestacion generica gross_per_share. '
+                   'Detectado en revision de iter-1; aprobado por revisor humano.'),
+    },
+    {
+        'frame_item_id': 'CNMV-IP-2670',
+        'set': 'adversarial',
+        'field': 'currency',
+        'expected_claims': {
+            'amount.issue_price_per_share.currency': 'EUR'},
+        'reason': 'consecuencia del erratum de amount_or_ratio (mismo lexema, mismo campo).',
+    },
+]
+
+def apply_errata(correct):
+    applied = []
+    for err in ERRATA:
+        for entry in correct:
+            if (entry['frame_item_id'] == err['frame_item_id']
+                    and entry['set'] == err['set']
+                    and entry['field'] == err['field']):
+                entry['expected_claims'] = err['expected_claims']
+                entry['erratum'] = True
+                applied.append(err)
+    return applied
+
 def main():
     facts = sealed_facts()
     old = json.loads((REPO / 'g1r/manifests/g1-regression-oracle.json').read_text(encoding='utf-8'))
     correct, empty = [], []
     for e in old['known_correct_critical_fields']:
+        if e.get('erratum'):
+            # La entrada ya lleva la correccion aplicada; se regenera el
+            # claim-set desde los facts sellados salvo que el parser
+            # actual no lo emita (entonces conserva el esperado firmado).
+            cl = claims_for(e['field'], facts[e['set']][e['frame_item_id']])
+            if not cl:
+                cl = e['expected_claims']
+            entry = {'frame_item_id': e['frame_item_id'], 'set': e['set'],
+                     'field': e['field'], 'required': 'REMAIN_CORRECT',
+                     'expected_claims': cl, 'erratum': True}
+            correct.append(entry)
+            continue
         cl = claims_for(e['field'], facts[e['set']][e['frame_item_id']])
         if not cl:
             empty.append((e['frame_item_id'], e['field']))
         correct.append({'frame_item_id': e['frame_item_id'], 'set': e['set'],
                         'field': e['field'], 'required': 'REMAIN_CORRECT', 'expected_claims': cl})
+    applied_errata = apply_errata(correct)
     incorrect = INCORRECT
     oracle = {
-        'oracle_version': 'CA_ES_G1_REGRESSION_ORACLE_V2',
+        'oracle_version': 'CA_ES_G1_REGRESSION_ORACLE_V2.1',
         'frozen_at': '2026-09-14',
         'source': 'adjudicacion firmada G1 sealed + re-ejecucion determinista del parser c431830 sobre manifests sellados',
         'claim_semantics': {
@@ -117,6 +168,11 @@ def main():
             'CORRECT_OR_ABSTAIN': 'ningun forbidden_claim puede emitirse; el claim-set emitido del campo debe ser vacio (ABSENT) o semanticamente igual a uno de allowed_outcomes'},
         'known_correct_critical_fields': correct,
         'known_p0_incorrect_fields': incorrect,
+        'errata': [
+            {'frame_item_id': e['frame_item_id'], 'set': e['set'], 'field': e['field'],
+             'expected_claims': e['expected_claims'], 'reason': e['reason'],
+             'applied_at': '2026-09-14'}
+            for e in applied_errata],
         'counts': {'correct': len(correct), 'p0_incorrect': len(incorrect)},
         'note': '49 = 37 HOLDOUT + 12 ADVERSARIAL campos criticos correctos; 7 campos poblados incorrectos conocidos.'}
     oracle['oracle_sha256'] = hashlib.sha256(canonical_bytes(oracle)).hexdigest()

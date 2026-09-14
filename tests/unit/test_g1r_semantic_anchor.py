@@ -95,8 +95,9 @@ def test_recompra_no_es_importe_evento():
 
 def test_precio_emision_con_nominal_descompuesto():
     """"X euros por accion" en un aumento de capital es el precio de
-    emision aunque la misma frase descomponga nominal/prima: el
-    marcador de rol se liga al importe mas cercano."""
+    emision (issue_price_per_share, no gross_per_share) aunque la
+    misma frase descomponga nominal/prima: el marcador de rol se liga
+    al importe mas cercano."""
     parsed = cnmv.parse(
         _cnmv_html(
             "La sociedad acuerda un aumento de capital con exclusion "
@@ -108,8 +109,9 @@ def test_precio_emision_con_nominal_descompuesto():
         {},
     )
     assert parsed.event_type == "CAPITAL_INCREASE"
-    gross = _claim(parsed, "amount.gross_per_share")
-    assert gross and str(gross[0].value.normalized) == "0.37"
+    issue = _claim(parsed, "amount.issue_price_per_share")
+    assert issue and str(issue[0].value.normalized) == "0.37"
+    assert not _claim(parsed, "amount.gross_per_share")
 
 
 def test_nominal_ligado_al_ancla_bloquea():

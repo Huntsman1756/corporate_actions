@@ -200,13 +200,21 @@ def _parse_text(text: str, document: SourceDocument) -> ParsedDocument:
     _DIVIDEND_LEXEME_EVENTS = {"CASH_DIVIDEND", "SCRIP_DIVIDEND", "UNKNOWN"}
     dividend_lexeme_ok = event_type in _DIVIDEND_LEXEME_EVENTS
 
-    # "X euros por accion" es consideracion unitaria generica (precio de
-    # suscripcion en aumentos, precio de amortizacion, dividendo...). En
-    # una OPA la contraprestacion exige ancla propia ("precio de la
-    # OPA/oferta", "contraprestacion"), porque el documento contiene
-    # otros precios por accion (cotizacion, rango...) que no son la
-    # oferta. El resto de roles incompatibles se filtran por contexto.
+    # "X euros por accion" es consideracion unitaria; el field_path se
+    # rutea por familia del evento: en aumentos de capital / rights
+    # issues es el precio de emision; en dividendos es el importe por
+    # accion. En una OPA la contraprestacion exige ancla propia
+    # ("precio de la OPA/oferta", "contraprestacion"), porque el
+    # documento contiene otros precios por accion (cotizacion,
+    # rango...) que no son la oferta. El resto de roles incompatibles
+    # se filtran por contexto.
+    _ISSUE_PRICE_EVENTS = {"CAPITAL_INCREASE", "RIGHTS_ISSUE"}
     per_share_ok = event_type != "TAKEOVER_BID"
+    per_share_field = (
+        "amount.issue_price_per_share"
+        if event_type in _ISSUE_PRICE_EVENTS
+        else "amount.gross_per_share"
+    )
 
     # Contextos de rol incompatibles con "importe del evento por accion":
     # el lexema pertenece a nominal, recompra, cotizacion, canje u
@@ -283,11 +291,12 @@ def _parse_text(text: str, document: SourceDocument) -> ParsedDocument:
     cents = dividend_cents
     eur = dividend_eur
     generic = dividend_generic
-    if per_share and per_share_ok \
+    claimed_fields = {c.field_path for c in claims}
+    if per_share and per_share_ok and per_share_field not in claimed_fields \
             and not _role_blocked("dividend_per_share"):
         claims.append(
             Claim(
-                field_path="amount.gross_per_share",
+                field_path=per_share_field,
                 value=FinancialAmount.parse_localized(per_share, currency="EUR"),
                 evidence_locator=cite("dividend_per_share"),
                 raw_pointer="/anchors/dividend_per_share/value",
