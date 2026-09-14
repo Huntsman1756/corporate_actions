@@ -1,0 +1,23 @@
+{
+  "manifest_version": "CA_ES_SOURCE_MANIFEST_V1",
+  "corpus_id": "G1R_DEVELOPMENT_POEX-DOC-22422",
+  "retrieved_at": "2026-09-14",
+  "documents": [
+    {
+      "source_id": "PORTFOLIO_STOCK_EXCHANGE",
+      "official_document_id": "POEX-DOC-22422",
+      "content_sha256": "689fdd0a91c60b5f1ae8107ee1b9b90024e520dc58838b53b23f64a63327b17e",
+      "retrieved_at": "2026-09-14",
+      "publication_date": "2026-01-13",
+      "media_type": "application/pdf",
+      "raw_relpath": "g1r/corpus/raw/dev/POEX-DOC-22422.pdf",
+      "synthetic": false,
+      "retrieval_status": "OK",
+      "acquisition": {
+        "url": "https://api.portfolio.exchange/poex/document/22422",
+        "retrieval_method": "HTTP_GET"
+      },
+      "relations": []
+    }
+  ]
+}

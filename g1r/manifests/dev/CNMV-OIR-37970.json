@@ -1,0 +1,23 @@
+{
+  "manifest_version": "CA_ES_SOURCE_MANIFEST_V1",
+  "corpus_id": "G1R_DEVELOPMENT_CNMV-OIR-37970",
+  "retrieved_at": "2026-09-14",
+  "documents": [
+    {
+      "source_id": "CNMV",
+      "official_document_id": "CNMV-OIR-37970",
+      "content_sha256": "cbd8944a4962876c41a1b7ce19f63693a258676fbabe8c9b55454fe2548ce227",
+      "retrieved_at": "2026-09-14",
+      "publication_date": "2025-12-02",
+      "media_type": "application/pdf",
+      "raw_relpath": "g1r/corpus/raw/dev/CNMV-OIR-37970.pdf",
+      "synthetic": false,
+      "retrieval_status": "OK",
+      "acquisition": {
+        "url": "https://www.cnmv.es/webservices/verdocumento/ver?t=%7b0924ad16-067e-4290-a1dc-d57823437de4%7d",
+        "retrieval_method": "HTTP_GET"
+      },
+      "relations": []
+    }
+  ]
+}

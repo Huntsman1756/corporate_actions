@@ -1,0 +1,23 @@
+{
+  "manifest_version": "CA_ES_SOURCE_MANIFEST_V1",
+  "corpus_id": "G1R_DEVELOPMENT_CNMV-IP-3011",
+  "retrieved_at": "2026-09-14",
+  "documents": [
+    {
+      "source_id": "CNMV",
+      "official_document_id": "CNMV-IP-3011",
+      "content_sha256": "73b86632a5edcd89905f45f30c42b57fff03f4ae0492348c33d498e168c4db40",
+      "retrieved_at": "2026-09-14",
+      "publication_date": "2025-11-21",
+      "media_type": "application/pdf",
+      "raw_relpath": "g1r/corpus/raw/dev/CNMV-IP-3011.pdf",
+      "synthetic": false,
+      "retrieval_status": "OK",
+      "acquisition": {
+        "url": "https://www.cnmv.es/webservices/verdocumento/ver?t=%7b809d922f-a451-4bcf-9f69-6f37b0a361b8%7d",
+        "retrieval_method": "HTTP_GET"
+      },
+      "relations": []
+    }
+  ]
+}

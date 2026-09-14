@@ -1,0 +1,23 @@
+{
+  "manifest_version": "CA_ES_SOURCE_MANIFEST_V1",
+  "corpus_id": "G1R_DEVELOPMENT_BMEG-NewListings-ES0105650008-2026-03-06",
+  "retrieved_at": "2026-09-14",
+  "documents": [
+    {
+      "source_id": "BME_GROWTH",
+      "official_document_id": "BMEG-NewListings-ES0105650008-2026-03-06",
+      "content_sha256": "9f49fff5be87cd5b1b85d44d1aa0bf9229d54d867e6f5db4359f135dce8ee6b2",
+      "retrieved_at": "2026-09-14",
+      "publication_date": "2026-03-06",
+      "media_type": "application/json",
+      "raw_relpath": "g1r/corpus/raw/dev/BMEG-NewListings-ES0105650008-2026-03-06.json",
+      "synthetic": false,
+      "retrieval_status": "OK",
+      "acquisition": {
+        "url": "https://apiweb.bolsasymercados.es/Market/v1/EQ/CorporateActions/NewListings",
+        "retrieval_method": "BME_API_ROW_SNAPSHOT"
+      },
+      "relations": []
+    }
+  ]
+}
