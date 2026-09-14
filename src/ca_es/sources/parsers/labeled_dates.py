@@ -22,55 +22,92 @@ _NUMERIC = r"\d{1,2}\s*/\s*\d{1,2}\s*/\s*\d{4}"
 _SPANISH = r"\d{1,2}\s+de\s+\w+\s+de\s+\d{4}"
 ANY_DATE = rf"(?:{_NUMERIC}|{_SPANISH})"
 
-_LABELS: dict[str, tuple[str, ...]] = {
+# (patron, es_nombre_de_campo): los nombres de campo pueden aparecer como
+# referencia descriptiva ("en la fecha de pago") y requieren el filtro de
+# prefijo; las frases de contexto ("los titulares inscritos") no.
+_LABELS: dict[str, tuple[tuple[str, bool], ...]] = {
     "EX_DATE": (
-        r"\bex\s*[-–—]?\s*date\b",
-        r"\bexdate\b",
-        r"negociar[aá]n?\s+sin\s+derecho",
-        r"fecha\s+(?:a\s+partir\s+de\s+la\s+cual[^.]{0,60}?)?ex\b",
+        (r"\bex\s*[-–—]?\s*date\b", True),
+        (r"\bexdate\b", True),
+        (r"negociar[aá]n?\s+sin\s+derecho", False),
     ),
     "RECORD_DATE": (
-        r"\brecord\s*[-–—]?\s*date\b",
-        r"fecha\s+de\s+registro\b",
-        r"titulares\s+inscritos",
+        (r"\brecord\s*[-–—]?\s*date\b", True),
+        (r"fecha\s+de\s+registro\b", True),
+        (r"titulares\s+inscritos", False),
     ),
     "PAYMENT_DATE": (
-        r"\bpayment\s*[-–—]?\s*date\b",
-        r"fecha\s+de\s+pago\b",
-        r"fecha\s+valor\b",
-        r"fecha\s+devengo\b",
+        (r"\bpayment\s*[-–—]?\s*date\b", True),
+        (r"fecha\s+de\s+pago\b", True),
+        (r"fecha\s+valor\b", True),
     ),
     "LAST_TRADING_DATE": (
-        r"\blast\s+trading\s+date\b",
-        r"[uú]ltim[ao]\s+(?:d[ií]a|fecha)\s+de\s+(?:negociaci[oó]n|contrataci[oó]n)",
+        (r"\blast\s+trading\s+date\b", True),
+        (r"[uú]ltim[ao]\s+(?:d[ií]a|fecha)\s+de\s+(?:negociaci[oó]n|contrataci[oó]n)", False),
     ),
 }
 
 
 def _to_iso(lexeme: str) -> str | None:
-    numeric = re.match(r"(\d{1,2})\s*/\s*(\d{1,2})\s*/\s*(\d{4})", lexeme.strip())
+    lexeme = re.sub(r"\s+", " ", lexeme.strip())
+    numeric = re.match(r"(\d{1,2})\s*/\s*(\d{1,2})\s*/\s*(\d{4})", lexeme)
     if numeric:
         day, month, year = numeric.groups()
         return f"{year}-{int(month):02d}-{int(day):02d}"
     return spanish_date_to_iso(lexeme)
 
 
-def find_labeled_date(text: str, date_kind: str) -> dict | None:
-    """Primera fecha que siga a una etiqueta del tipo pedido (<220 chars).
+# Uso descriptivo de la etiqueta ("en la fecha de pago", "la fecha de
+# reparto"): cuando el nombre del campo se menciona como concepto y no
+# introduce un valor, la siguiente fecha del documento no le pertenece.
+_DESCRIPTIVE_PREFIX = re.compile(
+    r"(?:en|a|de|desde|por|para|hasta|del|la|el|los|las)\s+(?:la\s+|el\s+)?$",
+    re.I,
+)
 
-    El hueco permite la forma "Fecha de pago: 25 dias siguientes ... (se
-    concreta en el dia 23 de junio de 2025)" sin cruzar a la etiqueta
-    siguiente: se toma siempre la primera fecha tras la etiqueta.
+
+_FIELD_NAME_PATTERNS = tuple(
+    pattern
+    for entries in _LABELS.values()
+    for pattern, is_field_name in entries
+    if is_field_name
+)
+_ANY_FIELD_NAME = re.compile("|".join(_FIELD_NAME_PATTERNS), re.I)
+
+
+def find_labeled_date(text: str, date_kind: str) -> dict | None:
+    """Primera fecha publicada tras una etiqueta del tipo pedido.
+
+    - Se prueban todas las ocurrencias de cada etiqueta (la primera puede
+      ser una mencion delegada sin fecha, p.ej. "(payment date)").
+    - El hueco de hasta 220 caracteres permite la forma "Fecha de pago:
+      25 dias siguientes ... (se concreta en el dia 23 de junio de 2025)".
+    - Una etiqueta precedida de articulo o preposicion ("en la fecha de
+      pago", "comunicara la fecha de reparto") se considera referencia
+      descriptiva y se descarta: promoveria una fecha ajena al campo.
     """
-    for label in _LABELS.get(date_kind, ()):
-        match = re.search(rf"{label}.{{0,220}}?({ANY_DATE})", text, re.I | re.S)
-        if match:
-            iso = _to_iso(match.group(1))
+    for label, is_field_name in _LABELS.get(date_kind, ()):
+        for label_match in re.finditer(label, text, re.I):
+            if is_field_name and _DESCRIPTIVE_PREFIX.search(
+                text[max(0, label_match.start() - 12):label_match.start()]
+            ):
+                continue
+            window = text[label_match.end():label_match.end() + 240]
+            date_match = re.search(ANY_DATE, window)
+            if not date_match:
+                continue
+            # La fecha pertenece a esta etiqueta solo si no hay otra
+            # etiqueta de campo interpuesta ("record date: X" entre
+            # "ex date" y la fecha significaria captura cruzada).
+            if _ANY_FIELD_NAME.search(window[: date_match.start()]):
+                continue
+            iso = _to_iso(date_match.group(0))
             if iso:
+                matched = text[label_match.start():label_match.end() + date_match.end()]
                 return {
-                    "value": match.group(1),
+                    "value": date_match.group(0),
                     "iso": iso,
-                    "matched": match.group(0),
-                    "offset": match.start(),
+                    "matched": matched,
+                    "offset": label_match.start(),
                 }
     return None

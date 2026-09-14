@@ -230,6 +230,28 @@ def test_labeled_date_sin_etiqueta_no_extrae():
     assert find_labeled_date("La junta fue el 30 de abril de 2025.", "EX_DATE") is None
 
 
+def test_labeled_date_descriptiva_no_promueve_fecha_ajena():
+    # "en la fecha de pago" es referencia al concepto; la fecha siguiente
+    # es la de firma del documento y no debe promoverse.
+    text = (
+        "por cada accion con derecho a percibirlo en la fecha de pago. "
+        "Una vez se convoque la Junta se comunicara la fecha de reparto. "
+        "En Madrid, a 25 de marzo de 2026."
+    )
+    assert find_labeled_date(text, "PAYMENT_DATE") is None
+
+
+def test_labeled_date_segunda_ocurrencia():
+    # La primera etiqueta es una mencion delegada sin fecha; la segunda
+    # introduce el valor.
+    text = (
+        "para que fije la fecha de pago (payment date) y designe al "
+        "agente. En el marco de lo anterior se fija el calendario: "
+        "Fecha de pago (payment date): 26 de mayo de 2025."
+    )
+    assert find_labeled_date(text, "PAYMENT_DATE")["iso"] == "2025-05-26"
+
+
 def test_cnmv_fechas_etiquetadas_parentesis():
     parsed = cnmv.parse(
         _cnmv_html(

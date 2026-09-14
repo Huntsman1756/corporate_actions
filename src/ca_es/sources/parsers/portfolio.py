@@ -176,6 +176,38 @@ def _parse_pdf(payload: bytes, document: SourceDocument) -> ParsedDocument:
                     raw_pointer="/anchors/amount.gross_per_share/value",
                 )
             )
+    if not any(c.field_path == "amount.gross_per_share" for c in claims):
+        line = _line_with(text, "bruto unitario") or _line_with(text, "Bruto por acci")
+        if line:
+            amount = _last_amount(line)
+            if amount:
+                register("amount.gross_per_share", line, amount)
+                claims.append(
+                    Claim(
+                        field_path="amount.gross_per_share",
+                        value=FinancialAmount.parse_localized(amount, currency="EUR"),
+                        evidence_locator=(
+                            f"{document.official_document_id}: «{line.strip()[:200]}»"
+                        ),
+                        raw_pointer="/anchors/amount.gross_per_share/value",
+                    )
+                )
+    if not any(c.field_path == "amount.gross_total" for c in claims):
+        line = _line_with(text, "bruto a repartir") or _line_with(text, "importe total de")
+        if line:
+            amount = _last_amount(line)
+            if amount:
+                register("amount.gross_total", line, amount)
+                claims.append(
+                    Claim(
+                        field_path="amount.gross_total",
+                        value=FinancialAmount.parse_localized(amount, currency="EUR"),
+                        evidence_locator=(
+                            f"{document.official_document_id}: «{line.strip()[:200]}»"
+                        ),
+                        raw_pointer="/anchors/amount.gross_total/value",
+                    )
+                )
 
     # Importe de reduccion de capital: "reduccion de capital por un
     # importe de X" / "disminucion de capital social de X euros".
