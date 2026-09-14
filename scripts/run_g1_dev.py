@@ -32,6 +32,7 @@ DEV_HOLDOUT = REPO_ROOT / "g1" / "manifests" / "dev-holdout.json"
 FRAME = REPO_ROOT / "g1" / "manifests" / "sampling-frame.json"
 MANIFEST_DIR = REPO_ROOT / "g1" / "manifests" / "dev"
 RAW_DIR = REPO_ROOT / "g1" / "corpus" / "raw" / "dev"
+_SET_DIRNAME = {"development": "dev", "holdout": "holdout", "adversarial": "adversarial"}
 RESULTS_DIR = REPO_ROOT / "g1" / "results"
 INSTRUMENT_BINDINGS = "g0/corpus/reference/portfolio-instruments.json"
 FIRDS_LISTINGS = REPO_ROOT / "g0" / "corpus" / "reference" / "esma-firds-listings.json"
@@ -284,7 +285,15 @@ def funnel(entries: list[dict]) -> dict:
 def main(argv: list[str] | None = None) -> int:
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument(
-        "--phase", choices=["first-run", "final-run"], default="first-run"
+        "--phase", choices=["first-run", "final-run", "holdout-run", "adversarial-run"],
+        default="first-run",
+    )
+    parser.add_argument(
+        "--set",
+        dest="seed_set",
+        choices=["development", "holdout", "adversarial"],
+        default="development",
+        help="holdout/adversarial solo tras PARSER_FREEZE; adversarial queda excluido de tasas globales",
     )
     parser.add_argument(
         "--only",
@@ -300,10 +309,24 @@ def main(argv: list[str] | None = None) -> int:
     )
     args = parser.parse_args(argv)
 
+    global MANIFEST_DIR, RAW_DIR
+    MANIFEST_DIR = REPO_ROOT / "g1" / "manifests" / _SET_DIRNAME[args.seed_set]
+    RAW_DIR = REPO_ROOT / "g1" / "corpus" / "raw" / _SET_DIRNAME[args.seed_set]
+
     dev_holdout = json.loads(DEV_HOLDOUT.read_text(encoding="utf-8"))
     frame = json.loads(FRAME.read_text(encoding="utf-8"))
     items = {i["frame_item_id"]: i for i in frame["items"]}
-    seed_ids = sorted(dev_holdout["development"])
+    if args.seed_set == "holdout":
+        seed_ids = sorted(dev_holdout["holdout"])
+    elif args.seed_set == "adversarial":
+        registry = json.loads(
+            (REPO_ROOT / "g1" / "manifests" / "adversarial-registry.json").read_text(
+                encoding="utf-8"
+            )
+        )
+        seed_ids = sorted(e["frame_item_id"] for e in registry["entries"])
+    else:
+        seed_ids = sorted(dev_holdout["development"])
     if args.only:
         wanted = set(args.only)
         missing = wanted - set(seed_ids)
@@ -313,8 +336,8 @@ def main(argv: list[str] | None = None) -> int:
         seed_ids = [s for s in seed_ids if s in wanted]
 
     commit, dirty = git_commit()
-    if dirty and args.phase == "first-run" and not args.only:
-        print("ERROR: arbol sucio en src/ scripts/ docs/ — baseline exige commit limpio", file=sys.stderr)
+    if dirty and not args.only:
+        print("ERROR: arbol sucio en src/ scripts/ docs/ — la corrida exige commit limpio", file=sys.stderr)
         return 2
 
     resolver = (
@@ -333,7 +356,7 @@ def main(argv: list[str] | None = None) -> int:
                 manifest_relpath=manifest_rel,
                 resolver=resolver,
                 instrument_bindings_relpath=INSTRUMENT_BINDINGS,
-                run_id=f"G1-DEV-{index:02d}-{args.phase}",
+                run_id=f"G1-{args.seed_set.upper()}-{index:02d}-{args.phase}",
                 executed_at=EXECUTED_AT,
             )
         except Exception as error:  # noqa: BLE001 - el fallo es el resultado
@@ -368,6 +391,7 @@ def main(argv: list[str] | None = None) -> int:
     body = {
         "results_version": "CA_ES_G1_DEV_RESULTS_V1",
         "phase": args.phase,
+        "seed_set": args.seed_set,
         "parser_commit": commit,
         "parser_commit_dirty": dirty,
         "executed_at": EXECUTED_AT,
@@ -391,7 +415,11 @@ def main(argv: list[str] | None = None) -> int:
     body["batch_sha256"] = batch_sha
 
     RESULTS_DIR.mkdir(parents=True, exist_ok=True)
-    out = args.out or (RESULTS_DIR / f"{args.phase}-results.json")
+    out = args.out or (
+        RESULTS_DIR / f"{args.phase}-results.json"
+        if args.seed_set == "development"
+        else RESULTS_DIR / f"{args.seed_set}-results.json"
+    )
     out.write_text(
         json.dumps(body, indent=2, ensure_ascii=False) + "\n", encoding="utf-8"
     )
