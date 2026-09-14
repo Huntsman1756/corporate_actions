@@ -1,0 +1,23 @@
+{
+  "manifest_version": "CA_ES_SOURCE_MANIFEST_V1",
+  "corpus_id": "G1R_HOLDOUT_BMEG-Delistings-ES0105077004-2026-04-01",
+  "retrieved_at": "2026-09-14",
+  "documents": [
+    {
+      "source_id": "BME_GROWTH",
+      "official_document_id": "BMEG-Delistings-ES0105077004-2026-04-01",
+      "content_sha256": "52539c8a8697f2924e12187becfabc33df968c2ca3846f040158b45b4e8b28b9",
+      "retrieved_at": "2026-09-14",
+      "publication_date": "2026-04-01",
+      "media_type": "application/json",
+      "raw_relpath": "g1r/corpus/raw/holdout/BMEG-Delistings-ES0105077004-2026-04-01.json",
+      "synthetic": false,
+      "retrieval_status": "OK",
+      "acquisition": {
+        "url": "https://apiweb.bolsasymercados.es/Market/v1/EQ/CorporateActions/Delistings",
+        "retrieval_method": "BME_API_ROW_SNAPSHOT"
+      },
+      "relations": []
+    }
+  ]
+}

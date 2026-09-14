@@ -1,0 +1,23 @@
+{
+  "manifest_version": "CA_ES_SOURCE_MANIFEST_V1",
+  "corpus_id": "G1R_HOLDOUT_POEX-DOC-4319",
+  "retrieved_at": "2026-09-14",
+  "documents": [
+    {
+      "source_id": "PORTFOLIO_STOCK_EXCHANGE",
+      "official_document_id": "POEX-DOC-4319",
+      "content_sha256": "d0b7f27169b40774b81a730f07a393219215f26fd19bba5a29fb8cbdc2d1ee44",
+      "retrieved_at": "2026-09-14",
+      "publication_date": "2025-05-05",
+      "media_type": "application/pdf",
+      "raw_relpath": "g1r/corpus/raw/holdout/POEX-DOC-4319.pdf",
+      "synthetic": false,
+      "retrieval_status": "OK",
+      "acquisition": {
+        "url": "https://api.portfolio.exchange/poex/document/4319",
+        "retrieval_method": "HTTP_GET"
+      },
+      "relations": []
+    }
+  ]
+}

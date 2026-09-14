@@ -1,0 +1,23 @@
+{
+  "manifest_version": "CA_ES_SOURCE_MANIFEST_V1",
+  "corpus_id": "G1R_HOLDOUT_CNMV-OIR-41312",
+  "retrieved_at": "2026-09-14",
+  "documents": [
+    {
+      "source_id": "CNMV",
+      "official_document_id": "CNMV-OIR-41312",
+      "content_sha256": "0b9be06b89867b2323a405cdbc164fc1e39937a2deb0e7b630c6dcc37ebcfa93",
+      "retrieved_at": "2026-09-14",
+      "publication_date": "2026-06-09",
+      "media_type": "application/pdf",
+      "raw_relpath": "g1r/corpus/raw/holdout/CNMV-OIR-41312.pdf",
+      "synthetic": false,
+      "retrieval_status": "OK",
+      "acquisition": {
+        "url": "https://www.cnmv.es/webservices/verdocumento/ver?t=%7b2af13f35-2b0a-4f68-b19a-2d0fd089421d%7d",
+        "retrieval_method": "HTTP_GET"
+      },
+      "relations": []
+    }
+  ]
+}

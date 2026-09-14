@@ -1,0 +1,23 @@
+{
+  "manifest_version": "CA_ES_SOURCE_MANIFEST_V1",
+  "corpus_id": "G1R_HOLDOUT_BMEG-Dividends-ES0131703003-2025-09-18",
+  "retrieved_at": "2026-09-14",
+  "documents": [
+    {
+      "source_id": "BME_GROWTH",
+      "official_document_id": "BMEG-Dividends-ES0131703003-2025-09-18",
+      "content_sha256": "4b367ef99a67d55142aeacc0589d3a0674546291eaa742a1edc3ddd863159b42",
+      "retrieved_at": "2026-09-14",
+      "publication_date": "2025-09-18",
+      "media_type": "application/json",
+      "raw_relpath": "g1r/corpus/raw/holdout/BMEG-Dividends-ES0131703003-2025-09-18.json",
+      "synthetic": false,
+      "retrieval_status": "OK",
+      "acquisition": {
+        "url": "https://apiweb.bolsasymercados.es/Market/v1/EQ/CorporateActions/Dividends",
+        "retrieval_method": "BME_API_ROW_SNAPSHOT"
+      },
+      "relations": []
+    }
+  ]
+}
