@@ -15,6 +15,7 @@ from ...source_policy import SourcePolicy
 from ..documents import SourceDocument
 from .base import Claim, InfrastructureClaim, ParsedDocument, parse_structured
 from .labeled_dates import find_labeled_date
+from .magnitude_amounts import find_magnitude_amounts
 from .pdf_text import extract_text, normalize_text
 
 _ISIN = r"\bES[A-Z0-9]{10}\b"
@@ -228,6 +229,24 @@ def _parse_pdf(payload: bytes, document: SourceDocument) -> ParsedDocument:
                     f"{document.official_document_id}: «{reduction_amount.group(0).strip()[:200]}»"
                 ),
                 raw_pointer="/anchors/amount.reduction_total/value",
+            )
+        )
+
+    # Magnitudes verbales con ancla semantica ("importe ... de
+    # X millones de euros"). Misma regla generica que CNMV.
+    for item in find_magnitude_amounts(text):
+        if any(c.field_path == item["field_path"] for c in claims):
+            continue
+        name = f"magnitude_{item['offset']}"
+        anchors[name] = {"value": item["amount"].normalized_str(), "matched": item["matched"]}
+        claims.append(
+            Claim(
+                field_path=item["field_path"],
+                value=item["amount"],
+                evidence_locator=(
+                    f"{document.official_document_id}: «{item['matched'].strip()[:200]}»"
+                ),
+                raw_pointer=f"/anchors/{name}/value",
             )
         )
 

@@ -286,3 +286,67 @@ def test_cnmv_propuesta_dividendo_detectada():
     assert parsed.event_type == "CASH_DIVIDEND"
     gross = [c for c in parsed.claims if c.field_path == "amount.gross_per_share"]
     assert gross and gross[0].value.raw_lexeme == "1,57"
+
+
+def test_magnitude_amounts_millones_normalizados():
+    from ca_es.sources.parsers.magnitude_amounts import find_magnitude_amounts
+
+    found = find_magnitude_amounts(
+        "El importe en circulacion de las Obligaciones Existentes es de "
+        "255 millones de euros, y la nueva emision tendra un importe "
+        "nominal maximo de 262 millones de euros."
+    )
+    by_field = {item["field_path"]: item["amount"] for item in found}
+    assert by_field["amount.outstanding"].normalized_str() == "255000000"
+    assert by_field["amount.outstanding"].raw_lexeme == "255 millones de euros"
+    assert by_field["amount.outstanding"].currency == "EUR"
+    assert by_field["amount.max_total"].normalized_str() == "262000000"
+
+
+def test_magnitude_amounts_decimal_coeficiente():
+    from ca_es.sources.parsers.magnitude_amounts import find_magnitude_amounts
+
+    found = find_magnitude_amounts("por un total de 1,2 millones de euros.")
+    assert found and found[0]["amount"].normalized_str() == "1200000"
+
+
+def test_magnitude_amounts_qualifier_no_promueve():
+    from ca_es.sources.parsers.magnitude_amounts import find_magnitude_amounts
+
+    assert not find_magnitude_amounts(
+        "por un total de aproximadamente 255 millones de euros."
+    )
+    assert not find_magnitude_amounts(
+        "El importe maximo de hasta 262 millones de euros."
+    )
+    assert not find_magnitude_amounts(
+        "una emision por un importe de mas de 100 millones de euros."
+    )
+    assert not find_magnitude_amounts(
+        "que podria alcanzar hasta un importe maximo de 262 millones de euros."
+    )
+
+
+def test_magnitude_amounts_sin_ancla_no_extrae():
+    from ca_es.sources.parsers.magnitude_amounts import find_magnitude_amounts
+
+    assert not find_magnitude_amounts(
+        "La empresa cuenta con activos por 255 millones de euros."
+    )
+
+
+def test_cnmv_millones_de_euros_extrae_importe():
+    parsed = cnmv.parse(
+        _cnmv_html(
+            "Amortizacion anticipada. El importe en circulacion de las "
+            "Obligaciones Existentes es de 255 millones de euros."
+        ),
+        _doc("CNMV", "text/html"),
+        {},
+    )
+    outstanding = [
+        c for c in parsed.claims if c.field_path == "amount.outstanding"
+    ]
+    assert outstanding
+    assert outstanding[0].value.normalized_str() == "255000000"
+    assert outstanding[0].value.raw_lexeme == "255 millones de euros"

@@ -17,6 +17,7 @@ from ..documents import SourceDocument
 from .base import Claim, DocumentReference, ParsedDocument, parse_structured
 from .html_text import decode as decode_html, html_to_text, spanish_date_to_iso
 from .labeled_dates import find_labeled_date
+from .magnitude_amounts import find_magnitude_amounts
 from .pdf_text import extract_text, normalize_text
 
 SOURCE_ID = "CNMV"
@@ -295,6 +296,29 @@ def _parse_text(text: str, document: SourceDocument) -> ParsedDocument:
         ("max_amount", "amount.max_total", rf"importe m[aá]ximo de {_AMOUNT} euros"),
     ):
         add_amount(name, field, grab_amount(name, pattern))
+
+    # Magnitudes verbales con ancla semantica ("importe ... de
+    # 255 millones de euros"). Normalizacion de representacion
+    # (coeficiente x magnitud), no derivacion. Los qualifiers
+    # ("hasta", "aproximadamente"...) impiden la promocion.
+    for item in find_magnitude_amounts(text):
+        if any(c.field_path == item["field_path"] for c in claims):
+            continue
+        name = f"magnitude_{item['offset']}"
+        anchors[name] = {
+            "value": item["amount"].raw_lexeme,
+            "matched": item["matched"],
+            "offset": item["offset"],
+        }
+        claims.append(
+            Claim(
+                field_path=item["field_path"],
+                value=item["amount"],
+                evidence_locator=cite(name),
+                raw_pointer=f"/anchors/{name}/value",
+            )
+        )
+
     pct = grab("redemption_price_pct", rf"precio de amortizaci[oó]n:\s*{_AMOUNT}%", flags=re.I)
     if pct:
         claims.append(
