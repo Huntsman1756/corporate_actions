@@ -142,9 +142,9 @@ SEEDS = {
    'affected = Reig Jofre. SIGNED: inicio de cotizacion de acciones del dividendo flexible = ADMISSION/TRADING_START del scrip',
    'inicio cotizacion 1-jul-2026 de 664.162 acciones nuevas del dividendo flexible; capital resultante 41.441.701,50 EUR'),
  'CNMV-OIR-41981': (
-   'ACTUAL_CA', 'REVERSE_SPLIT', 'REGISTRATION',
-   'affected = ES0109260291 (nueva fila ISIN; agrupacion ~25:1 desde ES0109260531)',
-   'pagina derechos de voto/capital AMPER: nueva inscripcion 14/07/2026, 91.044.963 acciones, ISIN ES0109260291'),
+   'ACTUAL_CA', 'SPLIT', 'REGISTRATION',
+   'affected = ES0109260291 (nueva fila ISIN; agrupacion ~25:1 desde ES0109260531). SIGNED: family SPLIT + mechanism REVERSE_SPLIT (contra-split); vocabulario canonico contiene SPLIT, no REVERSE_SPLIT',
+   'pagina derechos de voto/capital AMPER: nueva inscripcion 14/07/2026, 91.044.963 acciones, ISIN ES0109260291; titulo oficial: actualizacion tras admision de acciones del contra-split'),
  'POEX-DOC-21984': (
    'ACTUAL_CA', 'CAPITAL_INCREASE', 'COMPLETION',
    'affected = ES0105801007 (ISIN explicito en el aviso)',
@@ -169,8 +169,9 @@ SEEDS = {
 
 # =========================================================================
 # GROUND TRUTH por campo critico.
-#   status: CORRECT | MISSING | FALSE_FINANCIAL_FACT | UNKNOWN |
-#           NOT_APPLICABLE | AMBIGUOUS
+#   status: CORRECT | MISSING | UNKNOWN | NOT_APPLICABLE | AMBIGUOUS
+#   (los errores P0 son eje ortogonal via P0_ERROR, nunca un estado
+#   de missingness — convencion de cierre G1)
 #   published: PUBLISHED | NOT_PUBLISHED | N/A | AMBIGUOUS_SOURCE
 #   expected: claims esperados cuando la fuente los publica
 # =========================================================================
@@ -264,7 +265,7 @@ GT = {
    'currency': ('MISSING', 'PUBLISHED', {'instrument.currency': 'EUR'}, 'euros declarados; no emitido'),
  },
  'CNMV-OIR-35263': {
-   'event_type': ('AMBIGUOUS', 'AMBIGUOUS_SOURCE', None, 'titulo oficial: anuncio de fecha de efectos del desdoblamiento (split); el artefacto registro no declara el evento como lexema (precedente CNMV-OIR-36507)'),
+   'event_type': ('MISSING', 'PUBLISHED', {'event_type': 'SPLIT'}, 'titulo oficial CNMV "Anuncio de la Fecha de Efectos del desdoblamiento (split)" y el documento explica explicitamente el split 10:1; parser emitio {} [SIGNED]'),
    'ex_date': ('NOT_APPLICABLE', 'N/A', None, 'REGISTRATION: la pagina publica fecha de inscripcion (12/06/2025), no ex_date'),
    'record_date': ('NOT_APPLICABLE', 'N/A', None, 'REGISTRATION: no aplica'),
    'payment_date': ('NOT_APPLICABLE', 'N/A', None, 'SPLIT: sin pata de efectivo'),
@@ -320,7 +321,7 @@ GT = {
    'currency': ('NOT_APPLICABLE', 'N/A', None, 'los euros mencionados son nominal/capital, no contraprestacion'),
  },
  'CNMV-OIR-41981': {
-   'event_type': ('AMBIGUOUS', 'AMBIGUOUS_SOURCE', None, 'titulo oficial: actualizacion de acciones/derechos de voto tras admision; la pagina no declara el evento como lexema; ISIN nuevo + acciones ~25:1 sugiere agrupacion'),
+   'event_type': ('MISSING', 'PUBLISHED', {'event_type': 'SPLIT'}, 'titulo oficial: actualizacion de acciones/derechos de voto tras admision de nuevas acciones resultado del contra-split; el documento muestra la cadena reduccion/contra-split/admision; parser emitio {} [SIGNED: SPLIT + mechanism REVERSE_SPLIT]'),
    'ex_date': ('NOT_APPLICABLE', 'N/A', None, 'REGISTRATION: no aplica'),
    'record_date': ('NOT_APPLICABLE', 'N/A', None, 'REGISTRATION: no aplica'),
    'payment_date': ('NOT_APPLICABLE', 'N/A', None, 'sin pata de efectivo'),
@@ -389,6 +390,7 @@ MECHANISM = {
  'CNMV-OIR-40758': 'BONUS_CAPITAL_INCREASE',
  'CNMV-OIR-41381': 'BONUS_CAPITAL_INCREASE',
  'CNMV-OIR-41640': 'BONUS_CAPITAL_INCREASE',
+ 'CNMV-OIR-41981': 'REVERSE_SPLIT',
 }
 
 # =========================================================================
@@ -539,13 +541,18 @@ CATALOG = [
   'seeds': ['CNMV-OIR-41381', 'CNMV-OIR-41640'],
   'description': 'documento de fase posterior (cierre/admision) que referencia el evento por OIR anterior; el tipo se infiere de la cadena documental, no del lexema local',
   'safety': 'P1'},
- {'failure_class': 'REGISTRY_ARTIFACT_NO_LEXEME',
+ {'failure_class': 'OFFICIAL_TITLE_EVENT_TYPE_NOT_USED',
   'seeds': ['CNMV-OIR-35263', 'CNMV-OIR-41981'],
-  'description': 'pagina oficial derechos de voto/capital: publica estado (capital/acciones/ISIN), no el evento como lexema',
-  'safety': 'limitacion de fuente / P1'},
+  'description': 'la evidencia del evento existe en titulo/documento oficial (anuncio de desdoblamiento; actualizacion tras contra-split) pero el pipeline no la aprovecha para event_type',
+  'safety': 'P1'},
+ {'failure_class': 'EXPLICIT_SOURCE_INSTRUMENT_NOT_USED',
+  'seeds': ['CNMV-OIR-35263', 'CNMV-OIR-41981'],
+  'description': 'el documento porta ISIN explicito (EXPLICIT_SOURCE_ASSERTION, ADR-013 nivel 1) y el pipeline no lo extrae para el binding',
+  'safety': 'P2'},
  {'failure_class': 'SOURCE_CARRIED_INSTRUMENT_NOT_USED',
-  'seeds': ['CNMV-OIR-35263', 'CNMV-OIR-41981'],
-  'description': 'el propio documento porta ISIN en su tabla y el pipeline no lo explota para el binding',
+  'seeds': ['POEX-DOC-22422', 'POEX-DOC-36171', 'POEX-DOC-4666',
+            'POEX-DOC-7021'],
+  'description': 'la misma fuente oficial liga documento->instrumento via structured identifier (product_url con ISIN, ADR-013 nivel 2) y el pipeline no lo explota',
   'safety': 'P2'},
  {'failure_class': 'PARTIAL_AMOUNT_EXTRACTION',
   'seeds': ['POEX-DOC-7021'],
@@ -553,9 +560,8 @@ CATALOG = [
   'safety': 'P1'},
  {'failure_class': 'INSTRUMENT_NAME_ONLY',
   'seeds': ['CNMV-IP-3011', 'CNMV-OIR-32783', 'CNMV-OIR-36798', 'CNMV-OIR-37702',
-            'CNMV-OIR-39819', 'CNMV-OIR-40758', 'CNMV-OIR-41381', 'CNMV-OIR-41640',
-            'POEX-DOC-22422', 'POEX-DOC-36171', 'POEX-DOC-4666', 'POEX-DOC-7021'],
-  'description': 'el documento identifica al emisor por nombre, sin ISIN; ADR-013 exige cross-reference oficial para el binding',
+            'CNMV-OIR-39819', 'CNMV-OIR-40758', 'CNMV-OIR-41381', 'CNMV-OIR-41640'],
+  'description': 'el documento identifica al emisor por nombre, sin ISIN/NIF; name-only no es binding automatico (ADR-013) y exige relacion humana o identificador oficial no congelado',
   'safety': 'P2'},
 ]
 

@@ -84,21 +84,32 @@
    "safety": "P1"
   },
   {
-   "failure_class": "REGISTRY_ARTIFACT_NO_LEXEME",
+   "failure_class": "OFFICIAL_TITLE_EVENT_TYPE_NOT_USED",
    "seeds": [
     "CNMV-OIR-35263",
     "CNMV-OIR-41981"
    ],
-   "description": "pagina oficial derechos de voto/capital: publica estado (capital/acciones/ISIN), no el evento como lexema",
-   "safety": "limitacion de fuente / P1"
+   "description": "la evidencia del evento existe en titulo/documento oficial (anuncio de desdoblamiento; actualizacion tras contra-split) pero el pipeline no la aprovecha para event_type",
+   "safety": "P1"
+  },
+  {
+   "failure_class": "EXPLICIT_SOURCE_INSTRUMENT_NOT_USED",
+   "seeds": [
+    "CNMV-OIR-35263",
+    "CNMV-OIR-41981"
+   ],
+   "description": "el documento porta ISIN explicito (EXPLICIT_SOURCE_ASSERTION, ADR-013 nivel 1) y el pipeline no lo extrae para el binding",
+   "safety": "P2"
   },
   {
    "failure_class": "SOURCE_CARRIED_INSTRUMENT_NOT_USED",
    "seeds": [
-    "CNMV-OIR-35263",
-    "CNMV-OIR-41981"
+    "POEX-DOC-22422",
+    "POEX-DOC-36171",
+    "POEX-DOC-4666",
+    "POEX-DOC-7021"
    ],
-   "description": "el propio documento porta ISIN en su tabla y el pipeline no lo explota para el binding",
+   "description": "la misma fuente oficial liga documento->instrumento via structured identifier (product_url con ISIN, ADR-013 nivel 2) y el pipeline no lo explota",
    "safety": "P2"
   },
   {
@@ -119,13 +130,9 @@
     "CNMV-OIR-39819",
     "CNMV-OIR-40758",
     "CNMV-OIR-41381",
-    "CNMV-OIR-41640",
-    "POEX-DOC-22422",
-    "POEX-DOC-36171",
-    "POEX-DOC-4666",
-    "POEX-DOC-7021"
+    "CNMV-OIR-41640"
    ],
-   "description": "el documento identifica al emisor por nombre, sin ISIN; ADR-013 exige cross-reference oficial para el binding",
+   "description": "el documento identifica al emisor por nombre, sin ISIN/NIF; name-only no es binding automatico (ADR-013) y exige relacion humana o identificador oficial no congelado",
    "safety": "P2"
   }
  ]
