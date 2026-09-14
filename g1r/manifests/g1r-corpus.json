@@ -1,0 +1,310 @@
+{
+ "corpus_version": "CA_ES_G1R_CORPUS_V1",
+ "protocol": "CA_ES_G1R_PREREG_V2 / g1r-protocol",
+ "frozen_at": "2026-09-14",
+ "parent_frame": "g1/manifests/sampling-frame.json",
+ "parent_frame_sha256": "edc785ebbe007ad5eec000edc06abaff15b2c674698c27e726cc41253dc94188",
+ "excluded_g1_items": "g1r/manifests/excluded-g1-frame-items.json",
+ "excluded_ids_sha256": "74f216cda7d4de32d841386a1d99e6aefcad3bc33ac1a01b62ef2b42bbaad2b3",
+ "sampling_namespace": "CA_ES_G1R_SAMPLE_V1",
+ "split_namespace": "CA_ES_G1R_SPLIT_V1",
+ "stratum_targets": {
+  "MAIN_MARKET": 20,
+  "BME_GROWTH_MTF": 10,
+  "PORTFOLIO": 10
+ },
+ "holdout_count": 15,
+ "pre_split_dedup": {
+  "automated_only": true,
+  "manual_document_inspection": false,
+  "permitted_evidence": [
+   "structured source identifiers",
+   "exact official cross-references",
+   "already-frozen metadata"
+  ],
+  "default_when_not_determinable": "both seeds remain"
+ },
+ "dedup_log": [],
+ "selected": [
+  {
+   "frame_item_id": "BMEG-CapitalIncreases-ES0105561007-2025-01-13",
+   "stratum": "BME_GROWTH_MTF",
+   "partition": "DEV",
+   "sample_score": "013ef6ca839c17e5bad417e4bb11cc3f0d578b117df9f28727518da15acb0285",
+   "split_score": "bc635b30875c00166710e8ff21d8edc5839263ba1cd9dbebc58a3f3b54bab93d"
+  },
+  {
+   "frame_item_id": "BMEG-CapitalIncreases-ES0105606190-2025-04-07",
+   "stratum": "BME_GROWTH_MTF",
+   "partition": "DEV",
+   "sample_score": "0467c7ef88cda3b0a4659b20423dd979edbec6001121139a743373b9688a0b6e",
+   "split_score": "7fa3b500af318d8aa84793e90cc75dd66953a06d75e68cb64b0a02cf777d3e04"
+  },
+  {
+   "frame_item_id": "BMEG-Delistings-ES0105077004-2026-04-01",
+   "stratum": "BME_GROWTH_MTF",
+   "partition": "HOLDOUT",
+   "sample_score": "040d9fc62af346ada1d2deaef38429960f829b786884204bee3f91ac20bb577a",
+   "split_score": "48c24699c4d938b36f0bd57bbe248dc5103630c8b7097a98199f7838ad788179"
+  },
+  {
+   "frame_item_id": "BMEG-Dividends-ES0105224002-2025-05-08",
+   "stratum": "BME_GROWTH_MTF",
+   "partition": "DEV",
+   "sample_score": "023a55d8738d869197fb6bd1441183558a1f3716bff40cfa59ff122e85719090",
+   "split_score": "9d655298219b6a01b461ae9521d0ede1a27063dd8a7981c1a2f48555cc6b4311"
+  },
+  {
+   "frame_item_id": "BMEG-Dividends-ES0105290003-2025-06-25",
+   "stratum": "BME_GROWTH_MTF",
+   "partition": "DEV",
+   "sample_score": "00642f6bec6afdf408196628eb1b9f65743684b12678bef3386b6bef09c41730",
+   "split_score": "f7b078bdc9011b21bd9a32fb56f6f4b17c7fac234f5df84b7d9979181f1183e2"
+  },
+  {
+   "frame_item_id": "BMEG-Dividends-ES0105407003-2026-09-11",
+   "stratum": "BME_GROWTH_MTF",
+   "partition": "DEV",
+   "sample_score": "0147ec9e965faa4d359a127deab8709bc7e3ccba608699d0e7e2245fe83332c9",
+   "split_score": "db5776c84a9c10fba17841a1df127ec43ba2f6d0569b50f394e2e89fc2859778"
+  },
+  {
+   "frame_item_id": "BMEG-Dividends-ES0105659009-2025-07-03",
+   "stratum": "BME_GROWTH_MTF",
+   "partition": "DEV",
+   "sample_score": "00f641b068620183cec5a3a4a10b068824ce44bf352fbda9978773b2b7880eba",
+   "split_score": "ce886b43f16bd12e29e76a935a29ec771962ff5bf007dddcf86f7e280349bd0a"
+  },
+  {
+   "frame_item_id": "BMEG-Dividends-ES0131703003-2025-09-18",
+   "stratum": "BME_GROWTH_MTF",
+   "partition": "HOLDOUT",
+   "sample_score": "01f2a40c69a9527cf49caf2b9702a6b1efac2cd058234881d2176a93c5d7f3c2",
+   "split_score": "02e929abf67d43c539d936906625cb2c8b1318f0310bbcb02a50d7a40bf178ef"
+  },
+  {
+   "frame_item_id": "BMEG-NewListings-ES0105650008-2026-03-06",
+   "stratum": "BME_GROWTH_MTF",
+   "partition": "DEV",
+   "sample_score": "01c07be590f11345b4a02e3926c09a3bdec4a993e98acb158ce2f1a968b08762",
+   "split_score": "b4be467a9e5db74a85f65bcdb7294181077a4f4c7c1f7bf04d2833fbab9f590c"
+  },
+  {
+   "frame_item_id": "BMEG-OtherPayments-ES0105323002-2025-01-08",
+   "stratum": "BME_GROWTH_MTF",
+   "partition": "DEV",
+   "sample_score": "03142d6a027fb29e73c7f6489812c9ed9a513b2e2c8cdc47519dea6ede9721a8",
+   "split_score": "eb75b90ad5a328a73b8758a07a9037af82f6743c579a776e56177349f228fcce"
+  },
+  {
+   "frame_item_id": "CNMV-IP-2683",
+   "stratum": "MAIN_MARKET",
+   "partition": "HOLDOUT",
+   "sample_score": "066290c9c6e8c9e9a9c4fdd7b040c48ac0db3bd0ae5931b5eea56a179cfe3f97",
+   "split_score": "3c0d9266a881f05a6e27650b8659eba9e411ba628c6676a0127eb02c6e974b5f"
+  },
+  {
+   "frame_item_id": "CNMV-IP-3011",
+   "stratum": "MAIN_MARKET",
+   "partition": "DEV",
+   "sample_score": "02c32bd5aab50dc5d302aef4bd7a1882cd5ca6040b1bc18c5ff8a866fcf94b3e",
+   "split_score": "b05f04ff0976f89ee13eb5c82f8798b1f6b7c334cca3f811b6312eccb66a6ada"
+  },
+  {
+   "frame_item_id": "CNMV-OIR-32783",
+   "stratum": "MAIN_MARKET",
+   "partition": "DEV",
+   "sample_score": "04d912f88344d43627711959d0548e10b38c16fd8b05ef64edfecbd1493f360c",
+   "split_score": "c13a07cf938ea65d6ab507edb1bf767623733d8803c8938263270f894938bbf2"
+  },
+  {
+   "frame_item_id": "CNMV-OIR-33177",
+   "stratum": "MAIN_MARKET",
+   "partition": "HOLDOUT",
+   "sample_score": "054d8b4eb7927fb882564d419510f886309d89fbc35fc41ab67d903a934182b2",
+   "split_score": "6fc5b74c6e225042c199e9c685b9c6db118e1b8dcad4ea083ef4737d3dbcb2e6"
+  },
+  {
+   "frame_item_id": "CNMV-OIR-34106",
+   "stratum": "MAIN_MARKET",
+   "partition": "HOLDOUT",
+   "sample_score": "065b7caae08069941b4eb8eff79793070bbab2a7d356fed99f689e8872fdd2e0",
+   "split_score": "6355bcdfd772943b4d49311efdce45ffb5ab15793ff6a28906a68a1fb4d72168"
+  },
+  {
+   "frame_item_id": "CNMV-OIR-34625",
+   "stratum": "MAIN_MARKET",
+   "partition": "HOLDOUT",
+   "sample_score": "068894c494b7f5cf6e51865a42b042dc7fdf0e625b1c42c134f68d59156f3405",
+   "split_score": "736eda9a21701025c7891288efbe5d93e468a320234ad38998a71917869f5940"
+  },
+  {
+   "frame_item_id": "CNMV-OIR-34719",
+   "stratum": "MAIN_MARKET",
+   "partition": "HOLDOUT",
+   "sample_score": "0018c0d41b6e8abc27ff3998229dfa083db38a6d4405854d8c88e7f490462e3f",
+   "split_score": "4310373e380ac9f64bb6140bd5da36836de1ed0c757bf3d4449440cd4518412c"
+  },
+  {
+   "frame_item_id": "CNMV-OIR-35005",
+   "stratum": "MAIN_MARKET",
+   "partition": "DEV",
+   "sample_score": "059b76d04a8ee7ac79904895baa2a89cefe4b2e41057573aa7961593b29fba87",
+   "split_score": "858b27e184921af8b52efe39cfa625c629e5242879c826aee870efd8ab096741"
+  },
+  {
+   "frame_item_id": "CNMV-OIR-35131",
+   "stratum": "MAIN_MARKET",
+   "partition": "HOLDOUT",
+   "sample_score": "0728b863ffe14238bf63b2c15d3efa8774837f2fbef04773cc60fcf6b1eac1b9",
+   "split_score": "271c1f7f4a827216f8b3f38521a40f9e65fddbe094c528436c951a1368d12d13"
+  },
+  {
+   "frame_item_id": "CNMV-OIR-35263",
+   "stratum": "MAIN_MARKET",
+   "partition": "DEV",
+   "sample_score": "013361f159d0a702c90f5fe47ca6c645c26ebf1ad6cdc1a6ad7f94ef93907a7b",
+   "split_score": "d34f48a69964c9ac09fa053355bdff5f4aaf7eae25ec478cdea9fc650e486fae"
+  },
+  {
+   "frame_item_id": "CNMV-OIR-36798",
+   "stratum": "MAIN_MARKET",
+   "partition": "DEV",
+   "sample_score": "07a16de9eb6781948434cefe00b4edfa0738f6662d5a3dc38f31e9ccc8bd672a",
+   "split_score": "cd4d39a92acbd46a91f8ca8898e4ccd0c08b772eb6be603a8ae97f54bf274f21"
+  },
+  {
+   "frame_item_id": "CNMV-OIR-37702",
+   "stratum": "MAIN_MARKET",
+   "partition": "DEV",
+   "sample_score": "0280a3325872a23f33fd8e383774f920ea8e5c4985a8a641fd863ae2ff1ec951",
+   "split_score": "ecc9aebb5701add50b6e5f896fea12b3bf2c8fcc1ee861bb0b1556043dce637e"
+  },
+  {
+   "frame_item_id": "CNMV-OIR-37970",
+   "stratum": "MAIN_MARKET",
+   "partition": "DEV",
+   "sample_score": "020df7d8d7aa07be3c4078801ed79462696f39688d8cf8b7a62be9f3531733ee",
+   "split_score": "8afe6b10576a15499e7ffbe6f8bf665951cd51362d264c47aa5db67e7f6d1eea"
+  },
+  {
+   "frame_item_id": "CNMV-OIR-39819",
+   "stratum": "MAIN_MARKET",
+   "partition": "DEV",
+   "sample_score": "0518fc7ba75fbc923089bd4db8feba4614c2bfcc29a8fad8bb778824d6a0a951",
+   "split_score": "a5af8bff4febaf675899707c4c311a72c1f975eee8c171547ad40a7024352524"
+  },
+  {
+   "frame_item_id": "CNMV-OIR-40758",
+   "stratum": "MAIN_MARKET",
+   "partition": "DEV",
+   "sample_score": "06873ed698ed354b6f8092e381f0af9f963806802cff5db6a6b16b62a2a05c85",
+   "split_score": "a84852e17ff83e0508432a7949675cfea776f23495313137dedb96d8f02fa8e3"
+  },
+  {
+   "frame_item_id": "CNMV-OIR-41312",
+   "stratum": "MAIN_MARKET",
+   "partition": "HOLDOUT",
+   "sample_score": "04810f8301b9a3ea284a4199cc4bc86a9a876f4711bfbcc2d23027f504acfd4f",
+   "split_score": "4238077878787917879409218918d41e4f41d2463c7480eaa279e143a35f1d8a"
+  },
+  {
+   "frame_item_id": "CNMV-OIR-41381",
+   "stratum": "MAIN_MARKET",
+   "partition": "DEV",
+   "sample_score": "01bef5658a762fd8f2d9fbdbf6417014800870e81c4abd3e86613aa15e2912a9",
+   "split_score": "7ef472a224d64f80c6aa6086d470c37e182b2ad4cd9e58a8fad3d4f6f680263f"
+  },
+  {
+   "frame_item_id": "CNMV-OIR-41640",
+   "stratum": "MAIN_MARKET",
+   "partition": "DEV",
+   "sample_score": "06d0ccaa6e2861bc1d30c785cf13b039326995cbe07c04db85705f5546359332",
+   "split_score": "c09eb1c1e35b91eebc5393c2178f5f946c8c2766ad58a0cc6129a9a0c5946822"
+  },
+  {
+   "frame_item_id": "CNMV-OIR-41650",
+   "stratum": "MAIN_MARKET",
+   "partition": "HOLDOUT",
+   "sample_score": "00f83fbb16a5408d639e4e95f578d81a2b81ccc932596f4c1d8e5caae05d2f0f",
+   "split_score": "350c9863e8074ef796e10f2ed992b831157b853fce38aa514142e5442eb1a557"
+  },
+  {
+   "frame_item_id": "CNMV-OIR-41981",
+   "stratum": "MAIN_MARKET",
+   "partition": "DEV",
+   "sample_score": "06783c6eb8eb0e022cf992c663ac3aceaf1aa2d5ad508a9375deb39e4fb7be26",
+   "split_score": "dfc7373c2a970f80e0d8a12dbdd77a289f8b55c49c06be59ec6d7e1277d6339e"
+  },
+  {
+   "frame_item_id": "POEX-DOC-15339",
+   "stratum": "PORTFOLIO",
+   "partition": "HOLDOUT",
+   "sample_score": "2731bf813b06569395fb0e509c74f9538b82f364e9a0cebab4a5af2fcafb7874",
+   "split_score": "46bd394068422af1e06f95d8ef2dc50583abb581a2fbb7df5ab76ab8053558be"
+  },
+  {
+   "frame_item_id": "POEX-DOC-21984",
+   "stratum": "PORTFOLIO",
+   "partition": "DEV",
+   "sample_score": "0d460c82f3db7636a5d49f34d484a9d03061efdb7cbea2ee04e6967159c3ff56",
+   "split_score": "f187224f26cb0ca0901ed499a32fc2677ade69b65862b2e3daf293c30d2aa46c"
+  },
+  {
+   "frame_item_id": "POEX-DOC-22422",
+   "stratum": "PORTFOLIO",
+   "partition": "DEV",
+   "sample_score": "3985d4e1fd04c3d443271b8936dd0cff00f550f85e0ec4210dce2496da5c3cca",
+   "split_score": "ee3df56f4073eb7f6231e50befa899f22b5203906ff532f33f985fc8a2706ca0"
+  },
+  {
+   "frame_item_id": "POEX-DOC-36171",
+   "stratum": "PORTFOLIO",
+   "partition": "DEV",
+   "sample_score": "3b9576f5fe5cd2f6dd41696337fe8b3bea36d4b79652aa7a9d7f4bbf170cf8b2",
+   "split_score": "ffff3a2b8593df24c715c8921413a683b2e4d27fc02e147c10ebf61540ff7373"
+  },
+  {
+   "frame_item_id": "POEX-DOC-39649",
+   "stratum": "PORTFOLIO",
+   "partition": "HOLDOUT",
+   "sample_score": "1ec8514f777deee1be12d5741c912a419a41d88d7c7dee4725ec711d115c435a",
+   "split_score": "0f32fdac782f301574f9aa3b302157168ed13261029bc06b05ee9a5b11f6162f"
+  },
+  {
+   "frame_item_id": "POEX-DOC-4162",
+   "stratum": "PORTFOLIO",
+   "partition": "HOLDOUT",
+   "sample_score": "243e88daa4ad8b1fa91c479ce561e3ed9feb82d742892f283a4c9970ea698c34",
+   "split_score": "0bec040d3a98bf61b704fa1a736dc2ed43d021806a5aedd307e26f6f5785b5d2"
+  },
+  {
+   "frame_item_id": "POEX-DOC-4318",
+   "stratum": "PORTFOLIO",
+   "partition": "HOLDOUT",
+   "sample_score": "4469d159b9a3dad693e394f686ad8b5c9c6479aa6186f76745de26d98bb4b007",
+   "split_score": "6431bb966a1a5ac667ada93e4d92cc7990337c1a2fb6564e347be7a0c75fd270"
+  },
+  {
+   "frame_item_id": "POEX-DOC-4319",
+   "stratum": "PORTFOLIO",
+   "partition": "HOLDOUT",
+   "sample_score": "519d8d0179a9a96eeacd3c7eb26f1b752a4ebdebdd7a6ab82cf37d6aac28f2a1",
+   "split_score": "6157e8778f8d8ddea7f9eb93b1a05965416a7a8ef8cfae46a965558cf8ab0ec2"
+  },
+  {
+   "frame_item_id": "POEX-DOC-4666",
+   "stratum": "PORTFOLIO",
+   "partition": "DEV",
+   "sample_score": "570cc54e6c2c693df3418169c29cacfbf8145ae108a88f8cbf37791360366737",
+   "split_score": "b36d4bb1bd9796f8e7bebf463552a6977b683c764d3fe202bc0d3fe28f56be8b"
+  },
+  {
+   "frame_item_id": "POEX-DOC-7021",
+   "stratum": "PORTFOLIO",
+   "partition": "DEV",
+   "sample_score": "039832f80836686d3e487a2e264470374aa6fd85d14199a1596d7afbb3bddcdc",
+   "split_score": "cf0714f1050586c781375e9a2e21b1043b681eec5721324b2f17696f7253c6f1"
+  }
+ ]
+}
