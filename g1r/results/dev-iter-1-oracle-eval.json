@@ -1,0 +1,314 @@
+{
+ "correct": [
+  {
+   "id": "BMEG-CapitalIncreases-ES0105606190-2025-03-27",
+   "field": "event_type",
+   "ok": true
+  },
+  {
+   "id": "BMEG-CapitalIncreases-ES0105606190-2025-03-27",
+   "field": "amount_or_ratio",
+   "ok": true
+  },
+  {
+   "id": "BMEG-CapitalIncreases-ES0105606190-2025-03-27",
+   "field": "currency",
+   "ok": true
+  },
+  {
+   "id": "BMEG-Dividends-ES0105448007-2026-07-08",
+   "field": "event_type",
+   "ok": true
+  },
+  {
+   "id": "BMEG-Dividends-ES0105448007-2026-07-08",
+   "field": "ex_date",
+   "ok": true
+  },
+  {
+   "id": "BMEG-Dividends-ES0105448007-2026-07-08",
+   "field": "payment_date",
+   "ok": true
+  },
+  {
+   "id": "BMEG-Dividends-ES0105448007-2026-07-08",
+   "field": "amount_or_ratio",
+   "ok": true
+  },
+  {
+   "id": "BMEG-Dividends-ES0105448007-2026-07-08",
+   "field": "currency",
+   "ok": true
+  },
+  {
+   "id": "BMEG-OtherPayments-ES0105273009-2026-01-02",
+   "field": "event_type",
+   "ok": true
+  },
+  {
+   "id": "BMEG-OtherPayments-ES0105273009-2026-01-02",
+   "field": "ex_date",
+   "ok": true
+  },
+  {
+   "id": "BMEG-OtherPayments-ES0105273009-2026-01-02",
+   "field": "payment_date",
+   "ok": true
+  },
+  {
+   "id": "BMEG-OtherPayments-ES0105273009-2026-01-02",
+   "field": "amount_or_ratio",
+   "ok": true
+  },
+  {
+   "id": "BMEG-OtherPayments-ES0105273009-2026-01-02",
+   "field": "currency",
+   "ok": true
+  },
+  {
+   "id": "BMEG-OtherPayments-ES0105389003-2025-05-22",
+   "field": "event_type",
+   "ok": true
+  },
+  {
+   "id": "BMEG-OtherPayments-ES0105389003-2025-05-22",
+   "field": "ex_date",
+   "ok": true
+  },
+  {
+   "id": "BMEG-OtherPayments-ES0105389003-2025-05-22",
+   "field": "payment_date",
+   "ok": true
+  },
+  {
+   "id": "BMEG-OtherPayments-ES0105389003-2025-05-22",
+   "field": "amount_or_ratio",
+   "ok": true
+  },
+  {
+   "id": "BMEG-OtherPayments-ES0105389003-2025-05-22",
+   "field": "currency",
+   "ok": true
+  },
+  {
+   "id": "CNMV-IP-2594",
+   "field": "event_type",
+   "ok": true
+  },
+  {
+   "id": "CNMV-OIR-35466",
+   "field": "event_type",
+   "ok": true
+  },
+  {
+   "id": "CNMV-OIR-35946",
+   "field": "event_type",
+   "ok": true
+  },
+  {
+   "id": "CNMV-OIR-36141",
+   "field": "event_type",
+   "ok": true
+  },
+  {
+   "id": "CNMV-OIR-36141",
+   "field": "record_date",
+   "ok": true
+  },
+  {
+   "id": "CNMV-OIR-36141",
+   "field": "payment_date",
+   "ok": true
+  },
+  {
+   "id": "CNMV-OIR-38190",
+   "field": "event_type",
+   "ok": true
+  },
+  {
+   "id": "CNMV-OIR-41467",
+   "field": "event_type",
+   "ok": true
+  },
+  {
+   "id": "CNMV-OIR-41467",
+   "field": "record_date",
+   "ok": true
+  },
+  {
+   "id": "CNMV-OIR-41467",
+   "field": "payment_date",
+   "ok": true
+  },
+  {
+   "id": "CNMV-OIR-41942",
+   "field": "event_type",
+   "ok": true
+  },
+  {
+   "id": "POEX-DOC-18666",
+   "field": "event_type",
+   "ok": true
+  },
+  {
+   "id": "POEX-DOC-18666",
+   "field": "amount_or_ratio",
+   "ok": true
+  },
+  {
+   "id": "POEX-DOC-18666",
+   "field": "currency",
+   "ok": true
+  },
+  {
+   "id": "POEX-DOC-4662",
+   "field": "ex_date",
+   "ok": true
+  },
+  {
+   "id": "POEX-DOC-4662",
+   "field": "record_date",
+   "ok": true
+  },
+  {
+   "id": "POEX-DOC-4662",
+   "field": "payment_date",
+   "ok": true
+  },
+  {
+   "id": "POEX-DOC-4662",
+   "field": "amount_or_ratio",
+   "ok": true
+  },
+  {
+   "id": "POEX-DOC-4662",
+   "field": "currency",
+   "ok": true
+  },
+  {
+   "id": "CNMV-IP-2670",
+   "field": "event_type",
+   "ok": true
+  },
+  {
+   "id": "CNMV-IP-2670",
+   "field": "amount_or_ratio",
+   "ok": true
+  },
+  {
+   "id": "CNMV-IP-2670",
+   "field": "currency",
+   "ok": true
+  },
+  {
+   "id": "CNMV-OIR-32583",
+   "field": "event_type",
+   "ok": true
+  },
+  {
+   "id": "CNMV-OIR-37214",
+   "field": "event_type",
+   "ok": true
+  },
+  {
+   "id": "CNMV-OIR-37214",
+   "field": "ex_date",
+   "ok": true
+  },
+  {
+   "id": "CNMV-OIR-37214",
+   "field": "record_date",
+   "ok": true
+  },
+  {
+   "id": "CNMV-OIR-37214",
+   "field": "payment_date",
+   "ok": true
+  },
+  {
+   "id": "CNMV-OIR-37547",
+   "field": "event_type",
+   "ok": true
+  },
+  {
+   "id": "CNMV-OIR-40729",
+   "field": "event_type",
+   "ok": true
+  },
+  {
+   "id": "CNMV-OIR-40729",
+   "field": "record_date",
+   "ok": true
+  },
+  {
+   "id": "CNMV-OIR-40729",
+   "field": "payment_date",
+   "ok": true
+  }
+ ],
+ "incorrect": [
+  {
+   "id": "CNMV-OIR-37214",
+   "field": "amount_or_ratio",
+   "ok": true,
+   "emitted": {},
+   "note": "0,01 era nominal de accion, no dividendo. Publicado: \"importe total de 342 millones de euros\"."
+  },
+  {
+   "id": "CNMV-OIR-40729",
+   "field": "amount_or_ratio",
+   "ok": true,
+   "emitted": {},
+   "note": "0,01 era nominal de accion, no dividendo. Publicado: \"importe total de 400 millones de euros\"."
+  },
+  {
+   "id": "CNMV-OIR-40729",
+   "field": "ex_date",
+   "ok": false,
+   "emitted": {
+    "date.ex_date": "2026-05-15"
+   },
+   "note": "15-may era fecha prevista de anuncio; ex-dividendo publicado = 18-may-2026."
+  },
+  {
+   "id": "CNMV-IP-2594",
+   "field": "amount_or_ratio",
+   "ok": true,
+   "emitted": {},
+   "note": "755M pertenece al programa de recompra. Dividendo publicado: 12,44 centimos brutos/accion."
+  },
+  {
+   "id": "CNMV-OIR-36680",
+   "field": "event_type",
+   "ok": false,
+   "emitted": {
+    "event_type": "CASH_DIVIDEND"
+   },
+   "note": "Documento de fusion por absorcion JSS->Arima; CASH_DIVIDEND era lexema espurio."
+  },
+  {
+   "id": "CNMV-OIR-38190",
+   "field": "amount_or_ratio",
+   "ok": false,
+   "emitted": {
+    "amount.gross_per_share": {
+     "normalized": "53",
+     "currency": "EUR"
+    }
+   },
+   "note": "DECIMAL_SPLIT_PDF: \"0. 53 euros\" se emitio como 53."
+  },
+  {
+   "id": "CNMV-OIR-41467",
+   "field": "amount_or_ratio",
+   "ok": false,
+   "emitted": {
+    "amount.gross_per_share": {
+     "normalized": "47",
+     "currency": "EUR"
+    }
+   },
+   "note": "DECIMAL_SPLIT_PDF: \"0, 47 euros\" se emitio como 47."
+  }
+ ]
+}
