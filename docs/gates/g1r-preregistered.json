@@ -1,0 +1,80 @@
+{
+  "preregistration_version": "CA_ES_G1R_PREREG_V1",
+  "frozen_at": "2026-09-14",
+  "parent_g1": "G1 FAIL — docs/gates/g1-closure-report.md (b1b79c1, g1-audit-review)",
+  "parser_reference_freeze": "c431830de42acef3d108525edb575ed83be4fc13 / g1-parser-freeze",
+  "question": "Puede ca-es eliminar los false financial facts y errores de atribucion observados en G1 y mantener ese comportamiento en un nuevo holdout virgen?",
+  "failure_catalog_source": "g1/results/post-freeze-findings.jsonl (30 findings, empirico)",
+  "priorities": {
+    "P0": ["false_financial_value=0", "wrong_attribution=0", "wrong_event_type=0", "date_misbinding=0"],
+    "P1": ["published_but_missed_facts=decrease_vs_baseline"],
+    "P2": ["instrument_resolution=increase_vs_baseline"],
+    "P3": ["discovery_recrawl=OUT_OF_SCOPE"]
+  },
+  "corpora": {
+    "g1_sealed_25": {"role": "REGRESSION_ONLY", "usable_as_generalization_evidence": false},
+    "g1r_dev": {"role": "development", "target": 25},
+    "g1r_holdout": {"role": "virgin_evaluation", "target": 15, "frozen_before_parser_changes": true}
+  },
+  "sampling": {
+    "sample_score": "SHA256(CA_ES_G1R_SAMPLE_V1 + stratum + frame_item_id)",
+    "split_score": "SHA256(CA_ES_G1R_SPLIT_V1 + frame_item_id)",
+    "strata": ["MAIN_MARKET", "BME_GROWTH_MTF", "PORTFOLIO"],
+    "excluded_frame_item_ids": "todos los usados en el corpus G1 (DEV, HOLDOUT, ADVERSARIAL, NO_MATCH)",
+    "quota_policy": "sin cuotas forzadas de familia",
+    "adversarial": {"optional": true, "selection_class": "PRESELECTED_ADVERSARIAL", "reported": "separado, nunca combinado"}
+  },
+  "verdict": {
+    "PASS_requires_on_virgin_holdout": {
+      "false_financial_facts": 0,
+      "wrong_attribution": 0,
+      "wrong_event_type": 0,
+      "date_misbinding": 0,
+      "field_provenance_rate": 1.0,
+      "silent_conflicts": 0,
+      "unproven_auto_merges": 0,
+      "human_authored_financial_facts": 0,
+      "second_run_determinism": 1.0
+    },
+    "regression_guard": "los fallos P0 conocidos corregidos; sin empeorar los 37 campos correctos del holdout G1",
+    "measured_not_binding": {
+      "parser_miss_rate": "reportar vs baseline G1 38.33%",
+      "source_completeness": "reportar vs baseline G1 77.92%"
+    }
+  },
+  "hard_fail_criteria": {
+    "false_financial_facts": {"operator": ">", "value": 0},
+    "wrong_attribution": {"operator": ">", "value": 0},
+    "wrong_event_type": {"operator": ">", "value": 0},
+    "date_misbinding": {"operator": ">", "value": 0},
+    "field_provenance_rate": {"operator": "<", "value": 1.0},
+    "silent_conflicts": {"operator": ">", "value": 0},
+    "unproven_auto_merges": {"operator": ">", "value": 0},
+    "human_authored_financial_facts": {"operator": ">", "value": 0},
+    "second_run_determinism": {"operator": "!=", "value": 1.0}
+  },
+  "state_semantics": {
+    "UNKNOWN": "La fuente se proceso correctamente, pero el dato no estaba publicado.",
+    "MISSING": "Publicado en la evidencia revisada pero no extraido (incluye extraido con valor incorrecto).",
+    "FALSE_FACT": "Fact emitido con valor incorrecto o atribucion incorrecta; clase P0."
+  },
+  "human_intervention": {
+    "human_relation_adjudication": "ALLOWED",
+    "human_fact_entry": "FORBIDDEN",
+    "metric": "manual_adjudication_rate = manual_adjudications / events"
+  },
+  "out_of_scope": [
+    "discovery recall / negative control 11% FN (fase posterior propia)",
+    "expansion de producto, fuentes nuevas, ISO generation",
+    "rescribir el veredicto G1"
+  ],
+  "execution": [
+    "congelar protocolo (tag g1r-protocol) antes de modificar src/",
+    "construir G1-R DEV y congelar G1-R HOLDOUT en la misma operacion",
+    "desarrollar en DEV; cada cambio en g1r/results/g1r-changes.jsonl con reason_for_change",
+    "regression set 25 sellados tras cada iteracion; publicar diff de facts",
+    "freeze: tag g1r-parser-freeze; ejecutar holdout virgen + segunda pasada completa",
+    "adjudicacion humana: PROPOSED hasta firma; human_fact_entry FORBIDDEN"
+  ],
+  "metrics_status": "NOT_RUN"
+}
