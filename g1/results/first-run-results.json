@@ -1,0 +1,516 @@
+{
+  "results_version": "CA_ES_G1_DEV_RESULTS_V1",
+  "phase": "first-run",
+  "parser_commit": "cd38bc2f0317105216c533b926b71af3a9db5579",
+  "parser_commit_dirty": false,
+  "executed_at": "2026-09-14T00:00:00Z",
+  "seeds": 25,
+  "results": [
+    {
+      "frame_item_id": "BMEG-CapitalIncreases-ES0105425021-2026-02-23",
+      "stratum": "BME_GROWTH_MTF",
+      "retrieval_status": "OK",
+      "parse_status": "NO_PARSER:BME_GROWTH",
+      "event_detected": true,
+      "facts": {
+        "total": 0,
+        "populated_fields": []
+      },
+      "missing": [],
+      "unknown": [],
+      "conflicts": 0,
+      "identity_status": "UNRESOLVED",
+      "exception": null,
+      "result_sha": "895c21c81a1d4f757eae0e94aad5bcca814df23b343cc1ee12d4f3306f3993f1",
+      "parser_commit": "cd38bc2f0317105216c533b926b71af3a9db5579"
+    },
+    {
+      "frame_item_id": "BMEG-Dividends-ES0105318002-2026-07-03",
+      "stratum": "BME_GROWTH_MTF",
+      "retrieval_status": "OK",
+      "parse_status": "NO_PARSER:BME_GROWTH",
+      "event_detected": true,
+      "facts": {
+        "total": 0,
+        "populated_fields": []
+      },
+      "missing": [],
+      "unknown": [],
+      "conflicts": 0,
+      "identity_status": "UNRESOLVED",
+      "exception": null,
+      "result_sha": "6e14542ad927bcb3a83ba24256f6f68b7ba18d7b53632aa36a6b424834cee91d",
+      "parser_commit": "cd38bc2f0317105216c533b926b71af3a9db5579"
+    },
+    {
+      "frame_item_id": "BMEG-Dividends-ES0131172001-2026-07-07",
+      "stratum": "BME_GROWTH_MTF",
+      "retrieval_status": "OK",
+      "parse_status": "NO_PARSER:BME_GROWTH",
+      "event_detected": true,
+      "facts": {
+        "total": 0,
+        "populated_fields": []
+      },
+      "missing": [],
+      "unknown": [],
+      "conflicts": 0,
+      "identity_status": "UNRESOLVED",
+      "exception": null,
+      "result_sha": "86425d53eec3967b5e56ba59c561c2f7e5ece452577d70e4613c281513156de9",
+      "parser_commit": "cd38bc2f0317105216c533b926b71af3a9db5579"
+    },
+    {
+      "frame_item_id": "BMEG-NewListings-ES0105495008-2025-06-10",
+      "stratum": "BME_GROWTH_MTF",
+      "retrieval_status": "OK",
+      "parse_status": "NO_PARSER:BME_GROWTH",
+      "event_detected": true,
+      "facts": {
+        "total": 0,
+        "populated_fields": []
+      },
+      "missing": [],
+      "unknown": [],
+      "conflicts": 0,
+      "identity_status": "UNRESOLVED",
+      "exception": null,
+      "result_sha": "d8ae2f2ce6a4fdc1cb17907ee305d6e8a5389cdb713ae69b032c8c6a95a3b4c2",
+      "parser_commit": "cd38bc2f0317105216c533b926b71af3a9db5579"
+    },
+    {
+      "frame_item_id": "BMEG-OtherPayments-ES0105421004-2025-03-18",
+      "stratum": "BME_GROWTH_MTF",
+      "retrieval_status": "OK",
+      "parse_status": "NO_PARSER:BME_GROWTH",
+      "event_detected": true,
+      "facts": {
+        "total": 0,
+        "populated_fields": []
+      },
+      "missing": [],
+      "unknown": [],
+      "conflicts": 0,
+      "identity_status": "UNRESOLVED",
+      "exception": null,
+      "result_sha": "b2e8cdca0bcc60be213bdb2b7e44efaa011aa5308c9698ca6efcdbfa830ab0bd",
+      "parser_commit": "cd38bc2f0317105216c533b926b71af3a9db5579"
+    },
+    {
+      "frame_item_id": "BMEG-OtherPayments-ES0105685004-2026-05-25",
+      "stratum": "BME_GROWTH_MTF",
+      "retrieval_status": "OK",
+      "parse_status": "NO_PARSER:BME_GROWTH",
+      "event_detected": true,
+      "facts": {
+        "total": 0,
+        "populated_fields": []
+      },
+      "missing": [],
+      "unknown": [],
+      "conflicts": 0,
+      "identity_status": "UNRESOLVED",
+      "exception": null,
+      "result_sha": "80d6004e4cce1ee7fd317cd80b1482d2283a42c1406d3d80f14a7ed436d7b46c",
+      "parser_commit": "cd38bc2f0317105216c533b926b71af3a9db5579"
+    },
+    {
+      "frame_item_id": "CNMV-IP-2864",
+      "stratum": "MAIN_MARKET",
+      "retrieval_status": "OK",
+      "parse_status": "OK",
+      "event_detected": true,
+      "facts": {
+        "total": 1,
+        "populated_fields": []
+      },
+      "missing": [],
+      "unknown": [
+        "event_type"
+      ],
+      "conflicts": 0,
+      "identity_status": "UNRESOLVED",
+      "exception": null,
+      "result_sha": "f5f17eb9d73127e837866ab51310398cf1e58e3139b396a28354314f896f390a",
+      "parser_commit": "cd38bc2f0317105216c533b926b71af3a9db5579"
+    },
+    {
+      "frame_item_id": "CNMV-OIR-33627",
+      "stratum": "MAIN_MARKET",
+      "retrieval_status": "FETCH_FAILED:ValueError",
+      "parse_status": "SKIPPED:NO_RAW",
+      "event_detected": false,
+      "facts": {
+        "total": 0,
+        "populated_fields": []
+      },
+      "missing": [],
+      "unknown": [],
+      "conflicts": 0,
+      "identity_status": "NONE",
+      "exception": null,
+      "result_sha": "ab71fa6d039eb69e298b12b03fb0ae9a68daf92137ecb1d380865c1b297c1abd",
+      "parser_commit": "cd38bc2f0317105216c533b926b71af3a9db5579"
+    },
+    {
+      "frame_item_id": "CNMV-OIR-34234",
+      "stratum": "MAIN_MARKET",
+      "retrieval_status": "OK",
+      "parse_status": "OK",
+      "event_detected": true,
+      "facts": {
+        "total": 1,
+        "populated_fields": []
+      },
+      "missing": [],
+      "unknown": [
+        "event_type"
+      ],
+      "conflicts": 0,
+      "identity_status": "UNRESOLVED",
+      "exception": null,
+      "result_sha": "060931c1097e0be18ffdcb74031b13d7a88f7089bbf564d50e9e32d424f76f03",
+      "parser_commit": "cd38bc2f0317105216c533b926b71af3a9db5579"
+    },
+    {
+      "frame_item_id": "CNMV-OIR-34483",
+      "stratum": "MAIN_MARKET",
+      "retrieval_status": "OK",
+      "parse_status": "OK",
+      "event_detected": true,
+      "facts": {
+        "total": 2,
+        "populated_fields": [
+          "date.record_date"
+        ]
+      },
+      "missing": [],
+      "unknown": [
+        "event_type"
+      ],
+      "conflicts": 0,
+      "identity_status": "UNRESOLVED",
+      "exception": null,
+      "result_sha": "dc29e341073596ce4fa48659ec73459a1e25f74fb6b37dee795532f55f586902",
+      "parser_commit": "cd38bc2f0317105216c533b926b71af3a9db5579"
+    },
+    {
+      "frame_item_id": "CNMV-OIR-34753",
+      "stratum": "MAIN_MARKET",
+      "retrieval_status": "OK",
+      "parse_status": "OK",
+      "event_detected": true,
+      "facts": {
+        "total": 1,
+        "populated_fields": []
+      },
+      "missing": [],
+      "unknown": [
+        "event_type"
+      ],
+      "conflicts": 0,
+      "identity_status": "UNRESOLVED",
+      "exception": null,
+      "result_sha": "e5aeb1b04b4ec50058d5b720b74a2eac5c14a6a5eda85925c0dadb7d77da4e22",
+      "parser_commit": "cd38bc2f0317105216c533b926b71af3a9db5579"
+    },
+    {
+      "frame_item_id": "CNMV-OIR-35116",
+      "stratum": "MAIN_MARKET",
+      "retrieval_status": "OK",
+      "parse_status": "OK",
+      "event_detected": true,
+      "facts": {
+        "total": 1,
+        "populated_fields": []
+      },
+      "missing": [],
+      "unknown": [
+        "event_type"
+      ],
+      "conflicts": 0,
+      "identity_status": "UNRESOLVED",
+      "exception": null,
+      "result_sha": "1025a95b3a535a123594e8e5d3afdc1828c9d16ac49dea6630944e15ccfa4984",
+      "parser_commit": "cd38bc2f0317105216c533b926b71af3a9db5579"
+    },
+    {
+      "frame_item_id": "CNMV-OIR-38180",
+      "stratum": "MAIN_MARKET",
+      "retrieval_status": "OK",
+      "parse_status": "OK",
+      "event_detected": true,
+      "facts": {
+        "total": 2,
+        "populated_fields": [
+          "date.record_date"
+        ]
+      },
+      "missing": [],
+      "unknown": [
+        "event_type"
+      ],
+      "conflicts": 0,
+      "identity_status": "UNRESOLVED",
+      "exception": null,
+      "result_sha": "7d5e49b0b607c2dd78fba57f27f7baddbfa637c2b87f848c480f5b9d8f991200",
+      "parser_commit": "cd38bc2f0317105216c533b926b71af3a9db5579"
+    },
+    {
+      "frame_item_id": "CNMV-OIR-38198",
+      "stratum": "MAIN_MARKET",
+      "retrieval_status": "OK",
+      "parse_status": "OK",
+      "event_detected": true,
+      "facts": {
+        "total": 1,
+        "populated_fields": []
+      },
+      "missing": [],
+      "unknown": [
+        "event_type"
+      ],
+      "conflicts": 0,
+      "identity_status": "UNRESOLVED",
+      "exception": null,
+      "result_sha": "2ed856bcc75a0eb4ddcaac343806ba1987fab4635bdfc3277c042776a25c7d05",
+      "parser_commit": "cd38bc2f0317105216c533b926b71af3a9db5579"
+    },
+    {
+      "frame_item_id": "CNMV-OIR-38513",
+      "stratum": "MAIN_MARKET",
+      "retrieval_status": "OK",
+      "parse_status": "OK",
+      "event_detected": true,
+      "facts": {
+        "total": 1,
+        "populated_fields": []
+      },
+      "missing": [],
+      "unknown": [
+        "event_type"
+      ],
+      "conflicts": 0,
+      "identity_status": "UNRESOLVED",
+      "exception": null,
+      "result_sha": "e387158d84c08bcc449ec0f4aa340d8d5f66d493aa4ea89cf073b74040b4aff3",
+      "parser_commit": "cd38bc2f0317105216c533b926b71af3a9db5579"
+    },
+    {
+      "frame_item_id": "CNMV-OIR-39905",
+      "stratum": "MAIN_MARKET",
+      "retrieval_status": "OK",
+      "parse_status": "OK",
+      "event_detected": true,
+      "facts": {
+        "total": 1,
+        "populated_fields": []
+      },
+      "missing": [],
+      "unknown": [
+        "event_type"
+      ],
+      "conflicts": 0,
+      "identity_status": "UNRESOLVED",
+      "exception": null,
+      "result_sha": "12620d841954d9f1daa0ab2b10864030b091ea036265ef120a127e2d6f9bd8d0",
+      "parser_commit": "cd38bc2f0317105216c533b926b71af3a9db5579"
+    },
+    {
+      "frame_item_id": "CNMV-OIR-40136",
+      "stratum": "MAIN_MARKET",
+      "retrieval_status": "OK",
+      "parse_status": "OK",
+      "event_detected": true,
+      "facts": {
+        "total": 1,
+        "populated_fields": []
+      },
+      "missing": [],
+      "unknown": [
+        "event_type"
+      ],
+      "conflicts": 0,
+      "identity_status": "UNRESOLVED",
+      "exception": null,
+      "result_sha": "fc52d184047b7609d327bc399d351e11ad160f989cc66a80fd8cf926357e9ef2",
+      "parser_commit": "cd38bc2f0317105216c533b926b71af3a9db5579"
+    },
+    {
+      "frame_item_id": "POEX-DOC-36298",
+      "stratum": "PORTFOLIO",
+      "retrieval_status": "OK",
+      "parse_status": "OK",
+      "event_detected": true,
+      "facts": {
+        "total": 6,
+        "populated_fields": [
+          "amount.gross_per_share",
+          "amount.gross_total",
+          "date.ex_date",
+          "date.payment_date",
+          "date.record_date",
+          "event_type"
+        ]
+      },
+      "missing": [],
+      "unknown": [],
+      "conflicts": 0,
+      "identity_status": "UNRESOLVED",
+      "exception": null,
+      "result_sha": "0e934468fda90fbd02fbbe5f12df7262caaf1b2232b69302ab809d918b7a92a8",
+      "parser_commit": "cd38bc2f0317105216c533b926b71af3a9db5579"
+    },
+    {
+      "frame_item_id": "POEX-DOC-36615",
+      "stratum": "PORTFOLIO",
+      "retrieval_status": "OK",
+      "parse_status": "OK",
+      "event_detected": true,
+      "facts": {
+        "total": 3,
+        "populated_fields": [
+          "amount.gross_per_share",
+          "amount.gross_total",
+          "event_type"
+        ]
+      },
+      "missing": [],
+      "unknown": [],
+      "conflicts": 0,
+      "identity_status": "UNRESOLVED",
+      "exception": null,
+      "result_sha": "93fed9d3810936b8ff90e7e88e9886e869606dea1015b76ea0c36ef53df8c973",
+      "parser_commit": "cd38bc2f0317105216c533b926b71af3a9db5579"
+    },
+    {
+      "frame_item_id": "POEX-DOC-39667",
+      "stratum": "PORTFOLIO",
+      "retrieval_status": "OK",
+      "parse_status": "OK",
+      "event_detected": true,
+      "facts": {
+        "total": 1,
+        "populated_fields": [
+          "event_type"
+        ]
+      },
+      "missing": [],
+      "unknown": [],
+      "conflicts": 0,
+      "identity_status": "UNRESOLVED",
+      "exception": null,
+      "result_sha": "e49ea1a226b70afbf8a9472be889bfcb7089563a9b33dc8f9dbc4597db2e83d9",
+      "parser_commit": "cd38bc2f0317105216c533b926b71af3a9db5579"
+    },
+    {
+      "frame_item_id": "POEX-DOC-39954",
+      "stratum": "PORTFOLIO",
+      "retrieval_status": "OK",
+      "parse_status": "OK",
+      "event_detected": true,
+      "facts": {
+        "total": 6,
+        "populated_fields": [
+          "amount.gross_per_share",
+          "amount.gross_total",
+          "date.ex_date",
+          "date.payment_date",
+          "date.record_date",
+          "event_type"
+        ]
+      },
+      "missing": [],
+      "unknown": [],
+      "conflicts": 0,
+      "identity_status": "UNRESOLVED",
+      "exception": null,
+      "result_sha": "2cec95b0f2a1c444fec7232f318d5fc1652d240868a0ec35d38f7202203dd2de",
+      "parser_commit": "cd38bc2f0317105216c533b926b71af3a9db5579"
+    },
+    {
+      "frame_item_id": "POEX-DOC-40270",
+      "stratum": "PORTFOLIO",
+      "retrieval_status": "OK",
+      "parse_status": "OK",
+      "event_detected": true,
+      "facts": {
+        "total": 2,
+        "populated_fields": [
+          "amount.gross_per_share"
+        ]
+      },
+      "missing": [],
+      "unknown": [
+        "event_type"
+      ],
+      "conflicts": 0,
+      "identity_status": "UNRESOLVED",
+      "exception": null,
+      "result_sha": "594c5fd341b35218eede4f53fb08dc0a304a57f38f93f440433586bb63e97ca0",
+      "parser_commit": "cd38bc2f0317105216c533b926b71af3a9db5579"
+    },
+    {
+      "frame_item_id": "POEX-DOC-41986",
+      "stratum": "PORTFOLIO",
+      "retrieval_status": "OK",
+      "parse_status": "OK",
+      "event_detected": true,
+      "facts": {
+        "total": 1,
+        "populated_fields": []
+      },
+      "missing": [],
+      "unknown": [
+        "event_type"
+      ],
+      "conflicts": 0,
+      "identity_status": "UNRESOLVED",
+      "exception": null,
+      "result_sha": "6f00f418a2ac4da3989d9e735af987b956506543a1bf6609e8d0458360e857dc",
+      "parser_commit": "cd38bc2f0317105216c533b926b71af3a9db5579"
+    },
+    {
+      "frame_item_id": "POEX-DOC-4665",
+      "stratum": "PORTFOLIO",
+      "retrieval_status": "OK",
+      "parse_status": "OK",
+      "event_detected": true,
+      "facts": {
+        "total": 2,
+        "populated_fields": [
+          "amount.gross_per_share",
+          "event_type"
+        ]
+      },
+      "missing": [],
+      "unknown": [],
+      "conflicts": 0,
+      "identity_status": "UNRESOLVED",
+      "exception": null,
+      "result_sha": "0025b2b38aa27c133601488359ff71be8bfd1150561925623332999e7f209742",
+      "parser_commit": "cd38bc2f0317105216c533b926b71af3a9db5579"
+    },
+    {
+      "frame_item_id": "POEX-DOC-7018",
+      "stratum": "PORTFOLIO",
+      "retrieval_status": "OK",
+      "parse_status": "OK",
+      "event_detected": true,
+      "facts": {
+        "total": 1,
+        "populated_fields": []
+      },
+      "missing": [],
+      "unknown": [
+        "event_type"
+      ],
+      "conflicts": 0,
+      "identity_status": "UNRESOLVED",
+      "exception": null,
+      "result_sha": "4ae8a9c7de062dbbf0921cf8ec5e5d4099a5fa2fe0b92aac570a020357cbb487",
+      "parser_commit": "cd38bc2f0317105216c533b926b71af3a9db5579"
+    }
+  ],
+  "batch_sha256": "22b85c522d65c8984a6fd22c9cc1f519ba4915cafe8eae0cde7d0a636b649b64"
+}

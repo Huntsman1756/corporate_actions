@@ -10,6 +10,9 @@ g0/results/*.json
 !g0/results/.gitkeep
 g1/results/*.json
 !g1/results/.gitkeep
+# artefactos congelados G1 (ADR-015): baseline y final DEV se commitean
+!g1/results/first-run-results.json
+!g1/results/final-run-results.json
 
 # Python
 __pycache__/
