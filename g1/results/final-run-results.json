@@ -1,8 +1,8 @@
 {
   "results_version": "CA_ES_G1_DEV_RESULTS_V1",
   "phase": "final-run",
-  "parser_commit": "821c39b7b2f54db1a5f96274dd292f4d11c57530",
-  "parser_commit_dirty": true,
+  "parser_commit": "c431830de42acef3d108525edb575ed83be4fc13",
+  "parser_commit_dirty": false,
   "executed_at": "2026-09-14T00:00:00Z",
   "seeds": 25,
   "seed_verdicts": {
@@ -83,7 +83,7 @@
         "critical_facts_extracted": true,
         "instrument_resolved": true
       },
-      "parser_commit": "821c39b7b2f54db1a5f96274dd292f4d11c57530",
+      "parser_commit": "c431830de42acef3d108525edb575ed83be4fc13",
       "seed_verdict": "ACTUAL_CA",
       "first_run_result": {
         "frame_item_id": "BMEG-CapitalIncreases-ES0105425021-2026-02-23",
@@ -199,7 +199,7 @@
         "critical_facts_extracted": true,
         "instrument_resolved": true
       },
-      "parser_commit": "821c39b7b2f54db1a5f96274dd292f4d11c57530",
+      "parser_commit": "c431830de42acef3d108525edb575ed83be4fc13",
       "seed_verdict": "ACTUAL_CA",
       "first_run_result": {
         "frame_item_id": "BMEG-Dividends-ES0105318002-2026-07-03",
@@ -306,7 +306,7 @@
         "critical_facts_extracted": true,
         "instrument_resolved": true
       },
-      "parser_commit": "821c39b7b2f54db1a5f96274dd292f4d11c57530",
+      "parser_commit": "c431830de42acef3d108525edb575ed83be4fc13",
       "seed_verdict": "ACTUAL_CA",
       "first_run_result": {
         "frame_item_id": "BMEG-Dividends-ES0131172001-2026-07-07",
@@ -413,7 +413,7 @@
         "critical_facts_extracted": true,
         "instrument_resolved": true
       },
-      "parser_commit": "821c39b7b2f54db1a5f96274dd292f4d11c57530",
+      "parser_commit": "c431830de42acef3d108525edb575ed83be4fc13",
       "seed_verdict": "ACTUAL_CA",
       "first_run_result": {
         "frame_item_id": "BMEG-NewListings-ES0105495008-2025-06-10",
@@ -520,7 +520,7 @@
         "critical_facts_extracted": true,
         "instrument_resolved": true
       },
-      "parser_commit": "821c39b7b2f54db1a5f96274dd292f4d11c57530",
+      "parser_commit": "c431830de42acef3d108525edb575ed83be4fc13",
       "seed_verdict": "ACTUAL_CA",
       "first_run_result": {
         "frame_item_id": "BMEG-OtherPayments-ES0105421004-2025-03-18",
@@ -627,7 +627,7 @@
         "critical_facts_extracted": true,
         "instrument_resolved": true
       },
-      "parser_commit": "821c39b7b2f54db1a5f96274dd292f4d11c57530",
+      "parser_commit": "c431830de42acef3d108525edb575ed83be4fc13",
       "seed_verdict": "ACTUAL_CA",
       "first_run_result": {
         "frame_item_id": "BMEG-OtherPayments-ES0105685004-2026-05-25",
@@ -722,7 +722,7 @@
         "critical_facts_extracted": false,
         "instrument_resolved": false
       },
-      "parser_commit": "821c39b7b2f54db1a5f96274dd292f4d11c57530",
+      "parser_commit": "c431830de42acef3d108525edb575ed83be4fc13",
       "seed_verdict": "NOT_CA",
       "first_run_result": {
         "frame_item_id": "CNMV-IP-2864",
@@ -805,7 +805,7 @@
         "critical_facts_extracted": false,
         "instrument_resolved": false
       },
-      "parser_commit": "821c39b7b2f54db1a5f96274dd292f4d11c57530",
+      "parser_commit": "c431830de42acef3d108525edb575ed83be4fc13",
       "seed_verdict": "ACTUAL_CA",
       "first_run_result": {
         "frame_item_id": "CNMV-OIR-33627",
@@ -892,7 +892,7 @@
         "critical_facts_extracted": true,
         "instrument_resolved": true
       },
-      "parser_commit": "821c39b7b2f54db1a5f96274dd292f4d11c57530",
+      "parser_commit": "c431830de42acef3d108525edb575ed83be4fc13",
       "seed_verdict": "ACTUAL_CA",
       "first_run_result": {
         "frame_item_id": "CNMV-OIR-34234",
@@ -987,7 +987,7 @@
         "critical_facts_extracted": true,
         "instrument_resolved": false
       },
-      "parser_commit": "821c39b7b2f54db1a5f96274dd292f4d11c57530",
+      "parser_commit": "c431830de42acef3d108525edb575ed83be4fc13",
       "seed_verdict": "ACTUAL_CA",
       "first_run_result": {
         "frame_item_id": "CNMV-OIR-34483",
@@ -1076,7 +1076,7 @@
         "critical_facts_extracted": false,
         "instrument_resolved": false
       },
-      "parser_commit": "821c39b7b2f54db1a5f96274dd292f4d11c57530",
+      "parser_commit": "c431830de42acef3d108525edb575ed83be4fc13",
       "seed_verdict": "ACTUAL_CA",
       "first_run_result": {
         "frame_item_id": "CNMV-OIR-34753",
@@ -1162,7 +1162,7 @@
         "critical_facts_extracted": true,
         "instrument_resolved": false
       },
-      "parser_commit": "821c39b7b2f54db1a5f96274dd292f4d11c57530",
+      "parser_commit": "c431830de42acef3d108525edb575ed83be4fc13",
       "seed_verdict": "ACTUAL_CA",
       "first_run_result": {
         "frame_item_id": "CNMV-OIR-35116",
@@ -1252,7 +1252,7 @@
         "critical_facts_extracted": true,
         "instrument_resolved": false
       },
-      "parser_commit": "821c39b7b2f54db1a5f96274dd292f4d11c57530",
+      "parser_commit": "c431830de42acef3d108525edb575ed83be4fc13",
       "seed_verdict": "ACTUAL_CA",
       "first_run_result": {
         "frame_item_id": "CNMV-OIR-38180",
@@ -1339,7 +1339,7 @@
         "critical_facts_extracted": false,
         "instrument_resolved": false
       },
-      "parser_commit": "821c39b7b2f54db1a5f96274dd292f4d11c57530",
+      "parser_commit": "c431830de42acef3d108525edb575ed83be4fc13",
       "seed_verdict": "NOT_CA",
       "first_run_result": {
         "frame_item_id": "CNMV-OIR-38198",
@@ -1422,7 +1422,7 @@
         "critical_facts_extracted": true,
         "instrument_resolved": false
       },
-      "parser_commit": "821c39b7b2f54db1a5f96274dd292f4d11c57530",
+      "parser_commit": "c431830de42acef3d108525edb575ed83be4fc13",
       "seed_verdict": "ACTUAL_CA",
       "first_run_result": {
         "frame_item_id": "CNMV-OIR-38513",
@@ -1506,7 +1506,7 @@
         "critical_facts_extracted": true,
         "instrument_resolved": false
       },
-      "parser_commit": "821c39b7b2f54db1a5f96274dd292f4d11c57530",
+      "parser_commit": "c431830de42acef3d108525edb575ed83be4fc13",
       "seed_verdict": "ACTUAL_CA",
       "first_run_result": {
         "frame_item_id": "CNMV-OIR-39905",
@@ -1588,7 +1588,7 @@
         "critical_facts_extracted": false,
         "instrument_resolved": false
       },
-      "parser_commit": "821c39b7b2f54db1a5f96274dd292f4d11c57530",
+      "parser_commit": "c431830de42acef3d108525edb575ed83be4fc13",
       "seed_verdict": "NOT_CA",
       "first_run_result": {
         "frame_item_id": "CNMV-OIR-40136",
@@ -1674,7 +1674,7 @@
         "critical_facts_extracted": true,
         "instrument_resolved": false
       },
-      "parser_commit": "821c39b7b2f54db1a5f96274dd292f4d11c57530",
+      "parser_commit": "c431830de42acef3d108525edb575ed83be4fc13",
       "seed_verdict": "ACTUAL_CA",
       "first_run_result": {
         "frame_item_id": "POEX-DOC-36298",
@@ -1771,7 +1771,7 @@
         "critical_facts_extracted": true,
         "instrument_resolved": false
       },
-      "parser_commit": "821c39b7b2f54db1a5f96274dd292f4d11c57530",
+      "parser_commit": "c431830de42acef3d108525edb575ed83be4fc13",
       "seed_verdict": "ACTUAL_CA",
       "first_run_result": {
         "frame_item_id": "POEX-DOC-36615",
@@ -1866,7 +1866,7 @@
         "critical_facts_extracted": true,
         "instrument_resolved": false
       },
-      "parser_commit": "821c39b7b2f54db1a5f96274dd292f4d11c57530",
+      "parser_commit": "c431830de42acef3d108525edb575ed83be4fc13",
       "seed_verdict": "ACTUAL_CA",
       "first_run_result": {
         "frame_item_id": "POEX-DOC-39667",
@@ -1958,7 +1958,7 @@
         "critical_facts_extracted": true,
         "instrument_resolved": false
       },
-      "parser_commit": "821c39b7b2f54db1a5f96274dd292f4d11c57530",
+      "parser_commit": "c431830de42acef3d108525edb575ed83be4fc13",
       "seed_verdict": "ACTUAL_CA",
       "first_run_result": {
         "frame_item_id": "POEX-DOC-39954",
@@ -2054,7 +2054,7 @@
         "critical_facts_extracted": true,
         "instrument_resolved": false
       },
-      "parser_commit": "821c39b7b2f54db1a5f96274dd292f4d11c57530",
+      "parser_commit": "c431830de42acef3d108525edb575ed83be4fc13",
       "seed_verdict": "ACTUAL_CA",
       "first_run_result": {
         "frame_item_id": "POEX-DOC-40270",
@@ -2145,7 +2145,7 @@
         "critical_facts_extracted": true,
         "instrument_resolved": true
       },
-      "parser_commit": "821c39b7b2f54db1a5f96274dd292f4d11c57530",
+      "parser_commit": "c431830de42acef3d108525edb575ed83be4fc13",
       "seed_verdict": "ACTUAL_CA",
       "first_run_result": {
         "frame_item_id": "POEX-DOC-41986",
@@ -2235,7 +2235,7 @@
         "critical_facts_extracted": true,
         "instrument_resolved": false
       },
-      "parser_commit": "821c39b7b2f54db1a5f96274dd292f4d11c57530",
+      "parser_commit": "c431830de42acef3d108525edb575ed83be4fc13",
       "seed_verdict": "ACTUAL_CA",
       "first_run_result": {
         "frame_item_id": "POEX-DOC-4665",
@@ -2324,7 +2324,7 @@
         "critical_facts_extracted": true,
         "instrument_resolved": false
       },
-      "parser_commit": "821c39b7b2f54db1a5f96274dd292f4d11c57530",
+      "parser_commit": "c431830de42acef3d108525edb575ed83be4fc13",
       "seed_verdict": "ACTUAL_CA",
       "first_run_result": {
         "frame_item_id": "POEX-DOC-7018",
@@ -2379,5 +2379,5 @@
       "reason_for_change": null
     }
   ],
-  "batch_sha256": "cd7e637b19d5639c02a623e5382ef6706a50474ac8b635bfc3438ad2ad029c3c"
+  "batch_sha256": "8ea825031f71ba153cccbd9e852401214aa70deb87842e7a3dc9796e7af426d9"
 }
