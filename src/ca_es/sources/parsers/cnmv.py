@@ -16,6 +16,7 @@ from ...source_policy import SourcePolicy
 from ..documents import SourceDocument
 from .base import Claim, DocumentReference, ParsedDocument, parse_structured
 from .html_text import decode as decode_html, html_to_text, spanish_date_to_iso
+from .labeled_dates import find_labeled_date
 from .pdf_text import extract_text, normalize_text
 
 SOURCE_ID = "CNMV"
@@ -103,7 +104,7 @@ def _parse_text(text: str, document: SourceDocument) -> ParsedDocument:
     )
     dividend_context = grab(
         "event_dividend_context",
-        r"(?:distribuci[oó]n del dividendo(?: ordinario bruto)?|pago de (?:un )?dividendo|dividendo complementario|dividendo extraordinario|dividendo a cuenta)",
+        r"(?:distribuci[oó]n del dividendo(?: ordinario bruto)?|distribuci[oó]n de dividendos?|reparto de (?:un )?dividendo|repartir un dividendo|pago de (?:un )?dividendo|dividendo complementario|dividendo extraordinario|dividendo a cuenta)",
         flags=re.I,
     )
     redemption = grab(
@@ -191,8 +192,28 @@ def _parse_text(text: str, document: SourceDocument) -> ParsedDocument:
                 )
 
     # --- Dividendo --------------------------------------------------
+    # Importe por accion generico: "X euros brutos por accion",
+    # "X euros brutos por cada accion", "importe fijo unitario de X euros".
+    # Tiene precedencia sobre los patrones sin ancla "por accion" para no
+    # confundir el total del reparto con el importe unitario.
+    per_share = grab(
+        "dividend_per_share",
+        rf"(?:equivalente a |importe fijo unitario de |de )?{_AMOUNT} euros(?:\s*brutos)? por (?:cada )?acci[oó]n",
+        flags=re.I,
+    )
     cents = dividend_cents
-    if cents:
+    eur = dividend_eur
+    generic = dividend_generic
+    if per_share:
+        claims.append(
+            Claim(
+                field_path="amount.gross_per_share",
+                value=FinancialAmount.parse_localized(per_share, currency="EUR"),
+                evidence_locator=cite("dividend_per_share"),
+                raw_pointer="/anchors/dividend_per_share/value",
+            )
+        )
+    if cents and not per_share:
         claims.append(
             Claim(
                 field_path="amount.gross_per_share",
@@ -203,8 +224,7 @@ def _parse_text(text: str, document: SourceDocument) -> ParsedDocument:
                 fact_origin="DETERMINISTIC_DERIVATION",
             )
         )
-    eur = dividend_eur
-    if eur and not cents:
+    if eur and not cents and not per_share:
         claims.append(
             Claim(
                 field_path="amount.gross_per_share",
@@ -213,8 +233,7 @@ def _parse_text(text: str, document: SourceDocument) -> ParsedDocument:
                 raw_pointer="/anchors/dividend_eur/value",
             )
         )
-    generic = dividend_generic
-    if generic and not cents and not eur:
+    if generic and not cents and not eur and not per_share:
         claims.append(
             Claim(
                 field_path="amount.gross_per_share",
@@ -229,7 +248,7 @@ def _parse_text(text: str, document: SourceDocument) -> ParsedDocument:
         rf"{_AMOUNT} euros brutos y {_AMOUNT} euros netos por acci[oó]n",
         flags=re.I,
     )
-    if gross_net and not (cents or eur or generic):
+    if gross_net and not (cents or eur or generic or per_share):
         match = re.search(
             rf"{_AMOUNT} euros brutos y ({_AMOUNT}) euros netos por acci[oó]n",
             anchors["dividend_gross_net"]["matched"],
@@ -252,6 +271,21 @@ def _parse_text(text: str, document: SourceDocument) -> ParsedDocument:
                     raw_pointer="/anchors/dividend_gross_net/matched",
                 )
             )
+
+    gross_total = grab(
+        "dividend_gross_total",
+        rf"(?:dividendos?[^.]{{0,40}}?ascendente a|importe (?:bruto )?total de)\s*{_AMOUNT} euros",
+        flags=re.I,
+    )
+    if gross_total:
+        claims.append(
+            Claim(
+                field_path="amount.gross_total",
+                value=FinancialAmount.parse_localized(gross_total, currency="EUR"),
+                evidence_locator=cite("dividend_gross_total"),
+                raw_pointer="/anchors/dividend_gross_total/value",
+            )
+        )
 
     # Importes genericos de emision/amortizacion (transcripcion literal).
     for name, field, pattern in (
@@ -326,6 +360,55 @@ def _parse_text(text: str, document: SourceDocument) -> ParsedDocument:
         "date.record_date",
         "RECORD_DATE",
     )
+
+    # Fallback generico: fechas etiquetadas (Ex-Date / record date /
+    # payment date / fecha de pago / fecha valor / "se concreta en el
+    # dia") en formatos DD/MM/YYYY o "D de mes de YYYY".
+    if not payment_iso:
+        found = find_labeled_date(text, "PAYMENT_DATE")
+        if found:
+            anchors["payment_date"] = {
+                "value": found["value"],
+                "matched": found["matched"],
+                "offset": found["offset"],
+                "pattern": "labeled",
+            }
+            claims.append(
+                Claim(
+                    field_path="date.payment_date",
+                    value=found["iso"],
+                    date_kind="PAYMENT_DATE",
+                    evidence_locator=cite("payment_date"),
+                    raw_pointer="/anchors/payment_date/value",
+                )
+            )
+            payment_iso = found["iso"]
+    seen_fields = {c.field_path for c in claims}
+    for date_kind, field_path in (
+        ("EX_DATE", "date.ex_date"),
+        ("RECORD_DATE", "date.record_date"),
+    ):
+        if field_path in seen_fields:
+            continue
+        found = find_labeled_date(text, date_kind)
+        if not found:
+            continue
+        name = f"labeled_{date_kind.lower()}"
+        anchors[name] = {
+            "value": found["value"],
+            "matched": found["matched"],
+            "offset": found["offset"],
+            "pattern": "labeled",
+        }
+        claims.append(
+            Claim(
+                field_path=field_path,
+                value=found["iso"],
+                date_kind=date_kind,
+                evidence_locator=cite(name),
+                raw_pointer=f"/anchors/{name}/value",
+            )
+        )
 
     # --- Fecha de efecto de amortizacion/redencion -------------------
     redemption_date = grab(

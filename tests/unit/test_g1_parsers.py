@@ -6,6 +6,7 @@ import json
 from ca_es.sources.documents import SourceDocument
 from ca_es.sources.locators import resolve_locator
 from ca_es.sources.parsers import bme_growth, cnmv
+from ca_es.sources.parsers.labeled_dates import find_labeled_date
 
 
 def _doc(source_id: str, media_type: str = "application/json") -> SourceDocument:
@@ -201,3 +202,65 @@ def test_cnmv_unknown_cuando_no_hay_patron():
         {},
     )
     assert parsed.event_type == "UNKNOWN"
+
+
+# --- fechas etiquetadas (clase MISSING generica) ---------------------
+
+
+def test_labeled_date_numeric_y_espaciada():
+    text = "Record Date  02 / 07 / 2026\nEx–Date  03 / 07 / 2026"
+    assert find_labeled_date(text, "RECORD_DATE")["iso"] == "2026-07-02"
+    assert find_labeled_date(text, "EX_DATE")["iso"] == "2026-07-03"
+
+
+def test_labeled_date_espanola():
+    text = "Payment date  22 de julio de 2026"
+    assert find_labeled_date(text, "PAYMENT_DATE")["iso"] == "2026-07-22"
+
+
+def test_labeled_date_se_concreta_en_el_dia():
+    text = (
+        "Fecha de pago: 25 dias siguientes a la aprobacion del acuerdo "
+        "(que se concreta en el dia 23 de junio de 2025)."
+    )
+    assert find_labeled_date(text, "PAYMENT_DATE")["iso"] == "2025-06-23"
+
+
+def test_labeled_date_sin_etiqueta_no_extrae():
+    assert find_labeled_date("La junta fue el 30 de abril de 2025.", "EX_DATE") is None
+
+
+def test_cnmv_fechas_etiquetadas_parentesis():
+    parsed = cnmv.parse(
+        _cnmv_html(
+            "Distribucion de dividendos ordinarios ascendente a "
+            "10.753.259,44 euros brutos, equivalente a 0,01910633 euros "
+            "brutos por accion. "
+            "Fecha de pago del Dividendo (payment date): 26 de mayo de "
+            "2025. La fecha desde la que las acciones se negociaran sin "
+            "derecho (ex date) sera el 8 de mayo de 2025."
+        ),
+        _doc("CNMV", "text/html"),
+        {},
+    )
+    assert parsed.event_type == "CASH_DIVIDEND"
+    dates = {c.field_path: c.value for c in parsed.claims if c.date_kind}
+    assert dates["date.ex_date"] == "2025-05-08"
+    assert dates["date.payment_date"] == "2025-05-26"
+    gross = [c for c in parsed.claims if c.field_path == "amount.gross_per_share"]
+    assert gross and gross[0].value.raw_lexeme == "0,01910633"
+
+
+def test_cnmv_propuesta_dividendo_detectada():
+    parsed = cnmv.parse(
+        _cnmv_html(
+            "Ha acordado proponer a la Junta General repartir un "
+            "dividendo por un importe fijo unitario de 1,57 euros brutos "
+            "por cada accion."
+        ),
+        _doc("CNMV", "text/html"),
+        {},
+    )
+    assert parsed.event_type == "CASH_DIVIDEND"
+    gross = [c for c in parsed.claims if c.field_path == "amount.gross_per_share"]
+    assert gross and gross[0].value.raw_lexeme == "1,57"
