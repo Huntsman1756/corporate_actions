@@ -404,7 +404,7 @@ MECHANISM = {
 INSTR = {
  'CNMV-IP-3011': ('HUMAN_RELATION_REQUIRED', 'AEDAS Homes (nombre en doc). PELIGRO: affected != reporter; issuer_raw=NEINOR ligaria el instrumento equivocado; resolver exige relacion adjudicada al instrumento de la OPA', 'doc sin ISIN/NIF; name-only del objeto de la OPA'),
  'CNMV-OIR-32783': ('HUMAN_RELATION_REQUIRED', 'Aena S.M.E. (name-only; issuer_raw oficial a nivel nombre, sin identificador)', 'sin cadena exacta nombre->ISIN verificable'),
- 'CNMV-OIR-35263': ('RESOLVABLE_AUTOMATICALLY', 'ES0105046017 presente en la tabla de la pagina; no extraido por el parser', 'SOURCE_CARRIED binding no explotado'),
+ 'CNMV-OIR-35263': ('RESOLVABLE_AUTOMATICALLY', 'ES0105046017 presente en la tabla de la pagina; no extraido por el parser', 'EXPLICIT_SOURCE_ASSERTION: ISIN en documento no explotado'),
  'CNMV-OIR-36798': ('HUMAN_RELATION_REQUIRED', 'Banco de Sabadell = affected (issuer_raw oficial); el doc nombra Sabadell+BBVA', 'name-only; binding issuer->ISIN requiere lookup oficial no congelado'),
  'CNMV-OIR-37702': ('HUMAN_RELATION_REQUIRED', 'MERLIN (name-only)', 'sin identificador oficial en doc ni metadata'),
  'CNMV-OIR-37970': ('NOT_APPLICABLE', 'seed NOT_CA', 'sin evento sobre el titulo'),
@@ -412,11 +412,11 @@ INSTR = {
  'CNMV-OIR-40758': ('HUMAN_RELATION_REQUIRED', 'Almirall (name-only)', 'sin identificador oficial en doc ni metadata'),
  'CNMV-OIR-41381': ('HUMAN_RELATION_REQUIRED', 'Reig Jofre (name-only)', 'sin identificador oficial en doc ni metadata'),
  'CNMV-OIR-41640': ('HUMAN_RELATION_REQUIRED', 'Reig Jofre (name-only)', 'sin identificador oficial en doc ni metadata'),
- 'CNMV-OIR-41981': ('RESOLVABLE_AUTOMATICALLY', 'pagina porta ISINs; la fila mas reciente (ES0109260291, inscripcion 14/07/2026) es el instrumento post-agrupacion', 'SOURCE_CARRIED binding no explotado; multi-fila requiere regla determinista (fila vigente)'),
- 'POEX-DOC-22422': ('RESOLVABLE_VIA_OFFICIAL_CROSS_REFERENCE', 'ES0105801007 via metadata.product_url oficial POEX', 'structured source identifier: slug emisor porta ISIN'),
- 'POEX-DOC-36171': ('RESOLVABLE_VIA_OFFICIAL_CROSS_REFERENCE', 'ES0105902003 via metadata.product_url oficial POEX', 'structured source identifier: slug emisor porta ISIN'),
- 'POEX-DOC-4666': ('RESOLVABLE_VIA_OFFICIAL_CROSS_REFERENCE', 'ES0105801007 via metadata.product_url oficial POEX', 'structured source identifier: slug emisor porta ISIN'),
- 'POEX-DOC-7021': ('RESOLVABLE_VIA_OFFICIAL_CROSS_REFERENCE', 'ES0105746004 via metadata.product_url oficial POEX', 'structured source identifier: slug emisor porta ISIN'),
+ 'CNMV-OIR-41981': ('RESOLVABLE_AUTOMATICALLY', 'pagina porta ISINs; la fila mas reciente (ES0109260291, inscripcion 14/07/2026) es el instrumento post-agrupacion', 'EXPLICIT_SOURCE_ASSERTION: ISIN en documento; multi-fila requiere regla determinista (fila vigente)'),
+ 'POEX-DOC-22422': ('RESOLVABLE_AUTOMATICALLY', 'ES0105801007 via metadata.product_url oficial POEX', 'SOURCE_CARRIED_INSTRUMENT_BINDING (ADR-013 nivel 2): product page oficial porta ISIN en slug'),
+ 'POEX-DOC-36171': ('RESOLVABLE_AUTOMATICALLY', 'ES0105902003 via metadata.product_url oficial POEX', 'SOURCE_CARRIED_INSTRUMENT_BINDING (ADR-013 nivel 2): product page oficial porta ISIN en slug'),
+ 'POEX-DOC-4666': ('RESOLVABLE_AUTOMATICALLY', 'ES0105801007 via metadata.product_url oficial POEX', 'SOURCE_CARRIED_INSTRUMENT_BINDING (ADR-013 nivel 2): product page oficial porta ISIN en slug'),
+ 'POEX-DOC-7021': ('RESOLVABLE_AUTOMATICALLY', 'ES0105746004 via metadata.product_url oficial POEX', 'SOURCE_CARRIED_INSTRUMENT_BINDING (ADR-013 nivel 2): product page oficial porta ISIN en slug'),
 }
 
 
@@ -480,9 +480,16 @@ def instr_row(fid):
     e = {x['frame_item_id']: x for x in base['results']}[fid]
     f = FACTS.get(fid, {})
     if e['instrument_resolved']:
+        # nivel ADR-013 del binding que el baseline ya emitio
+        if fid.startswith('BMEG-'):
+            lvl = 'SOURCE_CARRIED_INSTRUMENT_BINDING'
+            src = 'fila BMEG estructurada porta ISIN'
+        else:
+            lvl = 'EXPLICIT_SOURCE_ASSERTION'
+            src = 'ISIN explicito en el documento'
         cls, expected, note = ('RESOLVED_BASELINE',
                                f.get('affected_instrument.isin'),
-                               'binding emitido por c431830 desde la propia fuente')
+                               f'{lvl}: {src}')
     else:
         cls, expected, note = INSTR[fid]
     return {

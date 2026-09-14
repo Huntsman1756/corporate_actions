@@ -79,7 +79,16 @@ Reglas:
    (`dev-failure-catalog.json`), nunca por seed/issuer/URL/hash.
 7. **Licencias registradas.** MIT/BSD: pdfplumber, docling-parse,
    spaCy, dateparser, RapidFuzz, price-parser. **LGPL-2.1+**:
-   python-stdnum — uso vía import (dynamic), sin vendoring.
+   python-stdnum — uso vía import (dynamic), sin vendoring; permanece
+   opcional y fuera del import graph del core.
+8. **Degradación explícita y determinista.**
+   ```text
+   core importable/runnable sin extras
+   lazy imports de adapters
+   versión del adapter/dependencia registrada en la salida
+   ausencia de dependencia = comportamiento determinista
+     (candidatos no propuestos), nunca crash oculto
+   ```
 
 ## Consequences
 
