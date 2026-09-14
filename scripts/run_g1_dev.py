@@ -373,8 +373,12 @@ def main(argv: list[str] | None = None) -> int:
         "executed_at": EXECUTED_AT,
         "seeds": len(entries),
         "seed_verdicts": {
-            k: sum(1 for e in entries if e["seed_verdict"] == k)
-            for k in ("ACTUAL_CA", "NOT_CA", "AMBIGUOUS", None)
+            k: sum(
+                1
+                for e in entries
+                if (e["seed_verdict"] or "UNADJUDICATED") == k
+            )
+            for k in ("ACTUAL_CA", "NOT_CA", "AMBIGUOUS", "UNADJUDICATED")
         },
         "funnel": funnel(entries),
         # metricas de extraccion solo sobre corporate actions reales
