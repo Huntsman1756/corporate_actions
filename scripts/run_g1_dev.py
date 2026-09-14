@@ -255,10 +255,12 @@ def load_verdicts() -> dict[str, str]:
         return {}
     return {
         v["frame_item_id"]: v["seed_verdict"]
-        for v in map(
-            json.loads, VERDICTS_PATH.read_text(encoding="utf-8").splitlines()
+        for v in (
+            json.loads(line)
+            for line in VERDICTS_PATH.read_text(encoding="utf-8").splitlines()
+            if line.strip()
         )
-        if v.strip() and v.get("seed_verdict")
+        if v.get("seed_verdict")
     }
 
 

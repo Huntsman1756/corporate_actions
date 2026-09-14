@@ -58,10 +58,11 @@ def main() -> int:
     matrix = json.loads(MATRIX_PATH.read_text(encoding="utf-8"))
     verdicts = {
         v["frame_item_id"]: v
-        for v in map(
-            json.loads, VERDICTS_PATH.read_text(encoding="utf-8").splitlines()
+        for v in (
+            json.loads(line)
+            for line in VERDICTS_PATH.read_text(encoding="utf-8").splitlines()
+            if line.strip()
         )
-        if v.strip()
     }
     results = json.loads(args.results.read_text(encoding="utf-8"))
 
