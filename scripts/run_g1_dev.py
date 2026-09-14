@@ -286,7 +286,21 @@ def main(argv: list[str] | None = None) -> int:
         "seeds": len(entries),
         "results": entries,
     }
-    batch_sha = sha256_hex(canonical_bytes(body))
+    try:
+        batch_sha = sha256_hex(canonical_bytes(body))
+    except TypeError:
+        def _find_bytes(obj, path=""):
+            if isinstance(obj, bytes):
+                print("bytes en batch:", path, repr(obj)[:120])
+                return True
+            if isinstance(obj, dict):
+                return any(_find_bytes(v, f"{path}.{k}") for k, v in obj.items())
+            if isinstance(obj, (list, tuple)):
+                return any(_find_bytes(v, f"{path}[{i}]") for i, v in enumerate(obj))
+            return False
+
+        _find_bytes(body, "body")
+        raise
     body["batch_sha256"] = batch_sha
 
     RESULTS_DIR.mkdir(parents=True, exist_ok=True)
