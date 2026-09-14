@@ -286,37 +286,7 @@ def main(argv: list[str] | None = None) -> int:
         "seeds": len(entries),
         "results": entries,
     }
-    try:
-        batch_sha = sha256_hex(canonical_bytes(body))
-    except TypeError:
-        def _find_bad(obj, path=""):
-            if isinstance(obj, bytes):
-                print("bytes en batch:", path, repr(obj)[:120])
-                return True
-            if isinstance(obj, dict):
-                for k, v in obj.items():
-                    if not isinstance(k, str):
-                        print("clave no-str:", path, repr(k)[:120])
-                        return True
-                    if _find_bad(v, f"{path}.{k}"):
-                        return True
-                return False
-            if isinstance(obj, (list, tuple, set, frozenset)):
-                return any(
-                    _find_bad(v, f"{path}[{i}]") for i, v in enumerate(obj)
-                )
-            if not isinstance(obj, (str, int, float, bool, type(None))):
-                print("tipo raro:", path, type(obj), repr(obj)[:120])
-                return True
-            return False
-
-        _find_bad(body, "body")
-        for i, e in enumerate(entries):
-            try:
-                canonical_bytes(e)
-            except Exception as e2:
-                print("entry", i, e.get("frame_item_id"), "->", e2)
-        raise
+    batch_sha = sha256_hex(body)
     body["batch_sha256"] = batch_sha
 
     RESULTS_DIR.mkdir(parents=True, exist_ok=True)
