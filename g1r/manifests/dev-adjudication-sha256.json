@@ -1,0 +1,11 @@
+{
+ "manifest_version": "CA_ES_G1R_DEV_ADJUDICATION_V1",
+ "frozen_at": "2026-09-14",
+ "status": "PROPOSED_PENDING_HUMAN_SIGN",
+ "files": {
+  "g1r/adjudication/dev-seed-review.jsonl": "7f114481e5097ae20bd6163dd790b75bb724dc6d05cdfecbbfefb28e2084d1ef",
+  "g1r/adjudication/dev-missingness-review.jsonl": "c824ae896a98610bd07db10d59b0832f439c60b0e54f9d2f32b46a3c71521d05",
+  "g1r/adjudication/dev-instrument-review.jsonl": "f699895fe3b0b75595f2dad70a4e57cd0ad58bc6386764eac58456545dfc0f3c",
+  "g1r/results/dev-failure-catalog.json": "0a939dc2c39448a9838d10de4d3753978e224c6115d5bb24c1d372069b217568"
+ }
+}

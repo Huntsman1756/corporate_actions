@@ -1,0 +1,124 @@
+{
+ "catalog_version": "CA_ES_G1R_DEV_FAILURE_CATALOG_V1",
+ "frozen_at": "2026-09-14",
+ "baseline": "c431830de42acef3d108525edb575ed83be4fc13",
+ "baseline_results": "g1r/results/baseline-c431830-results.json",
+ "rule": "clases genericas del fenomeno documental; prohibido condicionar por seed/issuer/documento",
+ "failures": [
+  {
+   "failure_class": "FALSE_FINANCIAL_SEMANTIC_ANCHOR",
+   "seeds": [
+    "CNMV-IP-3011"
+   ],
+   "description": "un importe del contexto (limite del rango de cotizacion) se promueve a amount del evento; el precio de la oferta (21,335) queda sin extraer",
+   "safety": "P0"
+  },
+  {
+   "failure_class": "DATE_MISBINDING",
+   "seeds": [
+    "CNMV-OIR-39819",
+    "CNMV-OIR-40758"
+   ],
+   "description": "fecha de un rol adyacente (record, fin de plazo) se emite como ex_date/record_date; el documento publica varias fechas etiquetadas y el parser captura la incorrecta",
+   "safety": "P0"
+  },
+  {
+   "failure_class": "EVENT_TYPE_FAMILY_BOUNDARY",
+   "seeds": [
+    "CNMV-OIR-40758",
+    "CNMV-OIR-41381",
+    "CNMV-OIR-41640"
+   ],
+   "description": "scrip dividend implementado via aumento de capital liberado: el parser emite CAPITAL_INCREASE o CASH_DIVIDEND en lugar de SCRIP_DIVIDEND; la familia canonica exige el tipo economico del evento",
+   "safety": "P0 (frontera de taxonomia, confirmar en firma)"
+  },
+  {
+   "failure_class": "FALSE_POSITIVE_EVENT",
+   "seeds": [
+    "CNMV-OIR-37970"
+   ],
+   "description": "documento regulatorio procedural (solicitud de dispensa de OPA obligatoria) sin evento sobre el titulo; el parser emite TAKEOVER_BID",
+   "safety": "P0"
+  },
+  {
+   "failure_class": "CENTS_PER_SHARE_LEXEME",
+   "seeds": [
+    "CNMV-OIR-37702"
+   ],
+   "description": "\"20 centimos de euro (0,20EUR) brutos por accion\" no reconocido como gross_per_share",
+   "safety": "P1"
+  },
+  {
+   "failure_class": "STRUCTURED_AMOUNT_LABEL_VARIANT",
+   "seeds": [
+    "CNMV-OIR-35005"
+   ],
+   "description": "\"Dividendo complementario bruto por accion: 0,6000 euros\" en lista de terminos no mapeado",
+   "safety": "P1"
+  },
+  {
+   "failure_class": "UNLABELED_TOTAL_AMOUNT",
+   "seeds": [
+    "CNMV-OIR-41381",
+    "POEX-DOC-21984",
+    "POEX-DOC-36171"
+   ],
+   "description": "importe total en prosa (\"por importe total de\", \"se aumento en\", numeros en letra) no extraido",
+   "safety": "P1"
+  },
+  {
+   "failure_class": "CROSS_DOC_LIFECYCLE_EVENT_TYPE",
+   "seeds": [
+    "CNMV-OIR-41381",
+    "CNMV-OIR-41640"
+   ],
+   "description": "documento de fase posterior (cierre/admision) que referencia el evento por OIR anterior; el tipo se infiere de la cadena documental, no del lexema local",
+   "safety": "P1"
+  },
+  {
+   "failure_class": "REGISTRY_ARTIFACT_NO_LEXEME",
+   "seeds": [
+    "CNMV-OIR-35263",
+    "CNMV-OIR-41981"
+   ],
+   "description": "pagina oficial derechos de voto/capital: publica estado (capital/acciones/ISIN), no el evento como lexema",
+   "safety": "limitacion de fuente / P1"
+  },
+  {
+   "failure_class": "SOURCE_CARRIED_INSTRUMENT_NOT_USED",
+   "seeds": [
+    "CNMV-OIR-35263",
+    "CNMV-OIR-41981"
+   ],
+   "description": "el propio documento porta ISIN en su tabla y el pipeline no lo explota para el binding",
+   "safety": "P2"
+  },
+  {
+   "failure_class": "PARTIAL_AMOUNT_EXTRACTION",
+   "seeds": [
+    "POEX-DOC-7021"
+   ],
+   "description": "se extrae gross_per_share pero no reduction_total ni net_per_share publicados en la misma tabla",
+   "safety": "P1"
+  },
+  {
+   "failure_class": "INSTRUMENT_NAME_ONLY",
+   "seeds": [
+    "CNMV-IP-3011",
+    "CNMV-OIR-32783",
+    "CNMV-OIR-36798",
+    "CNMV-OIR-37702",
+    "CNMV-OIR-39819",
+    "CNMV-OIR-40758",
+    "CNMV-OIR-41381",
+    "CNMV-OIR-41640",
+    "POEX-DOC-22422",
+    "POEX-DOC-36171",
+    "POEX-DOC-4666",
+    "POEX-DOC-7021"
+   ],
+   "description": "el documento identifica al emisor por nombre, sin ISIN; ADR-013 exige cross-reference oficial para el binding",
+   "safety": "P2"
+  }
+ ]
+}
