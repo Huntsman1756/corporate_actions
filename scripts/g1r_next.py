@@ -15,6 +15,7 @@ nunca mueve una clase de in_review a resolved por si mismo.
 """
 import argparse
 import json
+import os
 import subprocess
 import sys
 from pathlib import Path
@@ -100,7 +101,8 @@ def holdout_dirty(state):
 
 
 def cmd_gates(state, phase):
-    env = dict(**__import__("os").environ, PYTHONPATH="src")
+    env = dict(os.environ)
+    env["PYTHONPATH"] = "src"
     verdict = []
 
     dirty = holdout_dirty(state)
