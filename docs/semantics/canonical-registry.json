@@ -18,6 +18,9 @@
    "NOT_APPLICABLE"
   ],
   "proven_requires": "referencia citada (especificacion + edicion/seccion o documento oficial); en duda UNMAPPED",
+  "status_semantics": {
+   "mapping_status": "en el registry = external_semantic_mapping_status (canonical -> referencia externa ISO/BME). En los oracle claims se separa: source_to_canonical_status (evidencia fuente -> concepto canonico) y external_semantic_mapping_status (concepto -> referencia externa, segun este registry)"
+  },
   "no_collapse": "dos campos de fuente con descripciones casi identicas no se colapsan; la relacion canonica exige mapping demostrado",
   "authority_scope": "bme_native_refs son autoridad de semantica de fuente solo para BME/Iberclear; nunca atraviesan otra fuente"
  },
@@ -38,13 +41,38 @@
    "canonical_id": "EVENT_TYPE.SCRIP_DIVIDEND",
    "domain": "EVENT_TYPE",
    "internal_field": "event_type=SCRIP_DIVIDEND",
+   "iso15022_ref": "CAEV=DVOP (condicionado)",
+   "iso20022_ref": null,
+   "bme_native_refs": ["DEE"],
+   "market_scope": "ES",
+   "mapping_status": "PROVEN",
+   "mapping_condition": "holder_choice=PROVEN: solo cuando el dividendo es electivo para el holder (dividendo flexible espanol). Sin opcion del tenedor demostrada, DVOP no aplica.",
+   "reference_version": "ISO 15022 CAEV; BME spec 1.01 (DEE dividendos electivos; BME distingue DVOP=optional dividend vs DVSE=stock dividend)",
+   "rationale": "dividendo flexible/scrip; la cadena documental (terms, ejecucion via ampliacion liberada, admision) se expresa por lifecycle_stage + implementation_mechanism, no por familia"
+  },
+  {
+   "canonical_id": "EVENT_TYPE.DIVIDEND_OPTION",
+   "domain": "EVENT_TYPE",
+   "internal_field": null,
    "iso15022_ref": "CAEV=DVOP",
    "iso20022_ref": null,
    "bme_native_refs": ["DEE"],
    "market_scope": "ALL",
    "mapping_status": "PROVEN",
-   "reference_version": "ISO 15022 CAEV; Clearstream CAH (DVOP); BME spec 1.01 (DEE dividendos electivos)",
-   "rationale": "dividendo flexible/scrip; la cadena documental (terms, ejecucion via ampliacion liberada, admision) se expresa por lifecycle_stage + implementation_mechanism, no por familia"
+   "reference_version": "ISO 15022 CAEV; BME spec 1.01 (DVOP = optional dividend)",
+   "rationale": "concepto transversal: dividendo con opcion del tenedor"
+  },
+  {
+   "canonical_id": "EVENT_TYPE.STOCK_DIVIDEND",
+   "domain": "EVENT_TYPE",
+   "internal_field": null,
+   "iso15022_ref": "CAEV=DVSE",
+   "iso20022_ref": null,
+   "bme_native_refs": [],
+   "market_scope": "ALL",
+   "mapping_status": "PROVEN",
+   "reference_version": "ISO 15022 CAEV; BME spec 1.01 (DVSE = stock dividend)",
+   "rationale": "dividendo en acciones sin opcion; distinto de DVOP"
   },
   {
    "canonical_id": "EVENT_TYPE.CAPITAL_INCREASE",
@@ -72,13 +100,13 @@
    "canonical_id": "EVENT_TYPE.SPLIT",
    "domain": "EVENT_TYPE",
    "internal_field": "event_type=SPLIT",
-   "iso15022_ref": "CAEV=SPLI (directo) / SPLR (reverso, via implementation_mechanism=REVERSE_SPLIT)",
+   "iso15022_ref": "CAEV=SPLF (directo) / SPLR (reverso, via implementation_mechanism=REVERSE_SPLIT)",
    "iso20022_ref": null,
    "bme_native_refs": ["SPL"],
    "market_scope": "ALL",
    "mapping_status": "PROVEN",
-   "reference_version": "ISO 15022 CAEV; BME spec 1.01 (SPL splits/contrasplits)",
-   "rationale": "familia canonica SPLIT; el sentido se expresa por mechanism"
+   "reference_version": "ISO 15022 CAEV; BME spec 1.01 (SPLF=Split, SPLR=Reverse split); Clearstream Connectivity Handbook",
+   "rationale": "familia canonica SPLIT; el sentido se expresa por mechanism. SPLI es un codigo de opcion/instruccion (Split Instruction), NO el CAEV del split"
   },
   {
    "canonical_id": "EVENT_TYPE.MERGER_OR_EXCHANGE",
@@ -210,11 +238,23 @@
    "internal_field": "date.payment_date",
    "iso15022_ref": "PAYD",
    "iso20022_ref": "PmtDt",
-   "bme_native_refs": ["AMP-FECHA-DESEMBOLSO"],
+   "bme_native_refs": [],
    "market_scope": "ALL",
    "mapping_status": "PROVEN",
-   "reference_version": "ISO 15022; BME spec 1.01",
-   "rationale": "fecha de pago/desembolso"
+   "reference_version": "ISO 15022",
+   "rationale": "fecha de pago al holder"
+  },
+  {
+   "canonical_id": "DATE_ROLE.SUBSCRIPTION_DISBURSEMENT",
+   "domain": "DATE_ROLE",
+   "internal_field": null,
+   "iso15022_ref": null,
+   "iso20022_ref": null,
+   "bme_native_refs": ["AMP-FECHA-DESEMBOLSO"],
+   "market_scope": "BME",
+   "mapping_status": "UNMAPPED",
+   "reference_version": "BME spec 1.01",
+   "rationale": "fecha de pago del importe de suscripcion del depositario al agente (BME); NO es el payment date de proceeds al holder -> no mapear a PAYD"
   },
   {
    "canonical_id": "DATE_ROLE.ANNOUNCEMENT_DATE",
@@ -428,6 +468,18 @@
    "mapping_status": "PROVEN",
    "reference_version": "ISO 6166; ADR-013 (explicit ISIN = binding de maximo nivel)",
    "rationale": "identificador explicito en documento"
+  },
+  {
+   "canonical_id": "IDENTIFIER.CURRENCY",
+   "domain": "IDENTIFIER",
+   "internal_field": "instrument.currency, *.currency",
+   "iso15022_ref": "ISO 4217",
+   "iso20022_ref": null,
+   "bme_native_refs": [],
+   "market_scope": "ALL",
+   "mapping_status": "PROVEN",
+   "reference_version": "ISO 4217",
+   "rationale": "divisa de un importe o instrumento"
   }
  ],
  "notes": [

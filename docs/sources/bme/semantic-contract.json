@@ -42,9 +42,9 @@
   },
   {
    "source_semantic": "BME AMP-FECHA-DESEMBOLSO",
-   "canonical_concept": "DATE_ROLE.PAYMENT_DATE",
-   "mapping_status": "PROVEN",
-   "evidence": "BME spec 1.01"
+   "canonical_concept": "DATE_ROLE.SUBSCRIPTION_DISBURSEMENT",
+   "mapping_status": "UNMAPPED",
+   "evidence": "BME spec 1.01: fecha de pago del importe de suscripcion del depositario al agente; NO es payment date al holder -> no mapear a PAYD"
   },
   {
    "source_semantic": "BME AMP inicio/fin de suscripcion",

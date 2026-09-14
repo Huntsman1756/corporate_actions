@@ -33,15 +33,30 @@ from ca_es.reference.esma_firds import load_firds_listings  # noqa: E402
 REVIEW = REPO / "g1r/adjudication/dev-oracle-claims.jsonl"
 
 
-def _normalize(row):
-    """Admite formato ORACLE_CLAIM (ADR-017) y el review plano V1."""
-    if "oracle_claim_id" in row:
-        return {
-            **row,
-            "expected_claims": row.get("expected_value"),
-            "pipeline": {"emitted_claims": row.get("baseline_claims") or {}},
-        }
-    return row
+def _group_atomic(rows):
+    """Reagrupa ORACLE_CLAIMs atomicos (ADR-017) a nivel de campo.
+
+    Un claim por fact canonico esperado -> una fila de evaluacion por
+    (frame_item_id, field) con expected_claims reconstruido. Las filas
+    sin expected (ABSENT) mantienen expected_claims=None.
+    """
+    if not rows or "oracle_claim_id" not in rows[0]:
+        return rows
+    grouped: dict[tuple, list] = {}
+    for r in rows:
+        grouped.setdefault((r["frame_item_id"], r["field"]), []).append(r)
+    out = []
+    for (_, _), group in grouped.items():
+        base = dict(group[0])
+        expected = {c["field_path"]: c["expected_value"]
+                    for c in group if c.get("field_path")
+                    and c["expected_value"] != "ABSENT"}
+        base["expected_claims"] = expected or None
+        base["oracle_claim_ids"] = [c["oracle_claim_id"] for c in group]
+        base["pipeline"] = {
+            "emitted_claims": group[0].get("baseline_claims") or {}}
+        out.append(base)
+    return out
 
 
 def _fin(v):
@@ -126,8 +141,9 @@ def main():
     ap.add_argument("--phase", default="dev-iter-1")
     args = ap.parse_args()
 
-    rows = [_normalize(json.loads(l)) for l in REVIEW.read_text(
-        encoding="utf-8").splitlines() if l.strip()]
+    rows = _group_atomic([
+        json.loads(l) for l in REVIEW.read_text(
+            encoding="utf-8").splitlines() if l.strip()])
     facts = current_facts()
 
     report_rows = []
@@ -139,7 +155,9 @@ def main():
         status = classify(row, baseline, current)
         counts[status] = counts.get(status, 0) + 1
         entry = {
-            "oracle_claim_id": row.get("oracle_claim_id"),
+            "oracle_claim_ids": row.get("oracle_claim_ids")
+            or ([row["oracle_claim_id"]] if row.get("oracle_claim_id")
+                else None),
             "frame_item_id": fid,
             "field": row["field"],
             "classification": row["classification"],
