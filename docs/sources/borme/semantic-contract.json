@@ -1,0 +1,30 @@
+{
+ "contract_version": "BORME_SEMANTIC_CONTRACT_V1",
+ "source_id": "BOE_BORME",
+ "reference": {
+  "document": "BORME actos societarios (XML/boletin oficial)",
+  "edition": null,
+  "date": null,
+  "publisher": "BOE - Boletin Oficial del Registro Mercantil"
+ },
+ "numeric_grammar": {
+  "source_wide_convention": {
+   "decimal_separator": ",",
+   "thousands_separator": ".",
+   "status": "DERIVED_FROM_DOCUMENT"
+  },
+  "note": "espanol; mismo regimen de evidencia por documento que CNMV"
+ },
+ "native_field_model": {
+  "families": ["actos registrales BORME"],
+  "note": "campos estructurados del boletin; 'tipo unitario de emision' ya mapeado en parser"
+ },
+ "mappings": [
+  {
+   "source_semantic": "BORME 'tipo unitario de emision es de X euros por accion'",
+   "canonical_concept": "AMOUNT_ROLE.ISSUE_PRICE_PER_SHARE",
+   "mapping_status": "PROVEN",
+   "evidence": "ancla explicita ya implementada (borme.py)"
+  }
+ ]
+}

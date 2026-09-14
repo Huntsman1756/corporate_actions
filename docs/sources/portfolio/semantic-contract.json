@@ -1,0 +1,60 @@
+{
+ "contract_version": "POEX_SEMANTIC_CONTRACT_V1",
+ "source_id": "PORTFOLIO_STOCK_EXCHANGE",
+ "reference": {
+  "document": "Portfolio/POEX avisos oficiales (p.ej. Single Payment Notice, api.portfolio.exchange/poex/document/28140)",
+  "edition": null,
+  "date": null,
+  "publisher": "Portfolio Stock Exchange (POSE)"
+ },
+ "numeric_grammar": {
+  "source_wide_convention": {
+   "decimal_separator": null,
+   "thousands_separator": null,
+   "status": "UNKNOWN"
+  },
+  "note": "los avisos observados usan decimales con coma ('5,55555603 Euro'); sin contrato formal -> DERIVED_FROM_DOCUMENT por documento, nunca convencion global"
+ },
+ "native_field_model": {
+  "families": ["POEX documents / product pages"],
+  "note": "avisos semiestructurados con ISIN, MIC POSE, 'Nature of the payment', Record/Ex/Payment Date y 'Gross unit amount per ETI'; el documento define los roles de fecha en el propio texto"
+ },
+ "mappings": [
+  {
+   "source_semantic": "POEX 'ISIN'",
+   "canonical_concept": "IDENTIFIER.ISIN",
+   "mapping_status": "PROVEN",
+   "evidence": "ISIN explicito en el aviso -> EXPLICIT_SOURCE_ASSERTION (ADR-013); product_url porta ISIN -> SOURCE_CARRIED_INSTRUMENT_BINDING"
+  },
+  {
+   "source_semantic": "POEX 'Ex-Date'",
+   "canonical_concept": "DATE_ROLE.EX_DATE",
+   "mapping_status": "PROVEN",
+   "evidence": "definicion explicita en el aviso: 'trading day after Record Date' -> ISO XDTE; nunca via BME"
+  },
+  {
+   "source_semantic": "POEX 'Record Date'",
+   "canonical_concept": "DATE_ROLE.RECORD_DATE",
+   "mapping_status": "PROVEN",
+   "evidence": "definicion explicita en el aviso: posiciones al cierre -> ISO RDTE"
+  },
+  {
+   "source_semantic": "POEX 'Payment Date'",
+   "canonical_concept": "DATE_ROLE.PAYMENT_DATE",
+   "mapping_status": "PROVEN",
+   "evidence": "fecha de pago explicita -> ISO PAYD"
+  },
+  {
+   "source_semantic": "POEX 'Gross unit amount per ETI'",
+   "canonical_concept": "AMOUNT_ROLE.GROSS_UNIT_AMOUNT",
+   "mapping_status": "PROVEN",
+   "evidence": "importe bruto unitario explicito por instrumento"
+  },
+  {
+   "source_semantic": "POEX 'Other cash distributions' (Nature of the payment)",
+   "canonical_concept": "EVENT_TYPE / CAEV",
+   "mapping_status": "UNMAPPED",
+   "evidence": "el aviso niega cupon/amortizacion y deriva derecho de tenencia en Record Date; el CAEV exacto no esta demostrado -> UNMAPPED, no forzar a DVCA"
+  }
+ ]
+}

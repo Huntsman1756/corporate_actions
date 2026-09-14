@@ -1,0 +1,60 @@
+{
+ "contract_version": "CNMV_SEMANTIC_CONTRACT_V1",
+ "source_id": "CNMV",
+ "reference": {
+  "document": "CNMV registros IP/OIR (PDF y HTML, prosa regulatoria)",
+  "edition": null,
+  "date": null,
+  "publisher": "Comision Nacional del Mercado de Valores"
+ },
+ "numeric_grammar": {
+  "source_wide_convention": {
+   "decimal_separator": ",",
+   "thousands_separator": ".",
+   "status": "DERIVED_FROM_DOCUMENT"
+  },
+  "note": "prosa en espanol; convencion es-ES observable en los documentos ('21,335', '19.865.753', '0,53'). DERIVED_FROM_DOCUMENT exige evidencia consistente por documento; un token aislado de miles no demuestra el separador decimal"
+ },
+ "native_field_model": {
+  "families": ["IP (informacion privilegiada)", "OIR (otra informacion relevante)"],
+  "note": "sin field model formal: la semantica de fuente son patrones lexicos ('dividendo de X euros', 'precio de la OPA', 'valor nominal', 'programa de recompra') evaluados con ancla + contexto (G1-R iter-1)"
+ },
+ "mappings": [
+  {
+   "source_semantic": "CNMV 'dividendo de X euros' / 'X euros brutos por accion' (en evento dividendo)",
+   "canonical_concept": "AMOUNT_ROLE.GROSS_UNIT_AMOUNT",
+   "mapping_status": "PROVEN",
+   "evidence": "iter-1: lexico de dividendo solo promueve en familia dividendo"
+  },
+  {
+   "source_semantic": "CNMV 'X euros por accion' en CAPITAL_INCREASE",
+   "canonical_concept": "AMOUNT_ROLE.ISSUE_PRICE_PER_SHARE",
+   "mapping_status": "PROVEN",
+   "evidence": "iter-1 routing por familia; erratum oracle IP-2670"
+  },
+  {
+   "source_semantic": "CNMV 'precio de la OPA/oferta' / 'contraprestacion'",
+   "canonical_concept": "AMOUNT_ROLE.GROSS_UNIT_AMOUNT (consideracion TENDER)",
+   "mapping_status": "PROVEN",
+   "evidence": "iter-1: ancla propia obligatoria en TAKEOVER_BID"
+  },
+  {
+   "source_semantic": "CNMV 'valor nominal' / 'recompra' / 'cotizacion' (contexto de importe)",
+   "canonical_concept": "role-incompatible con AMOUNT_ROLE del evento",
+   "mapping_status": "PROVEN",
+   "evidence": "iter-1: marcador ligado al importe mas cercano bloquea la promocion"
+  },
+  {
+   "source_semantic": "CNMV issuer_raw (nombre del comunicante)",
+   "canonical_concept": "IDENTIFIER (binding)",
+   "mapping_status": "UNMAPPED",
+   "evidence": "name-only != canonical binding (ADR-013); affected != reporter posible (Neinor/AEDAS) -> HUMAN_RELATION_REQUIRED"
+  },
+  {
+   "source_semantic": "CNMV titulo oficial del documento (p.ej. 'desdoblamiento (split)')",
+   "canonical_concept": "EVENT_TYPE.*",
+   "mapping_status": "UNMAPPED",
+   "evidence": "OFFICIAL_TITLE_EVENT_TYPE_NOT_USED (catalogo P2): la evidencia existe en metadata/titulo pero el pipeline no la aprovecha"
+  }
+ ]
+}

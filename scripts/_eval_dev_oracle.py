@@ -30,7 +30,18 @@ sys.path.insert(0, str(REPO / "src"))
 from ca_es.pipeline import run_pipeline  # noqa: E402
 from ca_es.reference.esma_firds import load_firds_listings  # noqa: E402
 
-REVIEW = REPO / "g1r/adjudication/dev-missingness-review.jsonl"
+REVIEW = REPO / "g1r/adjudication/dev-oracle-claims.jsonl"
+
+
+def _normalize(row):
+    """Admite formato ORACLE_CLAIM (ADR-017) y el review plano V1."""
+    if "oracle_claim_id" in row:
+        return {
+            **row,
+            "expected_claims": row.get("expected_value"),
+            "pipeline": {"emitted_claims": row.get("baseline_claims") or {}},
+        }
+    return row
 
 
 def _fin(v):
@@ -115,7 +126,7 @@ def main():
     ap.add_argument("--phase", default="dev-iter-1")
     args = ap.parse_args()
 
-    rows = [json.loads(l) for l in REVIEW.read_text(
+    rows = [_normalize(json.loads(l)) for l in REVIEW.read_text(
         encoding="utf-8").splitlines() if l.strip()]
     facts = current_facts()
 
@@ -128,6 +139,7 @@ def main():
         status = classify(row, baseline, current)
         counts[status] = counts.get(status, 0) + 1
         entry = {
+            "oracle_claim_id": row.get("oracle_claim_id"),
             "frame_item_id": fid,
             "field": row["field"],
             "classification": row["classification"],

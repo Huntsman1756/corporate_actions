@@ -11,6 +11,7 @@
  },
  "results": [
   {
+   "oracle_claim_id": "DEV::BMEG-CapitalIncreases-ES0105561007-2025-01-13::event_type",
    "frame_item_id": "BMEG-CapitalIncreases-ES0105561007-2025-01-13",
    "field": "event_type",
    "classification": "CORRECT",
@@ -27,6 +28,7 @@
    "status": "UNCHANGED_CORRECT"
   },
   {
+   "oracle_claim_id": "DEV::BMEG-CapitalIncreases-ES0105561007-2025-01-13::ex_date",
    "frame_item_id": "BMEG-CapitalIncreases-ES0105561007-2025-01-13",
    "field": "ex_date",
    "classification": "NOT_APPLICABLE",
@@ -37,6 +39,7 @@
    "status": "UNCHANGED_NOT_APPLICABLE"
   },
   {
+   "oracle_claim_id": "DEV::BMEG-CapitalIncreases-ES0105561007-2025-01-13::record_date",
    "frame_item_id": "BMEG-CapitalIncreases-ES0105561007-2025-01-13",
    "field": "record_date",
    "classification": "NOT_APPLICABLE",
@@ -47,6 +50,7 @@
    "status": "UNCHANGED_NOT_APPLICABLE"
   },
   {
+   "oracle_claim_id": "DEV::BMEG-CapitalIncreases-ES0105561007-2025-01-13::payment_date",
    "frame_item_id": "BMEG-CapitalIncreases-ES0105561007-2025-01-13",
    "field": "payment_date",
    "classification": "NOT_APPLICABLE",
@@ -57,6 +61,7 @@
    "status": "UNCHANGED_NOT_APPLICABLE"
   },
   {
+   "oracle_claim_id": "DEV::BMEG-CapitalIncreases-ES0105561007-2025-01-13::amount_or_ratio",
    "frame_item_id": "BMEG-CapitalIncreases-ES0105561007-2025-01-13",
    "field": "amount_or_ratio",
    "classification": "CORRECT",
@@ -144,6 +149,7 @@
    "status": "UNCHANGED_CORRECT"
   },
   {
+   "oracle_claim_id": "DEV::BMEG-CapitalIncreases-ES0105561007-2025-01-13::currency",
    "frame_item_id": "BMEG-CapitalIncreases-ES0105561007-2025-01-13",
    "field": "currency",
    "classification": "CORRECT",
@@ -172,6 +178,7 @@
    "status": "UNCHANGED_CORRECT"
   },
   {
+   "oracle_claim_id": "DEV::BMEG-CapitalIncreases-ES0105606190-2025-04-07::event_type",
    "frame_item_id": "BMEG-CapitalIncreases-ES0105606190-2025-04-07",
    "field": "event_type",
    "classification": "CORRECT",
@@ -188,6 +195,7 @@
    "status": "UNCHANGED_CORRECT"
   },
   {
+   "oracle_claim_id": "DEV::BMEG-CapitalIncreases-ES0105606190-2025-04-07::ex_date",
    "frame_item_id": "BMEG-CapitalIncreases-ES0105606190-2025-04-07",
    "field": "ex_date",
    "classification": "NOT_APPLICABLE",
@@ -198,6 +206,7 @@
    "status": "UNCHANGED_NOT_APPLICABLE"
   },
   {
+   "oracle_claim_id": "DEV::BMEG-CapitalIncreases-ES0105606190-2025-04-07::record_date",
    "frame_item_id": "BMEG-CapitalIncreases-ES0105606190-2025-04-07",
    "field": "record_date",
    "classification": "NOT_APPLICABLE",
@@ -208,6 +217,7 @@
    "status": "UNCHANGED_NOT_APPLICABLE"
   },
   {
+   "oracle_claim_id": "DEV::BMEG-CapitalIncreases-ES0105606190-2025-04-07::payment_date",
    "frame_item_id": "BMEG-CapitalIncreases-ES0105606190-2025-04-07",
    "field": "payment_date",
    "classification": "NOT_APPLICABLE",
@@ -218,6 +228,7 @@
    "status": "UNCHANGED_NOT_APPLICABLE"
   },
   {
+   "oracle_claim_id": "DEV::BMEG-CapitalIncreases-ES0105606190-2025-04-07::amount_or_ratio",
    "frame_item_id": "BMEG-CapitalIncreases-ES0105606190-2025-04-07",
    "field": "amount_or_ratio",
    "classification": "CORRECT",
@@ -305,6 +316,7 @@
    "status": "UNCHANGED_CORRECT"
   },
   {
+   "oracle_claim_id": "DEV::BMEG-CapitalIncreases-ES0105606190-2025-04-07::currency",
    "frame_item_id": "BMEG-CapitalIncreases-ES0105606190-2025-04-07",
    "field": "currency",
    "classification": "CORRECT",
@@ -333,6 +345,7 @@
    "status": "UNCHANGED_CORRECT"
   },
   {
+   "oracle_claim_id": "DEV::BMEG-Dividends-ES0105224002-2025-05-08::event_type",
    "frame_item_id": "BMEG-Dividends-ES0105224002-2025-05-08",
    "field": "event_type",
    "classification": "CORRECT",
@@ -349,6 +362,7 @@
    "status": "UNCHANGED_CORRECT"
   },
   {
+   "oracle_claim_id": "DEV::BMEG-Dividends-ES0105224002-2025-05-08::ex_date",
    "frame_item_id": "BMEG-Dividends-ES0105224002-2025-05-08",
    "field": "ex_date",
    "classification": "CORRECT",
@@ -365,6 +379,7 @@
    "status": "UNCHANGED_CORRECT"
   },
   {
+   "oracle_claim_id": "DEV::BMEG-Dividends-ES0105224002-2025-05-08::record_date",
    "frame_item_id": "BMEG-Dividends-ES0105224002-2025-05-08",
    "field": "record_date",
    "classification": "UNKNOWN",
@@ -375,6 +390,7 @@
    "status": "UNCHANGED_UNKNOWN"
   },
   {
+   "oracle_claim_id": "DEV::BMEG-Dividends-ES0105224002-2025-05-08::payment_date",
    "frame_item_id": "BMEG-Dividends-ES0105224002-2025-05-08",
    "field": "payment_date",
    "classification": "CORRECT",
@@ -391,6 +407,7 @@
    "status": "UNCHANGED_CORRECT"
   },
   {
+   "oracle_claim_id": "DEV::BMEG-Dividends-ES0105224002-2025-05-08::amount_or_ratio",
    "frame_item_id": "BMEG-Dividends-ES0105224002-2025-05-08",
    "field": "amount_or_ratio",
    "classification": "CORRECT",
@@ -434,6 +451,7 @@
    "status": "UNCHANGED_CORRECT"
   },
   {
+   "oracle_claim_id": "DEV::BMEG-Dividends-ES0105224002-2025-05-08::currency",
    "frame_item_id": "BMEG-Dividends-ES0105224002-2025-05-08",
    "field": "currency",
    "classification": "CORRECT",
@@ -454,6 +472,7 @@
    "status": "UNCHANGED_CORRECT"
   },
   {
+   "oracle_claim_id": "DEV::BMEG-Dividends-ES0105290003-2025-06-25::event_type",
    "frame_item_id": "BMEG-Dividends-ES0105290003-2025-06-25",
    "field": "event_type",
    "classification": "CORRECT",
@@ -470,6 +489,7 @@
    "status": "UNCHANGED_CORRECT"
   },
   {
+   "oracle_claim_id": "DEV::BMEG-Dividends-ES0105290003-2025-06-25::ex_date",
    "frame_item_id": "BMEG-Dividends-ES0105290003-2025-06-25",
    "field": "ex_date",
    "classification": "CORRECT",
@@ -486,6 +506,7 @@
    "status": "UNCHANGED_CORRECT"
   },
   {
+   "oracle_claim_id": "DEV::BMEG-Dividends-ES0105290003-2025-06-25::record_date",
    "frame_item_id": "BMEG-Dividends-ES0105290003-2025-06-25",
    "field": "record_date",
    "classification": "UNKNOWN",
@@ -496,6 +517,7 @@
    "status": "UNCHANGED_UNKNOWN"
   },
   {
+   "oracle_claim_id": "DEV::BMEG-Dividends-ES0105290003-2025-06-25::payment_date",
    "frame_item_id": "BMEG-Dividends-ES0105290003-2025-06-25",
    "field": "payment_date",
    "classification": "CORRECT",
@@ -512,6 +534,7 @@
    "status": "UNCHANGED_CORRECT"
   },
   {
+   "oracle_claim_id": "DEV::BMEG-Dividends-ES0105290003-2025-06-25::amount_or_ratio",
    "frame_item_id": "BMEG-Dividends-ES0105290003-2025-06-25",
    "field": "amount_or_ratio",
    "classification": "CORRECT",
@@ -555,6 +578,7 @@
    "status": "UNCHANGED_CORRECT"
   },
   {
+   "oracle_claim_id": "DEV::BMEG-Dividends-ES0105290003-2025-06-25::currency",
    "frame_item_id": "BMEG-Dividends-ES0105290003-2025-06-25",
    "field": "currency",
    "classification": "CORRECT",
@@ -575,6 +599,7 @@
    "status": "UNCHANGED_CORRECT"
   },
   {
+   "oracle_claim_id": "DEV::BMEG-Dividends-ES0105407003-2026-09-11::event_type",
    "frame_item_id": "BMEG-Dividends-ES0105407003-2026-09-11",
    "field": "event_type",
    "classification": "CORRECT",
@@ -591,6 +616,7 @@
    "status": "UNCHANGED_CORRECT"
   },
   {
+   "oracle_claim_id": "DEV::BMEG-Dividends-ES0105407003-2026-09-11::ex_date",
    "frame_item_id": "BMEG-Dividends-ES0105407003-2026-09-11",
    "field": "ex_date",
    "classification": "CORRECT",
@@ -607,6 +633,7 @@
    "status": "UNCHANGED_CORRECT"
   },
   {
+   "oracle_claim_id": "DEV::BMEG-Dividends-ES0105407003-2026-09-11::record_date",
    "frame_item_id": "BMEG-Dividends-ES0105407003-2026-09-11",
    "field": "record_date",
    "classification": "UNKNOWN",
@@ -617,6 +644,7 @@
    "status": "UNCHANGED_UNKNOWN"
   },
   {
+   "oracle_claim_id": "DEV::BMEG-Dividends-ES0105407003-2026-09-11::payment_date",
    "frame_item_id": "BMEG-Dividends-ES0105407003-2026-09-11",
    "field": "payment_date",
    "classification": "CORRECT",
@@ -633,6 +661,7 @@
    "status": "UNCHANGED_CORRECT"
   },
   {
+   "oracle_claim_id": "DEV::BMEG-Dividends-ES0105407003-2026-09-11::amount_or_ratio",
    "frame_item_id": "BMEG-Dividends-ES0105407003-2026-09-11",
    "field": "amount_or_ratio",
    "classification": "CORRECT",
@@ -676,6 +705,7 @@
    "status": "UNCHANGED_CORRECT"
   },
   {
+   "oracle_claim_id": "DEV::BMEG-Dividends-ES0105407003-2026-09-11::currency",
    "frame_item_id": "BMEG-Dividends-ES0105407003-2026-09-11",
    "field": "currency",
    "classification": "CORRECT",
@@ -696,6 +726,7 @@
    "status": "UNCHANGED_CORRECT"
   },
   {
+   "oracle_claim_id": "DEV::BMEG-Dividends-ES0105659009-2025-07-03::event_type",
    "frame_item_id": "BMEG-Dividends-ES0105659009-2025-07-03",
    "field": "event_type",
    "classification": "CORRECT",
@@ -712,6 +743,7 @@
    "status": "UNCHANGED_CORRECT"
   },
   {
+   "oracle_claim_id": "DEV::BMEG-Dividends-ES0105659009-2025-07-03::ex_date",
    "frame_item_id": "BMEG-Dividends-ES0105659009-2025-07-03",
    "field": "ex_date",
    "classification": "CORRECT",
@@ -728,6 +760,7 @@
    "status": "UNCHANGED_CORRECT"
   },
   {
+   "oracle_claim_id": "DEV::BMEG-Dividends-ES0105659009-2025-07-03::record_date",
    "frame_item_id": "BMEG-Dividends-ES0105659009-2025-07-03",
    "field": "record_date",
    "classification": "UNKNOWN",
@@ -738,6 +771,7 @@
    "status": "UNCHANGED_UNKNOWN"
   },
   {
+   "oracle_claim_id": "DEV::BMEG-Dividends-ES0105659009-2025-07-03::payment_date",
    "frame_item_id": "BMEG-Dividends-ES0105659009-2025-07-03",
    "field": "payment_date",
    "classification": "CORRECT",
@@ -754,6 +788,7 @@
    "status": "UNCHANGED_CORRECT"
   },
   {
+   "oracle_claim_id": "DEV::BMEG-Dividends-ES0105659009-2025-07-03::amount_or_ratio",
    "frame_item_id": "BMEG-Dividends-ES0105659009-2025-07-03",
    "field": "amount_or_ratio",
    "classification": "CORRECT",
@@ -793,6 +828,7 @@
    "status": "UNCHANGED_CORRECT"
   },
   {
+   "oracle_claim_id": "DEV::BMEG-Dividends-ES0105659009-2025-07-03::currency",
    "frame_item_id": "BMEG-Dividends-ES0105659009-2025-07-03",
    "field": "currency",
    "classification": "CORRECT",
@@ -813,6 +849,7 @@
    "status": "UNCHANGED_CORRECT"
   },
   {
+   "oracle_claim_id": "DEV::BMEG-NewListings-ES0105650008-2026-03-06::event_type",
    "frame_item_id": "BMEG-NewListings-ES0105650008-2026-03-06",
    "field": "event_type",
    "classification": "MISSING",
@@ -829,6 +866,7 @@
    "status": "UNCHANGED_MISSING"
   },
   {
+   "oracle_claim_id": "DEV::BMEG-NewListings-ES0105650008-2026-03-06::ex_date",
    "frame_item_id": "BMEG-NewListings-ES0105650008-2026-03-06",
    "field": "ex_date",
    "classification": "NOT_APPLICABLE",
@@ -839,6 +877,7 @@
    "status": "UNCHANGED_NOT_APPLICABLE"
   },
   {
+   "oracle_claim_id": "DEV::BMEG-NewListings-ES0105650008-2026-03-06::record_date",
    "frame_item_id": "BMEG-NewListings-ES0105650008-2026-03-06",
    "field": "record_date",
    "classification": "NOT_APPLICABLE",
@@ -849,6 +888,7 @@
    "status": "UNCHANGED_NOT_APPLICABLE"
   },
   {
+   "oracle_claim_id": "DEV::BMEG-NewListings-ES0105650008-2026-03-06::payment_date",
    "frame_item_id": "BMEG-NewListings-ES0105650008-2026-03-06",
    "field": "payment_date",
    "classification": "NOT_APPLICABLE",
@@ -859,6 +899,7 @@
    "status": "UNCHANGED_NOT_APPLICABLE"
   },
   {
+   "oracle_claim_id": "DEV::BMEG-NewListings-ES0105650008-2026-03-06::amount_or_ratio",
    "frame_item_id": "BMEG-NewListings-ES0105650008-2026-03-06",
    "field": "amount_or_ratio",
    "classification": "CORRECT",
@@ -898,6 +939,7 @@
    "status": "UNCHANGED_CORRECT"
   },
   {
+   "oracle_claim_id": "DEV::BMEG-NewListings-ES0105650008-2026-03-06::currency",
    "frame_item_id": "BMEG-NewListings-ES0105650008-2026-03-06",
    "field": "currency",
    "classification": "UNKNOWN",
@@ -914,6 +956,7 @@
    "status": "UNCHANGED_UNKNOWN"
   },
   {
+   "oracle_claim_id": "DEV::BMEG-OtherPayments-ES0105323002-2025-01-08::event_type",
    "frame_item_id": "BMEG-OtherPayments-ES0105323002-2025-01-08",
    "field": "event_type",
    "classification": "CORRECT",
@@ -930,6 +973,7 @@
    "status": "UNCHANGED_CORRECT"
   },
   {
+   "oracle_claim_id": "DEV::BMEG-OtherPayments-ES0105323002-2025-01-08::ex_date",
    "frame_item_id": "BMEG-OtherPayments-ES0105323002-2025-01-08",
    "field": "ex_date",
    "classification": "CORRECT",
@@ -946,6 +990,7 @@
    "status": "UNCHANGED_CORRECT"
   },
   {
+   "oracle_claim_id": "DEV::BMEG-OtherPayments-ES0105323002-2025-01-08::record_date",
    "frame_item_id": "BMEG-OtherPayments-ES0105323002-2025-01-08",
    "field": "record_date",
    "classification": "UNKNOWN",
@@ -956,6 +1001,7 @@
    "status": "UNCHANGED_UNKNOWN"
   },
   {
+   "oracle_claim_id": "DEV::BMEG-OtherPayments-ES0105323002-2025-01-08::payment_date",
    "frame_item_id": "BMEG-OtherPayments-ES0105323002-2025-01-08",
    "field": "payment_date",
    "classification": "CORRECT",
@@ -972,6 +1018,7 @@
    "status": "UNCHANGED_CORRECT"
   },
   {
+   "oracle_claim_id": "DEV::BMEG-OtherPayments-ES0105323002-2025-01-08::amount_or_ratio",
    "frame_item_id": "BMEG-OtherPayments-ES0105323002-2025-01-08",
    "field": "amount_or_ratio",
    "classification": "CORRECT",
@@ -1026,6 +1073,7 @@
    "status": "UNCHANGED_CORRECT"
   },
   {
+   "oracle_claim_id": "DEV::BMEG-OtherPayments-ES0105323002-2025-01-08::currency",
    "frame_item_id": "BMEG-OtherPayments-ES0105323002-2025-01-08",
    "field": "currency",
    "classification": "CORRECT",
@@ -1048,6 +1096,7 @@
    "status": "UNCHANGED_CORRECT"
   },
   {
+   "oracle_claim_id": "DEV::CNMV-IP-3011::event_type",
    "frame_item_id": "CNMV-IP-3011",
    "field": "event_type",
    "classification": "CORRECT",
@@ -1064,6 +1113,7 @@
    "status": "UNCHANGED_CORRECT"
   },
   {
+   "oracle_claim_id": "DEV::CNMV-IP-3011::ex_date",
    "frame_item_id": "CNMV-IP-3011",
    "field": "ex_date",
    "classification": "NOT_APPLICABLE",
@@ -1074,6 +1124,7 @@
    "status": "UNCHANGED_NOT_APPLICABLE"
   },
   {
+   "oracle_claim_id": "DEV::CNMV-IP-3011::record_date",
    "frame_item_id": "CNMV-IP-3011",
    "field": "record_date",
    "classification": "NOT_APPLICABLE",
@@ -1084,6 +1135,7 @@
    "status": "UNCHANGED_NOT_APPLICABLE"
   },
   {
+   "oracle_claim_id": "DEV::CNMV-IP-3011::payment_date",
    "frame_item_id": "CNMV-IP-3011",
    "field": "payment_date",
    "classification": "UNKNOWN",
@@ -1094,6 +1146,7 @@
    "status": "UNCHANGED_UNKNOWN"
   },
   {
+   "oracle_claim_id": "DEV::CNMV-IP-3011::amount_or_ratio",
    "frame_item_id": "CNMV-IP-3011",
    "field": "amount_or_ratio",
    "classification": "MISSING",
@@ -1122,6 +1175,7 @@
    "status": "CORRECTED"
   },
   {
+   "oracle_claim_id": "DEV::CNMV-IP-3011::currency",
    "frame_item_id": "CNMV-IP-3011",
    "field": "currency",
    "classification": "CORRECT",
@@ -1138,6 +1192,7 @@
    "status": "UNCHANGED_CORRECT"
   },
   {
+   "oracle_claim_id": "DEV::CNMV-OIR-32783::event_type",
    "frame_item_id": "CNMV-OIR-32783",
    "field": "event_type",
    "classification": "CORRECT",
@@ -1154,6 +1209,7 @@
    "status": "UNCHANGED_CORRECT"
   },
   {
+   "oracle_claim_id": "DEV::CNMV-OIR-32783::ex_date",
    "frame_item_id": "CNMV-OIR-32783",
    "field": "ex_date",
    "classification": "UNKNOWN",
@@ -1164,6 +1220,7 @@
    "status": "UNCHANGED_UNKNOWN"
   },
   {
+   "oracle_claim_id": "DEV::CNMV-OIR-32783::record_date",
    "frame_item_id": "CNMV-OIR-32783",
    "field": "record_date",
    "classification": "UNKNOWN",
@@ -1174,6 +1231,7 @@
    "status": "UNCHANGED_UNKNOWN"
   },
   {
+   "oracle_claim_id": "DEV::CNMV-OIR-32783::payment_date",
    "frame_item_id": "CNMV-OIR-32783",
    "field": "payment_date",
    "classification": "CORRECT",
@@ -1190,6 +1248,7 @@
    "status": "UNCHANGED_CORRECT"
   },
   {
+   "oracle_claim_id": "DEV::CNMV-OIR-32783::amount_or_ratio",
    "frame_item_id": "CNMV-OIR-32783",
    "field": "amount_or_ratio",
    "classification": "CORRECT",
@@ -1218,6 +1277,7 @@
    "status": "UNCHANGED_CORRECT"
   },
   {
+   "oracle_claim_id": "DEV::CNMV-OIR-32783::currency",
    "frame_item_id": "CNMV-OIR-32783",
    "field": "currency",
    "classification": "CORRECT",
@@ -1234,6 +1294,7 @@
    "status": "UNCHANGED_CORRECT"
   },
   {
+   "oracle_claim_id": "DEV::CNMV-OIR-35005::event_type",
    "frame_item_id": "CNMV-OIR-35005",
    "field": "event_type",
    "classification": "CORRECT",
@@ -1250,6 +1311,7 @@
    "status": "UNCHANGED_CORRECT"
   },
   {
+   "oracle_claim_id": "DEV::CNMV-OIR-35005::ex_date",
    "frame_item_id": "CNMV-OIR-35005",
    "field": "ex_date",
    "classification": "CORRECT",
@@ -1266,6 +1328,7 @@
    "status": "UNCHANGED_CORRECT"
   },
   {
+   "oracle_claim_id": "DEV::CNMV-OIR-35005::record_date",
    "frame_item_id": "CNMV-OIR-35005",
    "field": "record_date",
    "classification": "CORRECT",
@@ -1282,6 +1345,7 @@
    "status": "UNCHANGED_CORRECT"
   },
   {
+   "oracle_claim_id": "DEV::CNMV-OIR-35005::payment_date",
    "frame_item_id": "CNMV-OIR-35005",
    "field": "payment_date",
    "classification": "CORRECT",
@@ -1298,6 +1362,7 @@
    "status": "UNCHANGED_CORRECT"
   },
   {
+   "oracle_claim_id": "DEV::CNMV-OIR-35005::amount_or_ratio",
    "frame_item_id": "CNMV-OIR-35005",
    "field": "amount_or_ratio",
    "classification": "MISSING",
@@ -1313,6 +1378,7 @@
    "status": "UNCHANGED_MISSING"
   },
   {
+   "oracle_claim_id": "DEV::CNMV-OIR-35005::currency",
    "frame_item_id": "CNMV-OIR-35005",
    "field": "currency",
    "classification": "MISSING",
@@ -1325,6 +1391,7 @@
    "status": "UNCHANGED_MISSING"
   },
   {
+   "oracle_claim_id": "DEV::CNMV-OIR-35263::event_type",
    "frame_item_id": "CNMV-OIR-35263",
    "field": "event_type",
    "classification": "MISSING",
@@ -1337,6 +1404,7 @@
    "status": "UNCHANGED_MISSING"
   },
   {
+   "oracle_claim_id": "DEV::CNMV-OIR-35263::ex_date",
    "frame_item_id": "CNMV-OIR-35263",
    "field": "ex_date",
    "classification": "NOT_APPLICABLE",
@@ -1347,6 +1415,7 @@
    "status": "UNCHANGED_NOT_APPLICABLE"
   },
   {
+   "oracle_claim_id": "DEV::CNMV-OIR-35263::record_date",
    "frame_item_id": "CNMV-OIR-35263",
    "field": "record_date",
    "classification": "NOT_APPLICABLE",
@@ -1357,6 +1426,7 @@
    "status": "UNCHANGED_NOT_APPLICABLE"
   },
   {
+   "oracle_claim_id": "DEV::CNMV-OIR-35263::payment_date",
    "frame_item_id": "CNMV-OIR-35263",
    "field": "payment_date",
    "classification": "NOT_APPLICABLE",
@@ -1367,6 +1437,7 @@
    "status": "UNCHANGED_NOT_APPLICABLE"
   },
   {
+   "oracle_claim_id": "DEV::CNMV-OIR-35263::amount_or_ratio",
    "frame_item_id": "CNMV-OIR-35263",
    "field": "amount_or_ratio",
    "classification": "UNKNOWN",
@@ -1377,6 +1448,7 @@
    "status": "UNCHANGED_UNKNOWN"
   },
   {
+   "oracle_claim_id": "DEV::CNMV-OIR-35263::currency",
    "frame_item_id": "CNMV-OIR-35263",
    "field": "currency",
    "classification": "NOT_APPLICABLE",
@@ -1387,6 +1459,7 @@
    "status": "UNCHANGED_NOT_APPLICABLE"
   },
   {
+   "oracle_claim_id": "DEV::CNMV-OIR-36798::event_type",
    "frame_item_id": "CNMV-OIR-36798",
    "field": "event_type",
    "classification": "CORRECT",
@@ -1403,6 +1476,7 @@
    "status": "UNCHANGED_CORRECT"
   },
   {
+   "oracle_claim_id": "DEV::CNMV-OIR-36798::ex_date",
    "frame_item_id": "CNMV-OIR-36798",
    "field": "ex_date",
    "classification": "NOT_APPLICABLE",
@@ -1413,6 +1487,7 @@
    "status": "UNCHANGED_NOT_APPLICABLE"
   },
   {
+   "oracle_claim_id": "DEV::CNMV-OIR-36798::record_date",
    "frame_item_id": "CNMV-OIR-36798",
    "field": "record_date",
    "classification": "NOT_APPLICABLE",
@@ -1423,6 +1498,7 @@
    "status": "UNCHANGED_NOT_APPLICABLE"
   },
   {
+   "oracle_claim_id": "DEV::CNMV-OIR-36798::payment_date",
    "frame_item_id": "CNMV-OIR-36798",
    "field": "payment_date",
    "classification": "UNKNOWN",
@@ -1433,6 +1509,7 @@
    "status": "UNCHANGED_UNKNOWN"
   },
   {
+   "oracle_claim_id": "DEV::CNMV-OIR-36798::amount_or_ratio",
    "frame_item_id": "CNMV-OIR-36798",
    "field": "amount_or_ratio",
    "classification": "UNKNOWN",
@@ -1443,6 +1520,7 @@
    "status": "UNCHANGED_UNKNOWN"
   },
   {
+   "oracle_claim_id": "DEV::CNMV-OIR-36798::currency",
    "frame_item_id": "CNMV-OIR-36798",
    "field": "currency",
    "classification": "UNKNOWN",
@@ -1453,6 +1531,7 @@
    "status": "UNCHANGED_UNKNOWN"
   },
   {
+   "oracle_claim_id": "DEV::CNMV-OIR-37702::event_type",
    "frame_item_id": "CNMV-OIR-37702",
    "field": "event_type",
    "classification": "CORRECT",
@@ -1469,6 +1548,7 @@
    "status": "UNCHANGED_CORRECT"
   },
   {
+   "oracle_claim_id": "DEV::CNMV-OIR-37702::ex_date",
    "frame_item_id": "CNMV-OIR-37702",
    "field": "ex_date",
    "classification": "CORRECT",
@@ -1485,6 +1565,7 @@
    "status": "UNCHANGED_CORRECT"
   },
   {
+   "oracle_claim_id": "DEV::CNMV-OIR-37702::record_date",
    "frame_item_id": "CNMV-OIR-37702",
    "field": "record_date",
    "classification": "CORRECT",
@@ -1501,6 +1582,7 @@
    "status": "UNCHANGED_CORRECT"
   },
   {
+   "oracle_claim_id": "DEV::CNMV-OIR-37702::payment_date",
    "frame_item_id": "CNMV-OIR-37702",
    "field": "payment_date",
    "classification": "CORRECT",
@@ -1517,6 +1599,7 @@
    "status": "UNCHANGED_CORRECT"
   },
   {
+   "oracle_claim_id": "DEV::CNMV-OIR-37702::amount_or_ratio",
    "frame_item_id": "CNMV-OIR-37702",
    "field": "amount_or_ratio",
    "classification": "MISSING",
@@ -1532,6 +1615,7 @@
    "status": "UNCHANGED_MISSING"
   },
   {
+   "oracle_claim_id": "DEV::CNMV-OIR-37702::currency",
    "frame_item_id": "CNMV-OIR-37702",
    "field": "currency",
    "classification": "MISSING",
@@ -1544,6 +1628,7 @@
    "status": "UNCHANGED_MISSING"
   },
   {
+   "oracle_claim_id": "DEV::CNMV-OIR-37970::event_type",
    "frame_item_id": "CNMV-OIR-37970",
    "field": "event_type",
    "classification": "NOT_APPLICABLE",
@@ -1558,6 +1643,7 @@
    "status": "UNCHANGED_NOT_APPLICABLE"
   },
   {
+   "oracle_claim_id": "DEV::CNMV-OIR-37970::ex_date",
    "frame_item_id": "CNMV-OIR-37970",
    "field": "ex_date",
    "classification": "NOT_APPLICABLE",
@@ -1568,6 +1654,7 @@
    "status": "UNCHANGED_NOT_APPLICABLE"
   },
   {
+   "oracle_claim_id": "DEV::CNMV-OIR-37970::record_date",
    "frame_item_id": "CNMV-OIR-37970",
    "field": "record_date",
    "classification": "NOT_APPLICABLE",
@@ -1578,6 +1665,7 @@
    "status": "UNCHANGED_NOT_APPLICABLE"
   },
   {
+   "oracle_claim_id": "DEV::CNMV-OIR-37970::payment_date",
    "frame_item_id": "CNMV-OIR-37970",
    "field": "payment_date",
    "classification": "NOT_APPLICABLE",
@@ -1588,6 +1676,7 @@
    "status": "UNCHANGED_NOT_APPLICABLE"
   },
   {
+   "oracle_claim_id": "DEV::CNMV-OIR-37970::amount_or_ratio",
    "frame_item_id": "CNMV-OIR-37970",
    "field": "amount_or_ratio",
    "classification": "NOT_APPLICABLE",
@@ -1598,6 +1687,7 @@
    "status": "UNCHANGED_NOT_APPLICABLE"
   },
   {
+   "oracle_claim_id": "DEV::CNMV-OIR-37970::currency",
    "frame_item_id": "CNMV-OIR-37970",
    "field": "currency",
    "classification": "NOT_APPLICABLE",
@@ -1608,6 +1698,7 @@
    "status": "UNCHANGED_NOT_APPLICABLE"
   },
   {
+   "oracle_claim_id": "DEV::CNMV-OIR-39819::event_type",
    "frame_item_id": "CNMV-OIR-39819",
    "field": "event_type",
    "classification": "MISSING",
@@ -1620,6 +1711,7 @@
    "status": "UNCHANGED_MISSING"
   },
   {
+   "oracle_claim_id": "DEV::CNMV-OIR-39819::ex_date",
    "frame_item_id": "CNMV-OIR-39819",
    "field": "ex_date",
    "classification": "MISSING",
@@ -1636,6 +1728,7 @@
    "status": "UNCHANGED_MISSING"
   },
   {
+   "oracle_claim_id": "DEV::CNMV-OIR-39819::record_date",
    "frame_item_id": "CNMV-OIR-39819",
    "field": "record_date",
    "classification": "MISSING",
@@ -1648,6 +1741,7 @@
    "status": "UNCHANGED_MISSING"
   },
   {
+   "oracle_claim_id": "DEV::CNMV-OIR-39819::payment_date",
    "frame_item_id": "CNMV-OIR-39819",
    "field": "payment_date",
    "classification": "MISSING",
@@ -1660,6 +1754,7 @@
    "status": "UNCHANGED_MISSING"
   },
   {
+   "oracle_claim_id": "DEV::CNMV-OIR-39819::amount_or_ratio",
    "frame_item_id": "CNMV-OIR-39819",
    "field": "amount_or_ratio",
    "classification": "CORRECT",
@@ -1688,6 +1783,7 @@
    "status": "UNCHANGED_CORRECT"
   },
   {
+   "oracle_claim_id": "DEV::CNMV-OIR-39819::currency",
    "frame_item_id": "CNMV-OIR-39819",
    "field": "currency",
    "classification": "CORRECT",
@@ -1704,6 +1800,7 @@
    "status": "UNCHANGED_CORRECT"
   },
   {
+   "oracle_claim_id": "DEV::CNMV-OIR-40758::event_type",
    "frame_item_id": "CNMV-OIR-40758",
    "field": "event_type",
    "classification": "MISSING",
@@ -1720,6 +1817,7 @@
    "status": "UNCHANGED_MISSING"
   },
   {
+   "oracle_claim_id": "DEV::CNMV-OIR-40758::ex_date",
    "frame_item_id": "CNMV-OIR-40758",
    "field": "ex_date",
    "classification": "MISSING",
@@ -1736,6 +1834,7 @@
    "status": "UNCHANGED_MISSING"
   },
   {
+   "oracle_claim_id": "DEV::CNMV-OIR-40758::record_date",
    "frame_item_id": "CNMV-OIR-40758",
    "field": "record_date",
    "classification": "MISSING",
@@ -1752,6 +1851,7 @@
    "status": "UNCHANGED_MISSING"
   },
   {
+   "oracle_claim_id": "DEV::CNMV-OIR-40758::payment_date",
    "frame_item_id": "CNMV-OIR-40758",
    "field": "payment_date",
    "classification": "MISSING",
@@ -1764,6 +1864,7 @@
    "status": "UNCHANGED_MISSING"
   },
   {
+   "oracle_claim_id": "DEV::CNMV-OIR-40758::amount_or_ratio",
    "frame_item_id": "CNMV-OIR-40758",
    "field": "amount_or_ratio",
    "classification": "UNKNOWN",
@@ -1774,6 +1875,7 @@
    "status": "UNCHANGED_UNKNOWN"
   },
   {
+   "oracle_claim_id": "DEV::CNMV-OIR-40758::currency",
    "frame_item_id": "CNMV-OIR-40758",
    "field": "currency",
    "classification": "UNKNOWN",
@@ -1784,6 +1886,7 @@
    "status": "UNCHANGED_UNKNOWN"
   },
   {
+   "oracle_claim_id": "DEV::CNMV-OIR-41381::event_type",
    "frame_item_id": "CNMV-OIR-41381",
    "field": "event_type",
    "classification": "MISSING",
@@ -1800,6 +1903,7 @@
    "status": "UNCHANGED_MISSING"
   },
   {
+   "oracle_claim_id": "DEV::CNMV-OIR-41381::ex_date",
    "frame_item_id": "CNMV-OIR-41381",
    "field": "ex_date",
    "classification": "NOT_APPLICABLE",
@@ -1810,6 +1914,7 @@
    "status": "UNCHANGED_NOT_APPLICABLE"
   },
   {
+   "oracle_claim_id": "DEV::CNMV-OIR-41381::record_date",
    "frame_item_id": "CNMV-OIR-41381",
    "field": "record_date",
    "classification": "NOT_APPLICABLE",
@@ -1820,6 +1925,7 @@
    "status": "UNCHANGED_NOT_APPLICABLE"
   },
   {
+   "oracle_claim_id": "DEV::CNMV-OIR-41381::payment_date",
    "frame_item_id": "CNMV-OIR-41381",
    "field": "payment_date",
    "classification": "MISSING",
@@ -1832,6 +1938,7 @@
    "status": "UNCHANGED_MISSING"
   },
   {
+   "oracle_claim_id": "DEV::CNMV-OIR-41381::amount_or_ratio",
    "frame_item_id": "CNMV-OIR-41381",
    "field": "amount_or_ratio",
    "classification": "MISSING",
@@ -1847,6 +1954,7 @@
    "status": "UNCHANGED_MISSING"
   },
   {
+   "oracle_claim_id": "DEV::CNMV-OIR-41381::currency",
    "frame_item_id": "CNMV-OIR-41381",
    "field": "currency",
    "classification": "MISSING",
@@ -1859,6 +1967,7 @@
    "status": "UNCHANGED_MISSING"
   },
   {
+   "oracle_claim_id": "DEV::CNMV-OIR-41640::event_type",
    "frame_item_id": "CNMV-OIR-41640",
    "field": "event_type",
    "classification": "MISSING",
@@ -1875,6 +1984,7 @@
    "status": "UNCHANGED_MISSING"
   },
   {
+   "oracle_claim_id": "DEV::CNMV-OIR-41640::ex_date",
    "frame_item_id": "CNMV-OIR-41640",
    "field": "ex_date",
    "classification": "NOT_APPLICABLE",
@@ -1885,6 +1995,7 @@
    "status": "UNCHANGED_NOT_APPLICABLE"
   },
   {
+   "oracle_claim_id": "DEV::CNMV-OIR-41640::record_date",
    "frame_item_id": "CNMV-OIR-41640",
    "field": "record_date",
    "classification": "NOT_APPLICABLE",
@@ -1895,6 +2006,7 @@
    "status": "UNCHANGED_NOT_APPLICABLE"
   },
   {
+   "oracle_claim_id": "DEV::CNMV-OIR-41640::payment_date",
    "frame_item_id": "CNMV-OIR-41640",
    "field": "payment_date",
    "classification": "NOT_APPLICABLE",
@@ -1905,6 +2017,7 @@
    "status": "UNCHANGED_NOT_APPLICABLE"
   },
   {
+   "oracle_claim_id": "DEV::CNMV-OIR-41640::amount_or_ratio",
    "frame_item_id": "CNMV-OIR-41640",
    "field": "amount_or_ratio",
    "classification": "UNKNOWN",
@@ -1915,6 +2028,7 @@
    "status": "UNCHANGED_UNKNOWN"
   },
   {
+   "oracle_claim_id": "DEV::CNMV-OIR-41640::currency",
    "frame_item_id": "CNMV-OIR-41640",
    "field": "currency",
    "classification": "NOT_APPLICABLE",
@@ -1925,6 +2039,7 @@
    "status": "UNCHANGED_NOT_APPLICABLE"
   },
   {
+   "oracle_claim_id": "DEV::CNMV-OIR-41981::event_type",
    "frame_item_id": "CNMV-OIR-41981",
    "field": "event_type",
    "classification": "MISSING",
@@ -1937,6 +2052,7 @@
    "status": "UNCHANGED_MISSING"
   },
   {
+   "oracle_claim_id": "DEV::CNMV-OIR-41981::ex_date",
    "frame_item_id": "CNMV-OIR-41981",
    "field": "ex_date",
    "classification": "NOT_APPLICABLE",
@@ -1947,6 +2063,7 @@
    "status": "UNCHANGED_NOT_APPLICABLE"
   },
   {
+   "oracle_claim_id": "DEV::CNMV-OIR-41981::record_date",
    "frame_item_id": "CNMV-OIR-41981",
    "field": "record_date",
    "classification": "NOT_APPLICABLE",
@@ -1957,6 +2074,7 @@
    "status": "UNCHANGED_NOT_APPLICABLE"
   },
   {
+   "oracle_claim_id": "DEV::CNMV-OIR-41981::payment_date",
    "frame_item_id": "CNMV-OIR-41981",
    "field": "payment_date",
    "classification": "NOT_APPLICABLE",
@@ -1967,6 +2085,7 @@
    "status": "UNCHANGED_NOT_APPLICABLE"
   },
   {
+   "oracle_claim_id": "DEV::CNMV-OIR-41981::amount_or_ratio",
    "frame_item_id": "CNMV-OIR-41981",
    "field": "amount_or_ratio",
    "classification": "UNKNOWN",
@@ -1977,6 +2096,7 @@
    "status": "UNCHANGED_UNKNOWN"
   },
   {
+   "oracle_claim_id": "DEV::CNMV-OIR-41981::currency",
    "frame_item_id": "CNMV-OIR-41981",
    "field": "currency",
    "classification": "NOT_APPLICABLE",
@@ -1987,6 +2107,7 @@
    "status": "UNCHANGED_NOT_APPLICABLE"
   },
   {
+   "oracle_claim_id": "DEV::POEX-DOC-21984::event_type",
    "frame_item_id": "POEX-DOC-21984",
    "field": "event_type",
    "classification": "MISSING",
@@ -1999,6 +2120,7 @@
    "status": "UNCHANGED_MISSING"
   },
   {
+   "oracle_claim_id": "DEV::POEX-DOC-21984::ex_date",
    "frame_item_id": "POEX-DOC-21984",
    "field": "ex_date",
    "classification": "NOT_APPLICABLE",
@@ -2009,6 +2131,7 @@
    "status": "UNCHANGED_NOT_APPLICABLE"
   },
   {
+   "oracle_claim_id": "DEV::POEX-DOC-21984::record_date",
    "frame_item_id": "POEX-DOC-21984",
    "field": "record_date",
    "classification": "NOT_APPLICABLE",
@@ -2019,6 +2142,7 @@
    "status": "UNCHANGED_NOT_APPLICABLE"
   },
   {
+   "oracle_claim_id": "DEV::POEX-DOC-21984::payment_date",
    "frame_item_id": "POEX-DOC-21984",
    "field": "payment_date",
    "classification": "NOT_APPLICABLE",
@@ -2029,6 +2153,7 @@
    "status": "UNCHANGED_NOT_APPLICABLE"
   },
   {
+   "oracle_claim_id": "DEV::POEX-DOC-21984::amount_or_ratio",
    "frame_item_id": "POEX-DOC-21984",
    "field": "amount_or_ratio",
    "classification": "MISSING",
@@ -2044,6 +2169,7 @@
    "status": "UNCHANGED_MISSING"
   },
   {
+   "oracle_claim_id": "DEV::POEX-DOC-21984::currency",
    "frame_item_id": "POEX-DOC-21984",
    "field": "currency",
    "classification": "MISSING",
@@ -2056,6 +2182,7 @@
    "status": "UNCHANGED_MISSING"
   },
   {
+   "oracle_claim_id": "DEV::POEX-DOC-22422::event_type",
    "frame_item_id": "POEX-DOC-22422",
    "field": "event_type",
    "classification": "CORRECT",
@@ -2072,6 +2199,7 @@
    "status": "UNCHANGED_CORRECT"
   },
   {
+   "oracle_claim_id": "DEV::POEX-DOC-22422::ex_date",
    "frame_item_id": "POEX-DOC-22422",
    "field": "ex_date",
    "classification": "CORRECT",
@@ -2088,6 +2216,7 @@
    "status": "UNCHANGED_CORRECT"
   },
   {
+   "oracle_claim_id": "DEV::POEX-DOC-22422::record_date",
    "frame_item_id": "POEX-DOC-22422",
    "field": "record_date",
    "classification": "CORRECT",
@@ -2104,6 +2233,7 @@
    "status": "UNCHANGED_CORRECT"
   },
   {
+   "oracle_claim_id": "DEV::POEX-DOC-22422::payment_date",
    "frame_item_id": "POEX-DOC-22422",
    "field": "payment_date",
    "classification": "CORRECT",
@@ -2120,6 +2250,7 @@
    "status": "UNCHANGED_CORRECT"
   },
   {
+   "oracle_claim_id": "DEV::POEX-DOC-22422::amount_or_ratio",
    "frame_item_id": "POEX-DOC-22422",
    "field": "amount_or_ratio",
    "classification": "CORRECT",
@@ -2163,6 +2294,7 @@
    "status": "UNCHANGED_CORRECT"
   },
   {
+   "oracle_claim_id": "DEV::POEX-DOC-22422::currency",
    "frame_item_id": "POEX-DOC-22422",
    "field": "currency",
    "classification": "CORRECT",
@@ -2181,6 +2313,7 @@
    "status": "UNCHANGED_CORRECT"
   },
   {
+   "oracle_claim_id": "DEV::POEX-DOC-36171::event_type",
    "frame_item_id": "POEX-DOC-36171",
    "field": "event_type",
    "classification": "MISSING",
@@ -2193,6 +2326,7 @@
    "status": "UNCHANGED_MISSING"
   },
   {
+   "oracle_claim_id": "DEV::POEX-DOC-36171::ex_date",
    "frame_item_id": "POEX-DOC-36171",
    "field": "ex_date",
    "classification": "NOT_APPLICABLE",
@@ -2203,6 +2337,7 @@
    "status": "UNCHANGED_NOT_APPLICABLE"
   },
   {
+   "oracle_claim_id": "DEV::POEX-DOC-36171::record_date",
    "frame_item_id": "POEX-DOC-36171",
    "field": "record_date",
    "classification": "NOT_APPLICABLE",
@@ -2213,6 +2348,7 @@
    "status": "UNCHANGED_NOT_APPLICABLE"
   },
   {
+   "oracle_claim_id": "DEV::POEX-DOC-36171::payment_date",
    "frame_item_id": "POEX-DOC-36171",
    "field": "payment_date",
    "classification": "NOT_APPLICABLE",
@@ -2223,6 +2359,7 @@
    "status": "UNCHANGED_NOT_APPLICABLE"
   },
   {
+   "oracle_claim_id": "DEV::POEX-DOC-36171::amount_or_ratio",
    "frame_item_id": "POEX-DOC-36171",
    "field": "amount_or_ratio",
    "classification": "MISSING",
@@ -2238,6 +2375,7 @@
    "status": "UNCHANGED_MISSING"
   },
   {
+   "oracle_claim_id": "DEV::POEX-DOC-36171::currency",
    "frame_item_id": "POEX-DOC-36171",
    "field": "currency",
    "classification": "MISSING",
@@ -2250,6 +2388,7 @@
    "status": "UNCHANGED_MISSING"
   },
   {
+   "oracle_claim_id": "DEV::POEX-DOC-4666::event_type",
    "frame_item_id": "POEX-DOC-4666",
    "field": "event_type",
    "classification": "CORRECT",
@@ -2266,6 +2405,7 @@
    "status": "UNCHANGED_CORRECT"
   },
   {
+   "oracle_claim_id": "DEV::POEX-DOC-4666::ex_date",
    "frame_item_id": "POEX-DOC-4666",
    "field": "ex_date",
    "classification": "CORRECT",
@@ -2282,6 +2422,7 @@
    "status": "UNCHANGED_CORRECT"
   },
   {
+   "oracle_claim_id": "DEV::POEX-DOC-4666::record_date",
    "frame_item_id": "POEX-DOC-4666",
    "field": "record_date",
    "classification": "CORRECT",
@@ -2298,6 +2439,7 @@
    "status": "UNCHANGED_CORRECT"
   },
   {
+   "oracle_claim_id": "DEV::POEX-DOC-4666::payment_date",
    "frame_item_id": "POEX-DOC-4666",
    "field": "payment_date",
    "classification": "CORRECT",
@@ -2314,6 +2456,7 @@
    "status": "UNCHANGED_CORRECT"
   },
   {
+   "oracle_claim_id": "DEV::POEX-DOC-4666::amount_or_ratio",
    "frame_item_id": "POEX-DOC-4666",
    "field": "amount_or_ratio",
    "classification": "CORRECT",
@@ -2357,6 +2500,7 @@
    "status": "UNCHANGED_CORRECT"
   },
   {
+   "oracle_claim_id": "DEV::POEX-DOC-4666::currency",
    "frame_item_id": "POEX-DOC-4666",
    "field": "currency",
    "classification": "CORRECT",
@@ -2375,6 +2519,7 @@
    "status": "UNCHANGED_CORRECT"
   },
   {
+   "oracle_claim_id": "DEV::POEX-DOC-7021::event_type",
    "frame_item_id": "POEX-DOC-7021",
    "field": "event_type",
    "classification": "CORRECT",
@@ -2391,6 +2536,7 @@
    "status": "UNCHANGED_CORRECT"
   },
   {
+   "oracle_claim_id": "DEV::POEX-DOC-7021::ex_date",
    "frame_item_id": "POEX-DOC-7021",
    "field": "ex_date",
    "classification": "CORRECT",
@@ -2407,6 +2553,7 @@
    "status": "UNCHANGED_CORRECT"
   },
   {
+   "oracle_claim_id": "DEV::POEX-DOC-7021::record_date",
    "frame_item_id": "POEX-DOC-7021",
    "field": "record_date",
    "classification": "CORRECT",
@@ -2423,6 +2570,7 @@
    "status": "UNCHANGED_CORRECT"
   },
   {
+   "oracle_claim_id": "DEV::POEX-DOC-7021::payment_date",
    "frame_item_id": "POEX-DOC-7021",
    "field": "payment_date",
    "classification": "CORRECT",
@@ -2439,6 +2587,7 @@
    "status": "UNCHANGED_CORRECT"
   },
   {
+   "oracle_claim_id": "DEV::POEX-DOC-7021::amount_or_ratio",
    "frame_item_id": "POEX-DOC-7021",
    "field": "amount_or_ratio",
    "classification": "MISSING",
@@ -2475,6 +2624,7 @@
    "status": "UNCHANGED_MISSING"
   },
   {
+   "oracle_claim_id": "DEV::POEX-DOC-7021::currency",
    "frame_item_id": "POEX-DOC-7021",
    "field": "currency",
    "classification": "CORRECT",

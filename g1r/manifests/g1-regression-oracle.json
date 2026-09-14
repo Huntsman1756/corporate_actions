@@ -1,5 +1,5 @@
 {
- "oracle_version": "CA_ES_G1_REGRESSION_ORACLE_V2.1",
+ "oracle_version": "CA_ES_G1_REGRESSION_ORACLE_V3",
  "frozen_at": "2026-09-14",
  "source": "adjudicacion firmada G1 sealed + re-ejecucion determinista del parser c431830 sobre manifests sellados",
  "claim_semantics": {
@@ -18,7 +18,12 @@
    "required": "REMAIN_CORRECT",
    "expected_claims": {
     "event_type": "CAPITAL_INCREASE"
-   }
+   },
+   "oracle_claim_id": "G1REG::HOLDOUT::BMEG-CapitalIncreases-ES0105606190-2025-03-27::event_type",
+   "canonical_concept": "EVENT_TYPE",
+   "source_content_sha256": "ca5e2be6bb82c0a70de521ca855171aefe2ee622cceb4b5fddeee6e0cb3be0b9",
+   "review_status": "SIGNED",
+   "reviewed_at": "2026-09-14"
   },
   {
    "frame_item_id": "BMEG-CapitalIncreases-ES0105606190-2025-03-27",
@@ -50,7 +55,12 @@
      "normalized": "0.0",
      "currency": "EUR"
     }
-   }
+   },
+   "oracle_claim_id": "G1REG::HOLDOUT::BMEG-CapitalIncreases-ES0105606190-2025-03-27::amount_or_ratio",
+   "canonical_concept": "AMOUNT_ROLE",
+   "source_content_sha256": "ca5e2be6bb82c0a70de521ca855171aefe2ee622cceb4b5fddeee6e0cb3be0b9",
+   "review_status": "SIGNED",
+   "reviewed_at": "2026-09-14"
   },
   {
    "frame_item_id": "BMEG-CapitalIncreases-ES0105606190-2025-03-27",
@@ -65,7 +75,12 @@
     "amount.nominal_total.currency": "EUR",
     "amount.price.currency": "EUR",
     "amount.rights_price.currency": "EUR"
-   }
+   },
+   "oracle_claim_id": "G1REG::HOLDOUT::BMEG-CapitalIncreases-ES0105606190-2025-03-27::currency",
+   "canonical_concept": "IDENTIFIER.CURRENCY",
+   "source_content_sha256": "ca5e2be6bb82c0a70de521ca855171aefe2ee622cceb4b5fddeee6e0cb3be0b9",
+   "review_status": "SIGNED",
+   "reviewed_at": "2026-09-14"
   },
   {
    "frame_item_id": "BMEG-Dividends-ES0105448007-2026-07-08",
@@ -74,7 +89,12 @@
    "required": "REMAIN_CORRECT",
    "expected_claims": {
     "event_type": "CASH_DIVIDEND"
-   }
+   },
+   "oracle_claim_id": "G1REG::HOLDOUT::BMEG-Dividends-ES0105448007-2026-07-08::event_type",
+   "canonical_concept": "EVENT_TYPE",
+   "source_content_sha256": "d379114c4b659f25f1eeb57fb2c11ac95db9a91dfa4f65bf86a57b2d9cea3ea5",
+   "review_status": "SIGNED",
+   "reviewed_at": "2026-09-14"
   },
   {
    "frame_item_id": "BMEG-Dividends-ES0105448007-2026-07-08",
@@ -83,7 +103,12 @@
    "required": "REMAIN_CORRECT",
    "expected_claims": {
     "date.ex_date": "2026-07-08"
-   }
+   },
+   "oracle_claim_id": "G1REG::HOLDOUT::BMEG-Dividends-ES0105448007-2026-07-08::ex_date",
+   "canonical_concept": "DATE_ROLE.EX_DATE",
+   "source_content_sha256": "d379114c4b659f25f1eeb57fb2c11ac95db9a91dfa4f65bf86a57b2d9cea3ea5",
+   "review_status": "SIGNED",
+   "reviewed_at": "2026-09-14"
   },
   {
    "frame_item_id": "BMEG-Dividends-ES0105448007-2026-07-08",
@@ -92,7 +117,12 @@
    "required": "REMAIN_CORRECT",
    "expected_claims": {
     "date.payment_date": "2026-07-10"
-   }
+   },
+   "oracle_claim_id": "G1REG::HOLDOUT::BMEG-Dividends-ES0105448007-2026-07-08::payment_date",
+   "canonical_concept": "DATE_ROLE.PAYMENT_DATE",
+   "source_content_sha256": "d379114c4b659f25f1eeb57fb2c11ac95db9a91dfa4f65bf86a57b2d9cea3ea5",
+   "review_status": "SIGNED",
+   "reviewed_at": "2026-09-14"
   },
   {
    "frame_item_id": "BMEG-Dividends-ES0105448007-2026-07-08",
@@ -108,7 +138,12 @@
      "normalized": "0.07039435",
      "currency": "EUR"
     }
-   }
+   },
+   "oracle_claim_id": "G1REG::HOLDOUT::BMEG-Dividends-ES0105448007-2026-07-08::amount_or_ratio",
+   "canonical_concept": "AMOUNT_ROLE",
+   "source_content_sha256": "d379114c4b659f25f1eeb57fb2c11ac95db9a91dfa4f65bf86a57b2d9cea3ea5",
+   "review_status": "SIGNED",
+   "reviewed_at": "2026-09-14"
   },
   {
    "frame_item_id": "BMEG-Dividends-ES0105448007-2026-07-08",
@@ -119,7 +154,12 @@
     "instrument.currency": "EUR",
     "amount.gross_per_share.currency": "EUR",
     "amount.net_per_share.currency": "EUR"
-   }
+   },
+   "oracle_claim_id": "G1REG::HOLDOUT::BMEG-Dividends-ES0105448007-2026-07-08::currency",
+   "canonical_concept": "IDENTIFIER.CURRENCY",
+   "source_content_sha256": "d379114c4b659f25f1eeb57fb2c11ac95db9a91dfa4f65bf86a57b2d9cea3ea5",
+   "review_status": "SIGNED",
+   "reviewed_at": "2026-09-14"
   },
   {
    "frame_item_id": "BMEG-OtherPayments-ES0105273009-2026-01-02",
@@ -128,7 +168,12 @@
    "required": "REMAIN_CORRECT",
    "expected_claims": {
     "event_type": "OTHER_PAYMENT"
-   }
+   },
+   "oracle_claim_id": "G1REG::HOLDOUT::BMEG-OtherPayments-ES0105273009-2026-01-02::event_type",
+   "canonical_concept": "EVENT_TYPE",
+   "source_content_sha256": "df30bb310d178660aa8c64e7643138cd7268a9fe5b497418af62b43fc256fa31",
+   "review_status": "SIGNED",
+   "reviewed_at": "2026-09-14"
   },
   {
    "frame_item_id": "BMEG-OtherPayments-ES0105273009-2026-01-02",
@@ -137,7 +182,12 @@
    "required": "REMAIN_CORRECT",
    "expected_claims": {
     "date.ex_date": "2026-01-02"
-   }
+   },
+   "oracle_claim_id": "G1REG::HOLDOUT::BMEG-OtherPayments-ES0105273009-2026-01-02::ex_date",
+   "canonical_concept": "DATE_ROLE.EX_DATE",
+   "source_content_sha256": "df30bb310d178660aa8c64e7643138cd7268a9fe5b497418af62b43fc256fa31",
+   "review_status": "SIGNED",
+   "reviewed_at": "2026-09-14"
   },
   {
    "frame_item_id": "BMEG-OtherPayments-ES0105273009-2026-01-02",
@@ -146,7 +196,12 @@
    "required": "REMAIN_CORRECT",
    "expected_claims": {
     "date.payment_date": "2026-01-15"
-   }
+   },
+   "oracle_claim_id": "G1REG::HOLDOUT::BMEG-OtherPayments-ES0105273009-2026-01-02::payment_date",
+   "canonical_concept": "DATE_ROLE.PAYMENT_DATE",
+   "source_content_sha256": "df30bb310d178660aa8c64e7643138cd7268a9fe5b497418af62b43fc256fa31",
+   "review_status": "SIGNED",
+   "reviewed_at": "2026-09-14"
   },
   {
    "frame_item_id": "BMEG-OtherPayments-ES0105273009-2026-01-02",
@@ -166,7 +221,12 @@
      "normalized": "0.0",
      "currency": "EUR"
     }
-   }
+   },
+   "oracle_claim_id": "G1REG::HOLDOUT::BMEG-OtherPayments-ES0105273009-2026-01-02::amount_or_ratio",
+   "canonical_concept": "AMOUNT_ROLE",
+   "source_content_sha256": "df30bb310d178660aa8c64e7643138cd7268a9fe5b497418af62b43fc256fa31",
+   "review_status": "SIGNED",
+   "reviewed_at": "2026-09-14"
   },
   {
    "frame_item_id": "BMEG-OtherPayments-ES0105273009-2026-01-02",
@@ -178,7 +238,12 @@
     "amount.effective_total.currency": "EUR",
     "amount.gross_per_share.currency": "EUR",
     "amount.net_per_share.currency": "EUR"
-   }
+   },
+   "oracle_claim_id": "G1REG::HOLDOUT::BMEG-OtherPayments-ES0105273009-2026-01-02::currency",
+   "canonical_concept": "IDENTIFIER.CURRENCY",
+   "source_content_sha256": "df30bb310d178660aa8c64e7643138cd7268a9fe5b497418af62b43fc256fa31",
+   "review_status": "SIGNED",
+   "reviewed_at": "2026-09-14"
   },
   {
    "frame_item_id": "BMEG-OtherPayments-ES0105389003-2025-05-22",
@@ -187,7 +252,12 @@
    "required": "REMAIN_CORRECT",
    "expected_claims": {
     "event_type": "OTHER_PAYMENT"
-   }
+   },
+   "oracle_claim_id": "G1REG::HOLDOUT::BMEG-OtherPayments-ES0105389003-2025-05-22::event_type",
+   "canonical_concept": "EVENT_TYPE",
+   "source_content_sha256": "5ceed98ec4d84f94873154f5d9e272335dd39306dc265aa54557cf26abde5a3b",
+   "review_status": "SIGNED",
+   "reviewed_at": "2026-09-14"
   },
   {
    "frame_item_id": "BMEG-OtherPayments-ES0105389003-2025-05-22",
@@ -196,7 +266,12 @@
    "required": "REMAIN_CORRECT",
    "expected_claims": {
     "date.ex_date": "2025-05-22"
-   }
+   },
+   "oracle_claim_id": "G1REG::HOLDOUT::BMEG-OtherPayments-ES0105389003-2025-05-22::ex_date",
+   "canonical_concept": "DATE_ROLE.EX_DATE",
+   "source_content_sha256": "5ceed98ec4d84f94873154f5d9e272335dd39306dc265aa54557cf26abde5a3b",
+   "review_status": "SIGNED",
+   "reviewed_at": "2026-09-14"
   },
   {
    "frame_item_id": "BMEG-OtherPayments-ES0105389003-2025-05-22",
@@ -205,7 +280,12 @@
    "required": "REMAIN_CORRECT",
    "expected_claims": {
     "date.payment_date": "2025-05-26"
-   }
+   },
+   "oracle_claim_id": "G1REG::HOLDOUT::BMEG-OtherPayments-ES0105389003-2025-05-22::payment_date",
+   "canonical_concept": "DATE_ROLE.PAYMENT_DATE",
+   "source_content_sha256": "5ceed98ec4d84f94873154f5d9e272335dd39306dc265aa54557cf26abde5a3b",
+   "review_status": "SIGNED",
+   "reviewed_at": "2026-09-14"
   },
   {
    "frame_item_id": "BMEG-OtherPayments-ES0105389003-2025-05-22",
@@ -225,7 +305,12 @@
      "normalized": "0.0",
      "currency": "EUR"
     }
-   }
+   },
+   "oracle_claim_id": "G1REG::HOLDOUT::BMEG-OtherPayments-ES0105389003-2025-05-22::amount_or_ratio",
+   "canonical_concept": "AMOUNT_ROLE",
+   "source_content_sha256": "5ceed98ec4d84f94873154f5d9e272335dd39306dc265aa54557cf26abde5a3b",
+   "review_status": "SIGNED",
+   "reviewed_at": "2026-09-14"
   },
   {
    "frame_item_id": "BMEG-OtherPayments-ES0105389003-2025-05-22",
@@ -237,7 +322,12 @@
     "amount.effective_total.currency": "EUR",
     "amount.gross_per_share.currency": "EUR",
     "amount.net_per_share.currency": "EUR"
-   }
+   },
+   "oracle_claim_id": "G1REG::HOLDOUT::BMEG-OtherPayments-ES0105389003-2025-05-22::currency",
+   "canonical_concept": "IDENTIFIER.CURRENCY",
+   "source_content_sha256": "5ceed98ec4d84f94873154f5d9e272335dd39306dc265aa54557cf26abde5a3b",
+   "review_status": "SIGNED",
+   "reviewed_at": "2026-09-14"
   },
   {
    "frame_item_id": "CNMV-IP-2594",
@@ -246,7 +336,12 @@
    "required": "REMAIN_CORRECT",
    "expected_claims": {
     "event_type": "CASH_DIVIDEND"
-   }
+   },
+   "oracle_claim_id": "G1REG::HOLDOUT::CNMV-IP-2594::event_type",
+   "canonical_concept": "EVENT_TYPE",
+   "source_content_sha256": "ebb8e9a07031c7a47c6511959d3e268963b32475bb25d7fdf2889fce480c399b",
+   "review_status": "SIGNED",
+   "reviewed_at": "2026-09-14"
   },
   {
    "frame_item_id": "CNMV-OIR-35466",
@@ -255,7 +350,12 @@
    "required": "REMAIN_CORRECT",
    "expected_claims": {
     "event_type": "MERGER_OR_EXCHANGE"
-   }
+   },
+   "oracle_claim_id": "G1REG::HOLDOUT::CNMV-OIR-35466::event_type",
+   "canonical_concept": "EVENT_TYPE",
+   "source_content_sha256": "8972328be6dff79bb6fa732702b170a1d09754e572818782304e075fab231075",
+   "review_status": "SIGNED",
+   "reviewed_at": "2026-09-14"
   },
   {
    "frame_item_id": "CNMV-OIR-35946",
@@ -264,7 +364,12 @@
    "required": "REMAIN_CORRECT",
    "expected_claims": {
     "event_type": "CAPITAL_INCREASE"
-   }
+   },
+   "oracle_claim_id": "G1REG::HOLDOUT::CNMV-OIR-35946::event_type",
+   "canonical_concept": "EVENT_TYPE",
+   "source_content_sha256": "c17d4df0e13615a73a18de5c0839f60300f80e1a4fda50ca83342b88b7ab23c2",
+   "review_status": "SIGNED",
+   "reviewed_at": "2026-09-14"
   },
   {
    "frame_item_id": "CNMV-OIR-36141",
@@ -273,7 +378,12 @@
    "required": "REMAIN_CORRECT",
    "expected_claims": {
     "event_type": "CASH_DIVIDEND"
-   }
+   },
+   "oracle_claim_id": "G1REG::HOLDOUT::CNMV-OIR-36141::event_type",
+   "canonical_concept": "EVENT_TYPE",
+   "source_content_sha256": "1b87d5b72007e69c2f7ec6dd97bf118a6efb20960b6bbb7b7d81297cf66da036",
+   "review_status": "SIGNED",
+   "reviewed_at": "2026-09-14"
   },
   {
    "frame_item_id": "CNMV-OIR-36141",
@@ -282,7 +392,12 @@
    "required": "REMAIN_CORRECT",
    "expected_claims": {
     "date.record_date": "2025-08-12"
-   }
+   },
+   "oracle_claim_id": "G1REG::HOLDOUT::CNMV-OIR-36141::record_date",
+   "canonical_concept": "DATE_ROLE.RECORD_DATE",
+   "source_content_sha256": "1b87d5b72007e69c2f7ec6dd97bf118a6efb20960b6bbb7b7d81297cf66da036",
+   "review_status": "SIGNED",
+   "reviewed_at": "2026-09-14"
   },
   {
    "frame_item_id": "CNMV-OIR-36141",
@@ -291,7 +406,12 @@
    "required": "REMAIN_CORRECT",
    "expected_claims": {
     "date.payment_date": "2025-08-13"
-   }
+   },
+   "oracle_claim_id": "G1REG::HOLDOUT::CNMV-OIR-36141::payment_date",
+   "canonical_concept": "DATE_ROLE.PAYMENT_DATE",
+   "source_content_sha256": "1b87d5b72007e69c2f7ec6dd97bf118a6efb20960b6bbb7b7d81297cf66da036",
+   "review_status": "SIGNED",
+   "reviewed_at": "2026-09-14"
   },
   {
    "frame_item_id": "CNMV-OIR-38190",
@@ -300,7 +420,12 @@
    "required": "REMAIN_CORRECT",
    "expected_claims": {
     "event_type": "CASH_DIVIDEND"
-   }
+   },
+   "oracle_claim_id": "G1REG::HOLDOUT::CNMV-OIR-38190::event_type",
+   "canonical_concept": "EVENT_TYPE",
+   "source_content_sha256": "418a101a0b748082c73af5815979766cd08891bf80f9796f30ea8fee73039f07",
+   "review_status": "SIGNED",
+   "reviewed_at": "2026-09-14"
   },
   {
    "frame_item_id": "CNMV-OIR-41467",
@@ -309,7 +434,12 @@
    "required": "REMAIN_CORRECT",
    "expected_claims": {
     "event_type": "CASH_DIVIDEND"
-   }
+   },
+   "oracle_claim_id": "G1REG::HOLDOUT::CNMV-OIR-41467::event_type",
+   "canonical_concept": "EVENT_TYPE",
+   "source_content_sha256": "f28645ee7bdbbab1151c437c76a9cd2ff378f6bce0cb59b0c4c3117fecbc0e69",
+   "review_status": "SIGNED",
+   "reviewed_at": "2026-09-14"
   },
   {
    "frame_item_id": "CNMV-OIR-41467",
@@ -318,7 +448,12 @@
    "required": "REMAIN_CORRECT",
    "expected_claims": {
     "date.record_date": "2026-07-06"
-   }
+   },
+   "oracle_claim_id": "G1REG::HOLDOUT::CNMV-OIR-41467::record_date",
+   "canonical_concept": "DATE_ROLE.RECORD_DATE",
+   "source_content_sha256": "f28645ee7bdbbab1151c437c76a9cd2ff378f6bce0cb59b0c4c3117fecbc0e69",
+   "review_status": "SIGNED",
+   "reviewed_at": "2026-09-14"
   },
   {
    "frame_item_id": "CNMV-OIR-41467",
@@ -327,7 +462,12 @@
    "required": "REMAIN_CORRECT",
    "expected_claims": {
     "date.payment_date": "2026-07-07"
-   }
+   },
+   "oracle_claim_id": "G1REG::HOLDOUT::CNMV-OIR-41467::payment_date",
+   "canonical_concept": "DATE_ROLE.PAYMENT_DATE",
+   "source_content_sha256": "f28645ee7bdbbab1151c437c76a9cd2ff378f6bce0cb59b0c4c3117fecbc0e69",
+   "review_status": "SIGNED",
+   "reviewed_at": "2026-09-14"
   },
   {
    "frame_item_id": "CNMV-OIR-41942",
@@ -336,7 +476,12 @@
    "required": "REMAIN_CORRECT",
    "expected_claims": {
     "event_type": "EARLY_REDEMPTION"
-   }
+   },
+   "oracle_claim_id": "G1REG::HOLDOUT::CNMV-OIR-41942::event_type",
+   "canonical_concept": "EVENT_TYPE",
+   "source_content_sha256": "8b514ccebbead11dc95cf7bb1f38ea343637ee0f3f5d70fe4b5d1f01e9b31489",
+   "review_status": "SIGNED",
+   "reviewed_at": "2026-09-14"
   },
   {
    "frame_item_id": "POEX-DOC-18666",
@@ -345,7 +490,12 @@
    "required": "REMAIN_CORRECT",
    "expected_claims": {
     "event_type": "CAPITAL_REDUCTION"
-   }
+   },
+   "oracle_claim_id": "G1REG::HOLDOUT::POEX-DOC-18666::event_type",
+   "canonical_concept": "EVENT_TYPE",
+   "source_content_sha256": "69bcefcf0669cdb978cd288fc0b426d6360a6f3eaa42a7e646b23820b589b908",
+   "review_status": "SIGNED",
+   "reviewed_at": "2026-09-14"
   },
   {
    "frame_item_id": "POEX-DOC-18666",
@@ -357,7 +507,12 @@
      "normalized": "2389825.92",
      "currency": "EUR"
     }
-   }
+   },
+   "oracle_claim_id": "G1REG::HOLDOUT::POEX-DOC-18666::amount_or_ratio",
+   "canonical_concept": "AMOUNT_ROLE",
+   "source_content_sha256": "69bcefcf0669cdb978cd288fc0b426d6360a6f3eaa42a7e646b23820b589b908",
+   "review_status": "SIGNED",
+   "reviewed_at": "2026-09-14"
   },
   {
    "frame_item_id": "POEX-DOC-18666",
@@ -366,7 +521,12 @@
    "required": "REMAIN_CORRECT",
    "expected_claims": {
     "amount.reduction_total.currency": "EUR"
-   }
+   },
+   "oracle_claim_id": "G1REG::HOLDOUT::POEX-DOC-18666::currency",
+   "canonical_concept": "IDENTIFIER.CURRENCY",
+   "source_content_sha256": "69bcefcf0669cdb978cd288fc0b426d6360a6f3eaa42a7e646b23820b589b908",
+   "review_status": "SIGNED",
+   "reviewed_at": "2026-09-14"
   },
   {
    "frame_item_id": "POEX-DOC-4662",
@@ -375,7 +535,12 @@
    "required": "REMAIN_CORRECT",
    "expected_claims": {
     "date.ex_date": "2025-07-16"
-   }
+   },
+   "oracle_claim_id": "G1REG::HOLDOUT::POEX-DOC-4662::ex_date",
+   "canonical_concept": "DATE_ROLE.EX_DATE",
+   "source_content_sha256": "1e2a89421684b5fe88082264736a1d3999c16953b7eab57be59fab7536b6779e",
+   "review_status": "SIGNED",
+   "reviewed_at": "2026-09-14"
   },
   {
    "frame_item_id": "POEX-DOC-4662",
@@ -384,7 +549,12 @@
    "required": "REMAIN_CORRECT",
    "expected_claims": {
     "date.record_date": "2025-07-15"
-   }
+   },
+   "oracle_claim_id": "G1REG::HOLDOUT::POEX-DOC-4662::record_date",
+   "canonical_concept": "DATE_ROLE.RECORD_DATE",
+   "source_content_sha256": "1e2a89421684b5fe88082264736a1d3999c16953b7eab57be59fab7536b6779e",
+   "review_status": "SIGNED",
+   "reviewed_at": "2026-09-14"
   },
   {
    "frame_item_id": "POEX-DOC-4662",
@@ -393,7 +563,12 @@
    "required": "REMAIN_CORRECT",
    "expected_claims": {
     "date.payment_date": "2025-07-16"
-   }
+   },
+   "oracle_claim_id": "G1REG::HOLDOUT::POEX-DOC-4662::payment_date",
+   "canonical_concept": "DATE_ROLE.PAYMENT_DATE",
+   "source_content_sha256": "1e2a89421684b5fe88082264736a1d3999c16953b7eab57be59fab7536b6779e",
+   "review_status": "SIGNED",
+   "reviewed_at": "2026-09-14"
   },
   {
    "frame_item_id": "POEX-DOC-4662",
@@ -409,7 +584,12 @@
      "normalized": "26128",
      "currency": "EUR"
     }
-   }
+   },
+   "oracle_claim_id": "G1REG::HOLDOUT::POEX-DOC-4662::amount_or_ratio",
+   "canonical_concept": "AMOUNT_ROLE",
+   "source_content_sha256": "1e2a89421684b5fe88082264736a1d3999c16953b7eab57be59fab7536b6779e",
+   "review_status": "SIGNED",
+   "reviewed_at": "2026-09-14"
   },
   {
    "frame_item_id": "POEX-DOC-4662",
@@ -419,7 +599,12 @@
    "expected_claims": {
     "amount.gross_per_share.currency": "EUR",
     "amount.gross_total.currency": "EUR"
-   }
+   },
+   "oracle_claim_id": "G1REG::HOLDOUT::POEX-DOC-4662::currency",
+   "canonical_concept": "IDENTIFIER.CURRENCY",
+   "source_content_sha256": "1e2a89421684b5fe88082264736a1d3999c16953b7eab57be59fab7536b6779e",
+   "review_status": "SIGNED",
+   "reviewed_at": "2026-09-14"
   },
   {
    "frame_item_id": "CNMV-IP-2670",
@@ -428,7 +613,12 @@
    "required": "REMAIN_CORRECT",
    "expected_claims": {
     "event_type": "CAPITAL_INCREASE"
-   }
+   },
+   "oracle_claim_id": "G1REG::ADVERSARIAL::CNMV-IP-2670::event_type",
+   "canonical_concept": "EVENT_TYPE",
+   "source_content_sha256": "e19c1727fd703952fd4d62cd6e13b5c2fb3900ac44c577f0ad6d74b195a6dc77",
+   "review_status": "SIGNED",
+   "reviewed_at": "2026-09-14"
   },
   {
    "frame_item_id": "CNMV-IP-2670",
@@ -441,7 +631,12 @@
      "currency": "EUR"
     }
    },
-   "erratum": true
+   "erratum": true,
+   "oracle_claim_id": "G1REG::ADVERSARIAL::CNMV-IP-2670::amount_or_ratio",
+   "canonical_concept": "AMOUNT_ROLE",
+   "source_content_sha256": "e19c1727fd703952fd4d62cd6e13b5c2fb3900ac44c577f0ad6d74b195a6dc77",
+   "review_status": "ERRATUM",
+   "reviewed_at": "2026-09-14"
   },
   {
    "frame_item_id": "CNMV-IP-2670",
@@ -451,7 +646,12 @@
    "expected_claims": {
     "amount.issue_price_per_share.currency": "EUR"
    },
-   "erratum": true
+   "erratum": true,
+   "oracle_claim_id": "G1REG::ADVERSARIAL::CNMV-IP-2670::currency",
+   "canonical_concept": "IDENTIFIER.CURRENCY",
+   "source_content_sha256": "e19c1727fd703952fd4d62cd6e13b5c2fb3900ac44c577f0ad6d74b195a6dc77",
+   "review_status": "ERRATUM",
+   "reviewed_at": "2026-09-14"
   },
   {
    "frame_item_id": "CNMV-OIR-32583",
@@ -460,7 +660,12 @@
    "required": "REMAIN_CORRECT",
    "expected_claims": {
     "event_type": "TAKEOVER_BID"
-   }
+   },
+   "oracle_claim_id": "G1REG::ADVERSARIAL::CNMV-OIR-32583::event_type",
+   "canonical_concept": "EVENT_TYPE",
+   "source_content_sha256": "8bc4e2a0383c2e1bdab35ae314a3fd1cc4273a845e47b8c09b716745652e7f9c",
+   "review_status": "SIGNED",
+   "reviewed_at": "2026-09-14"
   },
   {
    "frame_item_id": "CNMV-OIR-37214",
@@ -469,7 +674,12 @@
    "required": "REMAIN_CORRECT",
    "expected_claims": {
     "event_type": "CASH_DIVIDEND"
-   }
+   },
+   "oracle_claim_id": "G1REG::ADVERSARIAL::CNMV-OIR-37214::event_type",
+   "canonical_concept": "EVENT_TYPE",
+   "source_content_sha256": "deb649b9466525d77c25067758782a45024808c029e6929b1d9e564b8525ddc7",
+   "review_status": "SIGNED",
+   "reviewed_at": "2026-09-14"
   },
   {
    "frame_item_id": "CNMV-OIR-37214",
@@ -478,7 +688,12 @@
    "required": "REMAIN_CORRECT",
    "expected_claims": {
     "date.ex_date": "2025-10-24"
-   }
+   },
+   "oracle_claim_id": "G1REG::ADVERSARIAL::CNMV-OIR-37214::ex_date",
+   "canonical_concept": "DATE_ROLE.EX_DATE",
+   "source_content_sha256": "deb649b9466525d77c25067758782a45024808c029e6929b1d9e564b8525ddc7",
+   "review_status": "SIGNED",
+   "reviewed_at": "2026-09-14"
   },
   {
    "frame_item_id": "CNMV-OIR-37214",
@@ -487,7 +702,12 @@
    "required": "REMAIN_CORRECT",
    "expected_claims": {
     "date.record_date": "2025-10-27"
-   }
+   },
+   "oracle_claim_id": "G1REG::ADVERSARIAL::CNMV-OIR-37214::record_date",
+   "canonical_concept": "DATE_ROLE.RECORD_DATE",
+   "source_content_sha256": "deb649b9466525d77c25067758782a45024808c029e6929b1d9e564b8525ddc7",
+   "review_status": "SIGNED",
+   "reviewed_at": "2026-09-14"
   },
   {
    "frame_item_id": "CNMV-OIR-37214",
@@ -496,7 +716,12 @@
    "required": "REMAIN_CORRECT",
    "expected_claims": {
     "date.payment_date": "2025-12-03"
-   }
+   },
+   "oracle_claim_id": "G1REG::ADVERSARIAL::CNMV-OIR-37214::payment_date",
+   "canonical_concept": "DATE_ROLE.PAYMENT_DATE",
+   "source_content_sha256": "deb649b9466525d77c25067758782a45024808c029e6929b1d9e564b8525ddc7",
+   "review_status": "SIGNED",
+   "reviewed_at": "2026-09-14"
   },
   {
    "frame_item_id": "CNMV-OIR-37547",
@@ -505,7 +730,12 @@
    "required": "REMAIN_CORRECT",
    "expected_claims": {
     "event_type": "EARLY_REDEMPTION"
-   }
+   },
+   "oracle_claim_id": "G1REG::ADVERSARIAL::CNMV-OIR-37547::event_type",
+   "canonical_concept": "EVENT_TYPE",
+   "source_content_sha256": "70fb2f23de028470841a42101550125d5a91a46983aabb892461f7226e5233e2",
+   "review_status": "SIGNED",
+   "reviewed_at": "2026-09-14"
   },
   {
    "frame_item_id": "CNMV-OIR-40729",
@@ -514,7 +744,12 @@
    "required": "REMAIN_CORRECT",
    "expected_claims": {
     "event_type": "CASH_DIVIDEND"
-   }
+   },
+   "oracle_claim_id": "G1REG::ADVERSARIAL::CNMV-OIR-40729::event_type",
+   "canonical_concept": "EVENT_TYPE",
+   "source_content_sha256": "d24bc61225a85d2e5021b48648a91d3e5e2bd0c30ee50bf4c150fbadbaaac4b7",
+   "review_status": "SIGNED",
+   "reviewed_at": "2026-09-14"
   },
   {
    "frame_item_id": "CNMV-OIR-40729",
@@ -523,7 +758,12 @@
    "required": "REMAIN_CORRECT",
    "expected_claims": {
     "date.record_date": "2026-05-19"
-   }
+   },
+   "oracle_claim_id": "G1REG::ADVERSARIAL::CNMV-OIR-40729::record_date",
+   "canonical_concept": "DATE_ROLE.RECORD_DATE",
+   "source_content_sha256": "d24bc61225a85d2e5021b48648a91d3e5e2bd0c30ee50bf4c150fbadbaaac4b7",
+   "review_status": "SIGNED",
+   "reviewed_at": "2026-09-14"
   },
   {
    "frame_item_id": "CNMV-OIR-40729",
@@ -532,7 +772,12 @@
    "required": "REMAIN_CORRECT",
    "expected_claims": {
     "date.payment_date": "2026-06-15"
-   }
+   },
+   "oracle_claim_id": "G1REG::ADVERSARIAL::CNMV-OIR-40729::payment_date",
+   "canonical_concept": "DATE_ROLE.PAYMENT_DATE",
+   "source_content_sha256": "d24bc61225a85d2e5021b48648a91d3e5e2bd0c30ee50bf4c150fbadbaaac4b7",
+   "review_status": "SIGNED",
+   "reviewed_at": "2026-09-14"
   }
  ],
  "known_p0_incorrect_fields": [
@@ -556,7 +801,12 @@
      }
     }
    ],
-   "note": "0,01 era nominal de accion, no dividendo. Publicado: \"importe total de 342 millones de euros\"."
+   "note": "0,01 era nominal de accion, no dividendo. Publicado: \"importe total de 342 millones de euros\".",
+   "oracle_claim_id": "G1REG::ADVERSARIAL::CNMV-OIR-37214::amount_or_ratio",
+   "canonical_concept": "AMOUNT_ROLE",
+   "source_content_sha256": "deb649b9466525d77c25067758782a45024808c029e6929b1d9e564b8525ddc7",
+   "review_status": "SIGNED",
+   "reviewed_at": "2026-09-14"
   },
   {
    "frame_item_id": "CNMV-OIR-40729",
@@ -578,7 +828,12 @@
      }
     }
    ],
-   "note": "0,01 era nominal de accion, no dividendo. Publicado: \"importe total de 400 millones de euros\"."
+   "note": "0,01 era nominal de accion, no dividendo. Publicado: \"importe total de 400 millones de euros\".",
+   "oracle_claim_id": "G1REG::ADVERSARIAL::CNMV-OIR-40729::amount_or_ratio",
+   "canonical_concept": "AMOUNT_ROLE",
+   "source_content_sha256": "d24bc61225a85d2e5021b48648a91d3e5e2bd0c30ee50bf4c150fbadbaaac4b7",
+   "review_status": "SIGNED",
+   "reviewed_at": "2026-09-14"
   },
   {
    "frame_item_id": "CNMV-OIR-40729",
@@ -594,7 +849,12 @@
      "date.ex_date": "2026-05-18"
     }
    ],
-   "note": "15-may era fecha prevista de anuncio; ex-dividendo publicado = 18-may-2026."
+   "note": "15-may era fecha prevista de anuncio; ex-dividendo publicado = 18-may-2026.",
+   "oracle_claim_id": "G1REG::ADVERSARIAL::CNMV-OIR-40729::ex_date",
+   "canonical_concept": "DATE_ROLE.EX_DATE",
+   "source_content_sha256": "d24bc61225a85d2e5021b48648a91d3e5e2bd0c30ee50bf4c150fbadbaaac4b7",
+   "review_status": "SIGNED",
+   "reviewed_at": "2026-09-14"
   },
   {
    "frame_item_id": "CNMV-IP-2594",
@@ -616,7 +876,12 @@
      }
     }
    ],
-   "note": "755M pertenece al programa de recompra. Dividendo publicado: 12,44 centimos brutos/accion."
+   "note": "755M pertenece al programa de recompra. Dividendo publicado: 12,44 centimos brutos/accion.",
+   "oracle_claim_id": "G1REG::HOLDOUT::CNMV-IP-2594::amount_or_ratio",
+   "canonical_concept": "AMOUNT_ROLE",
+   "source_content_sha256": "ebb8e9a07031c7a47c6511959d3e268963b32475bb25d7fdf2889fce480c399b",
+   "review_status": "SIGNED",
+   "reviewed_at": "2026-09-14"
   },
   {
    "frame_item_id": "CNMV-OIR-36680",
@@ -632,7 +897,12 @@
      "event_type": "MERGER_OR_EXCHANGE"
     }
    ],
-   "note": "Documento de fusion por absorcion JSS->Arima; CASH_DIVIDEND era lexema espurio."
+   "note": "Documento de fusion por absorcion JSS->Arima; CASH_DIVIDEND era lexema espurio.",
+   "oracle_claim_id": "G1REG::HOLDOUT::CNMV-OIR-36680::event_type",
+   "canonical_concept": "EVENT_TYPE",
+   "source_content_sha256": "234985248c8e95e0059155e5880ffa4df2dfc3df2eaa1acc0eb78a862d93ca8b",
+   "review_status": "SIGNED",
+   "reviewed_at": "2026-09-14"
   },
   {
    "frame_item_id": "CNMV-OIR-38190",
@@ -654,7 +924,12 @@
      }
     }
    ],
-   "note": "DECIMAL_SPLIT_PDF: \"0. 53 euros\" se emitio como 53."
+   "note": "DECIMAL_SPLIT_PDF: \"0. 53 euros\" se emitio como 53.",
+   "oracle_claim_id": "G1REG::HOLDOUT::CNMV-OIR-38190::amount_or_ratio",
+   "canonical_concept": "AMOUNT_ROLE",
+   "source_content_sha256": "418a101a0b748082c73af5815979766cd08891bf80f9796f30ea8fee73039f07",
+   "review_status": "SIGNED",
+   "reviewed_at": "2026-09-14"
   },
   {
    "frame_item_id": "CNMV-OIR-41467",
@@ -676,7 +951,12 @@
      }
     }
    ],
-   "note": "DECIMAL_SPLIT_PDF: \"0, 47 euros\" se emitio como 47."
+   "note": "DECIMAL_SPLIT_PDF: \"0, 47 euros\" se emitio como 47.",
+   "oracle_claim_id": "G1REG::HOLDOUT::CNMV-OIR-41467::amount_or_ratio",
+   "canonical_concept": "AMOUNT_ROLE",
+   "source_content_sha256": "f28645ee7bdbbab1151c437c76a9cd2ff378f6bce0cb59b0c4c3117fecbc0e69",
+   "review_status": "SIGNED",
+   "reviewed_at": "2026-09-14"
   }
  ],
  "errata": [
@@ -709,5 +989,6 @@
   "p0_incorrect": 7
  },
  "note": "49 = 37 HOLDOUT + 12 ADVERSARIAL campos criticos correctos; 7 campos poblados incorrectos conocidos.",
- "oracle_sha256": "0f6ef737f2cc1d3e2eb72aaff956b214476d77da16588d5f4eb6ed616ec18a0a"
+ "provenance_note": "ORACLE_CLAIM con provenance (ADR-017): oracle_claim_id, canonical_concept, source_content_sha256, review_status por claim. Los expected/forbidden/allowed no cambian respecto a V2.1.",
+ "oracle_sha256": "e417b57748d9253ff7af823c26bcfe3fd9cd2a9c4455fd67237966253e1c8856"
 }

@@ -146,6 +146,7 @@ class EntitlementStatus(str, Enum):
 class MappingStatus(str, Enum):
     PROVEN = "PROVEN"
     UNMAPPED = "UNMAPPED"
+    CONFLICTING = "CONFLICTING"
     NOT_APPLICABLE = "NOT_APPLICABLE"
 
 
