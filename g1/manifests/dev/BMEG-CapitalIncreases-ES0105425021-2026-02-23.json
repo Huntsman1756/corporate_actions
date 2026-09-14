@@ -1,0 +1,23 @@
+{
+  "manifest_version": "CA_ES_SOURCE_MANIFEST_V1",
+  "corpus_id": "G1_DEV_BMEG-CapitalIncreases-ES0105425021-2026-02-23",
+  "retrieved_at": "2026-09-14",
+  "documents": [
+    {
+      "source_id": "BME_GROWTH",
+      "official_document_id": "BMEG-CapitalIncreases-ES0105425021-2026-02-23",
+      "content_sha256": "d2e47e97464232ed3d1c455101b2147d357ab7e0b9505d053b7ba5de5912ae61",
+      "retrieved_at": "2026-09-14",
+      "publication_date": "2026-02-23",
+      "media_type": "application/json",
+      "raw_relpath": "g1/corpus/raw/dev/BMEG-CapitalIncreases-ES0105425021-2026-02-23.json",
+      "synthetic": false,
+      "retrieval_status": "OK",
+      "acquisition": {
+        "url": "https://apiweb.bolsasymercados.es/Market/v1/EQ/CorporateActions/CapitalIncreases",
+        "retrieval_method": "BME_API_ROW_SNAPSHOT"
+      },
+      "relations": []
+    }
+  ]
+}
