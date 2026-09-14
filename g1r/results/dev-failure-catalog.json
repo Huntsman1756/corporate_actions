@@ -4,6 +4,13 @@
  "baseline": "c431830de42acef3d108525edb575ed83be4fc13",
  "baseline_results": "g1r/results/baseline-c431830-results.json",
  "rule": "clases genericas del fenomeno documental; prohibido condicionar por seed/issuer/documento",
+ "p0_axis": "los errores P0 son ortogonales a MISSING: el campo correcto publicado no extraido cuenta como MISSING en completeness y ademas registra su p0_error desagregado",
+ "p0_summary": {
+  "FALSE_FINANCIAL_FACT": 1,
+  "DATE_MISBINDING": 3,
+  "WRONG_EVENT_TYPE": 4,
+  "FALSE_POSITIVE_EVENT": 1
+ },
  "failures": [
   {
    "failure_class": "FALSE_FINANCIAL_SEMANTIC_ANCHOR",
@@ -27,10 +34,11 @@
    "seeds": [
     "CNMV-OIR-40758",
     "CNMV-OIR-41381",
-    "CNMV-OIR-41640"
+    "CNMV-OIR-41640",
+    "BMEG-NewListings-ES0105650008-2026-03-06"
    ],
-   "description": "scrip dividend implementado via aumento de capital liberado: el parser emite CAPITAL_INCREASE o CASH_DIVIDEND en lugar de SCRIP_DIVIDEND; la familia canonica exige el tipo economico del evento",
-   "safety": "P0 (frontera de taxonomia, confirmar en firma)"
+   "description": "el parser emite el tipo del mecanismo/fase (CAPITAL_INCREASE, CASH_DIVIDEND, NEW_LISTING) en lugar del tipo economico canonico del evento (SCRIP_DIVIDEND; CAPITAL_INCREASE/ADMISSION para admisiones post-ampliacion). Fronteras FIRMADAS: scrip via aumento liberado = SCRIP_DIVIDEND; admision de acciones fungibles != NEW_LISTING",
+   "safety": "P0 -> WRONG_EVENT_TYPE"
   },
   {
    "failure_class": "FALSE_POSITIVE_EVENT",

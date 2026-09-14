@@ -59,6 +59,10 @@ def fin(normalized, currency='EUR'):
 
 # =========================================================================
 # SEED VERDICTS  (verdict, family, lifecycle, affected_note, quote)
+# Fronteras de taxonomia FIRMADAS por el revisor:
+#   scrip via aumento liberado -> SCRIP_DIVIDEND con lifecycle distinto
+#   admision BMEG post-ampliacion -> CAPITAL_INCREASE/ADMISSION
+#   solicitud de dispensa OPA -> NOT_CA
 # =========================================================================
 SEEDS = {
  'BMEG-CapitalIncreases-ES0105561007-2025-01-13': (
@@ -87,7 +91,7 @@ SEEDS = {
    'A CUENTA gross 0.74 EUR exDate 20250703 payment 20250717'),
  'BMEG-NewListings-ES0105650008-2026-03-06': (
    'ACTUAL_CA', 'CAPITAL_INCREASE', 'ADMISSION',
-   'affected = ES0105650008 (fila BMEG)',
+   'affected = ES0105650008 (fila BMEG). SIGNED: admision de acciones fungibles de ampliacion previa NO es NEW_LISTING (NEW_LISTING reservado a incorporacion inicial de instrumento/emisor)',
    'admissionType Integration "AMP. CAPITAL NOV 2025": 9601365 acciones, nominal 960136.5'),
  'BMEG-OtherPayments-ES0105323002-2025-01-08': (
    'ACTUAL_CA', 'OTHER_PAYMENT', 'EXECUTION',
@@ -119,23 +123,23 @@ SEEDS = {
    'dividendo a cuenta 20 centimos (0,20) brutos/accion; record 24-nov-2025; ex 21-nov-2025; pago 10-dic-2025'),
  'CNMV-OIR-37970': (
    'NOT_CA', None, None,
-   'n/a',
+   'n/a. SIGNED: solicitud de dispensa de OPA obligatoria (CNMV autorizo la dispensa); no llego a existir oferta sobre holders',
    'solicitud de autorizacion de DISPENSA de la obligacion de formular OPA sobre Arima: procedimiento regulatorio, no hay oferta ni efecto sobre accionistas'),
  'CNMV-OIR-39819': (
    'ACTUAL_CA', 'CASH_DIVIDEND', 'EXECUTION',
    'affected = Naturhouse Health SA',
    'dividendo a cuenta 0,05 euros brutos/accion (3.000.000 total); last trading 15-abr-2026; ex 16-abr-2026; record 17-abr-2026; pago 20-abr-2026'),
  'CNMV-OIR-40758': (
-   'ACTUAL_CA', 'SCRIP_DIVIDEND', 'CALENDAR',
-   'affected = Almirall S.A.',
+   'ACTUAL_CA', 'SCRIP_DIVIDEND', 'TERMS_CALENDAR',
+   'affected = Almirall S.A. SIGNED: dividendo flexible implementado via aumento liberado; familia SCRIP_DIVIDEND con mechanism BONUS_CAPITAL_INCREASE',
    'calendario dividendo flexible: last trading 13-may-2026; record Iberclear 15-may-2026; ex-cupon 14-may-2026; pago efectivo 3-jun-2026'),
  'CNMV-OIR-41381': (
-   'ACTUAL_CA', 'SCRIP_DIVIDEND', 'COMPLETION',
-   'affected = Reig Jofre',
+   'ACTUAL_CA', 'SCRIP_DIVIDEND', 'EXECUTION',
+   'affected = Reig Jofre. SIGNED: ampliacion liberada = fase EXECUTION del scrip; mechanism BONUS_CAPITAL_INCREASE (cadena OIR 40958->41381->41640)',
    'cierre ampliacion liberada: 664.162 acciones nuevas; dividendo en efectivo total 135.770,59 euros liquidado 8-jun-2026'),
  'CNMV-OIR-41640': (
    'ACTUAL_CA', 'SCRIP_DIVIDEND', 'ADMISSION',
-   'affected = Reig Jofre',
+   'affected = Reig Jofre. SIGNED: inicio de cotizacion de acciones del dividendo flexible = ADMISSION/TRADING_START del scrip',
    'inicio cotizacion 1-jul-2026 de 664.162 acciones nuevas del dividendo flexible; capital resultante 41.441.701,50 EUR'),
  'CNMV-OIR-41981': (
    'ACTUAL_CA', 'REVERSE_SPLIT', 'REGISTRATION',
@@ -220,7 +224,7 @@ GT = {
    'currency': ('CORRECT', 'PUBLISHED', {'instrument.currency': 'EUR'}, 'currency=EUR'),
  },
  'BMEG-NewListings-ES0105650008-2026-03-06': {
-   'event_type': ('FALSE_FINANCIAL_FACT', 'PUBLISHED', {'event_type': 'CAPITAL_INCREASE'}, 'observations="AMP. CAPITAL NOV 2025" + admissionType=Integration: admision de acciones de una ampliacion; emitido NEW_LISTING (frontera de taxonomia, confirmar)'),
+   'event_type': ('MISSING', 'PUBLISHED', {'event_type': 'CAPITAL_INCREASE'}, 'observations="AMP. CAPITAL NOV 2025" + admissionType=Integration: admision de acciones de una ampliacion; emitido NEW_LISTING [SIGNED: CAPITAL_INCREASE/ADMISSION]'),
    'ex_date': ('NOT_APPLICABLE', 'N/A', None, 'admision post-ampliacion: no aplica'),
    'record_date': ('NOT_APPLICABLE', 'N/A', None, 'no aplica'),
    'payment_date': ('NOT_APPLICABLE', 'N/A', None, 'no aplica'),
@@ -240,7 +244,7 @@ GT = {
    'ex_date': ('NOT_APPLICABLE', 'N/A', None, 'TENDER: sin ex_date'),
    'record_date': ('NOT_APPLICABLE', 'N/A', None, 'TENDER: record no aplica a aceptacion'),
    'payment_date': ('UNKNOWN', 'NOT_PUBLISHED', None, 'plazo de aceptacion/liquidacion remitido al folleto'),
-   'amount_or_ratio': ('FALSE_FINANCIAL_FACT', 'PUBLISHED', {'amount.gross_per_share': fin('21.335')}, 'precio de la OPA mantenido = 21,335 euros/accion; el parser emitio 27,15 que es el limite inferior del rango de cotizacion del 13-jun-2025, no el precio de la oferta'),
+   'amount_or_ratio': ('MISSING', 'PUBLISHED', {'amount.gross_per_share': fin('21.335')}, 'precio de la OPA mantenido = 21,335 euros/accion; el parser emitio 27,15 que es el limite inferior del rango de cotizacion del 13-jun-2025, no el precio de la oferta'),
    'currency': ('CORRECT', 'PUBLISHED', {'instrument.currency': 'EUR'}, 'precios declarados en euros'),
  },
  'CNMV-OIR-32783': {
@@ -285,22 +289,22 @@ GT = {
  },
  'CNMV-OIR-39819': {
    'event_type': ('MISSING', 'PUBLISHED', {'event_type': 'CASH_DIVIDEND'}, '"distribuir tres millones de euros ... como dividendos a cuenta": evento detectado pero sin claim canonico de event_type'),
-   'ex_date': ('FALSE_FINANCIAL_FACT', 'PUBLISHED', {'date.ex_date': '2026-04-16'}, 'doc: "siendo el dia 16 de abril de 2026 el ex-date"; el parser emitio 2026-04-17 (el record-date)'),
+   'ex_date': ('MISSING', 'PUBLISHED', {'date.ex_date': '2026-04-16'}, 'doc: "siendo el dia 16 de abril de 2026 el ex-date"; el parser emitio 2026-04-17 (el record-date)'),
    'record_date': ('MISSING', 'PUBLISHED', {'date.record_date': '2026-04-17'}, '"17 de abril de 2026, la fecha de corte o record-date" no extraido'),
    'payment_date': ('MISSING', 'PUBLISHED', {'date.payment_date': '2026-04-20'}, '"el pago se efectuara el proximo dia 20 de abril de 2026" no extraido'),
    'amount_or_ratio': ('CORRECT', 'PUBLISHED', {'amount.gross_per_share': fin('0.05')}, '"0,05 euros brutos por accion"'),
    'currency': ('CORRECT', 'PUBLISHED', {'instrument.currency': 'EUR'}, 'euros explicitos'),
  },
  'CNMV-OIR-40758': {
-   'event_type': ('FALSE_FINANCIAL_FACT', 'PUBLISHED', {'event_type': 'SCRIP_DIVIDEND'}, '"dividendo flexible (scrip dividend)" implementado via aumento liberado; emitido CAPITAL_INCREASE (frontera de familia)'),
-   'ex_date': ('FALSE_FINANCIAL_FACT', 'PUBLISHED', {'date.ex_date': '2026-05-14'}, 'doc: "14 de mayo de 2026 ... las acciones de Almirall cotizan ex-cupon (ex date)"; el parser emitio 2026-05-25 (fin del plazo de solicitud de efectivo)'),
-   'record_date': ('FALSE_FINANCIAL_FACT', 'PUBLISHED', {'date.record_date': '2026-05-15'}, 'doc: "legitimados como accionistas en los registros de Iberclear el 15 de mayo de 2026 (record date)"; el parser emitio 2026-06-01 (fin del periodo de negociacion de derechos)'),
+   'event_type': ('MISSING', 'PUBLISHED', {'event_type': 'SCRIP_DIVIDEND'}, '"dividendo flexible (scrip dividend)" implementado via aumento liberado; emitido CAPITAL_INCREASE [SIGNED: SCRIP_DIVIDEND]'),
+   'ex_date': ('MISSING', 'PUBLISHED', {'date.ex_date': '2026-05-14'}, 'doc: "14 de mayo de 2026 ... las acciones de Almirall cotizan ex-cupon (ex date)"; el parser emitio 2026-05-25 (fin del plazo de solicitud de efectivo)'),
+   'record_date': ('MISSING', 'PUBLISHED', {'date.record_date': '2026-05-15'}, 'doc: "legitimados como accionistas en los registros de Iberclear el 15 de mayo de 2026 (record date)"; el parser emitio 2026-06-01 (fin del periodo de negociacion de derechos)'),
    'payment_date': ('MISSING', 'PUBLISHED', {'date.payment_date': '2026-06-03'}, '"3 de junio de 2026. Pago de efectivo ..." no extraido'),
    'amount_or_ratio': ('UNKNOWN', 'NOT_PUBLISHED', None, 'precio del compromiso de compra definido por formula (media 5 sesiones); sin importe fijo publicado'),
    'currency': ('UNKNOWN', 'NOT_PUBLISHED', None, 'no declarado como campo del evento'),
  },
  'CNMV-OIR-41381': {
-   'event_type': ('FALSE_FINANCIAL_FACT', 'PUBLISHED', {'event_type': 'SCRIP_DIVIDEND'}, '"dividendo mediante un scrip dividend o dividendo flexible"; emitido CASH_DIVIDEND'),
+   'event_type': ('MISSING', 'PUBLISHED', {'event_type': 'SCRIP_DIVIDEND'}, '"dividendo mediante un scrip dividend o dividendo flexible"; emitido CASH_DIVIDEND [SIGNED: SCRIP_DIVIDEND]'),
    'ex_date': ('NOT_APPLICABLE', 'N/A', None, 'COMPLETION del scrip: ex_date pertenecio a la fase de derechos'),
    'record_date': ('NOT_APPLICABLE', 'N/A', None, 'COMPLETION: no aplica'),
    'payment_date': ('MISSING', 'PUBLISHED', {'date.payment_date': '2026-06-08'}, '"liquidacion de dicho dividendo en efectivo ... con fecha 8 de junio de 2026" no extraido'),
@@ -308,7 +312,7 @@ GT = {
    'currency': ('MISSING', 'PUBLISHED', {'instrument.currency': 'EUR'}, 'euros explicitos; no emitido'),
  },
  'CNMV-OIR-41640': {
-   'event_type': ('FALSE_FINANCIAL_FACT', 'PUBLISHED', {'event_type': 'SCRIP_DIVIDEND'}, '"nuevas acciones resultantes de la conversion de los derechos ... dividendo flexible (scrip dividend)"; emitido CASH_DIVIDEND'),
+   'event_type': ('MISSING', 'PUBLISHED', {'event_type': 'SCRIP_DIVIDEND'}, '"nuevas acciones resultantes de la conversion de los derechos ... dividendo flexible (scrip dividend)"; emitido CASH_DIVIDEND [SIGNED: SCRIP_DIVIDEND]'),
    'ex_date': ('NOT_APPLICABLE', 'N/A', None, 'ADMISSION: no aplica'),
    'record_date': ('NOT_APPLICABLE', 'N/A', None, 'ADMISSION: no aplica'),
    'payment_date': ('NOT_APPLICABLE', 'N/A', None, 'la pata de efectivo se liquido en la fase anterior'),
@@ -366,24 +370,53 @@ GT = {
 }
 
 # =========================================================================
+# EJE P0 ORTOGONAL: estos campos son MISSING (completeness) y ADEMAS
+# llevan su error P0 desagregado (convencion de cierre G1).
+# =========================================================================
+P0_ERROR = {
+ ('CNMV-IP-3011', 'amount_or_ratio'): 'FALSE_FINANCIAL_FACT',
+ ('CNMV-OIR-39819', 'ex_date'): 'DATE_MISBINDING',
+ ('CNMV-OIR-40758', 'ex_date'): 'DATE_MISBINDING',
+ ('CNMV-OIR-40758', 'record_date'): 'DATE_MISBINDING',
+ ('CNMV-OIR-40758', 'event_type'): 'WRONG_EVENT_TYPE',
+ ('CNMV-OIR-41381', 'event_type'): 'WRONG_EVENT_TYPE',
+ ('CNMV-OIR-41640', 'event_type'): 'WRONG_EVENT_TYPE',
+ ('BMEG-NewListings-ES0105650008-2026-03-06', 'event_type'): 'WRONG_EVENT_TYPE',
+}
+
+# mechanism firmado para scrip implementado via aumento liberado
+MECHANISM = {
+ 'CNMV-OIR-40758': 'BONUS_CAPITAL_INCREASE',
+ 'CNMV-OIR-41381': 'BONUS_CAPITAL_INCREASE',
+ 'CNMV-OIR-41640': 'BONUS_CAPITAL_INCREASE',
+}
+
+# =========================================================================
 # INSTRUMENT REVIEW
+# Regla: RESOLVABLE_VIA_OFFICIAL_CROSS_REFERENCE solo si la cadena es
+# exacta y verificable con identificadores oficiales (ADR-013).
+# issuer_raw del registro CNMV es atribucion oficial a nivel NOMBRE;
+# sin NIF/ISIN en doc ni en metadata congelada -> no es cross-reference
+# exacta -> HUMAN_RELATION_REQUIRED.
+# POEX: metadata.product_url porta el ISIN (structured source
+# identifier oficial) -> cadena exacta.
 # =========================================================================
 INSTR = {
- 'CNMV-IP-3011': ('RESOLVABLE_VIA_OFFICIAL_CROSS_REFERENCE', 'AEDAS Homes (nombre en doc; ISIN via registro OPA CNMV reg.2773). PRECAUCION: affected != reporter (Neinor)', 'doc no porta ISIN; solo nombre del objeto de la OPA'),
- 'CNMV-OIR-32783': ('RESOLVABLE_VIA_OFFICIAL_CROSS_REFERENCE', 'Aena S.M.E. via registro de emisores CNMV', 'doc name-only'),
+ 'CNMV-IP-3011': ('HUMAN_RELATION_REQUIRED', 'AEDAS Homes (nombre en doc). PELIGRO: affected != reporter; issuer_raw=NEINOR ligaria el instrumento equivocado; resolver exige relacion adjudicada al instrumento de la OPA', 'doc sin ISIN/NIF; name-only del objeto de la OPA'),
+ 'CNMV-OIR-32783': ('HUMAN_RELATION_REQUIRED', 'Aena S.M.E. (name-only; issuer_raw oficial a nivel nombre, sin identificador)', 'sin cadena exacta nombre->ISIN verificable'),
  'CNMV-OIR-35263': ('RESOLVABLE_AUTOMATICALLY', 'ES0105046017 presente en la tabla de la pagina; no extraido por el parser', 'SOURCE_CARRIED binding no explotado'),
- 'CNMV-OIR-36798': ('RESOLVABLE_VIA_OFFICIAL_CROSS_REFERENCE', 'Banco de Sabadell via registro OPA CNMV', 'doc name-only (Sabadell+BBVA)'),
- 'CNMV-OIR-37702': ('RESOLVABLE_VIA_OFFICIAL_CROSS_REFERENCE', 'MERLIN via registro de emisores CNMV', 'doc name-only'),
+ 'CNMV-OIR-36798': ('HUMAN_RELATION_REQUIRED', 'Banco de Sabadell = affected (issuer_raw oficial); el doc nombra Sabadell+BBVA', 'name-only; binding issuer->ISIN requiere lookup oficial no congelado'),
+ 'CNMV-OIR-37702': ('HUMAN_RELATION_REQUIRED', 'MERLIN (name-only)', 'sin identificador oficial en doc ni metadata'),
  'CNMV-OIR-37970': ('NOT_APPLICABLE', 'seed NOT_CA', 'sin evento sobre el titulo'),
- 'CNMV-OIR-39819': ('RESOLVABLE_VIA_OFFICIAL_CROSS_REFERENCE', 'Naturhouse via registro CNMV', 'doc name-only'),
- 'CNMV-OIR-40758': ('RESOLVABLE_VIA_OFFICIAL_CROSS_REFERENCE', 'Almirall via registro CNMV', 'doc name-only'),
- 'CNMV-OIR-41381': ('RESOLVABLE_VIA_OFFICIAL_CROSS_REFERENCE', 'Reig Jofre via registro CNMV', 'doc name-only'),
- 'CNMV-OIR-41640': ('RESOLVABLE_VIA_OFFICIAL_CROSS_REFERENCE', 'Reig Jofre via registro CNMV', 'doc name-only'),
+ 'CNMV-OIR-39819': ('HUMAN_RELATION_REQUIRED', 'Naturhouse (name-only)', 'sin identificador oficial en doc ni metadata'),
+ 'CNMV-OIR-40758': ('HUMAN_RELATION_REQUIRED', 'Almirall (name-only)', 'sin identificador oficial en doc ni metadata'),
+ 'CNMV-OIR-41381': ('HUMAN_RELATION_REQUIRED', 'Reig Jofre (name-only)', 'sin identificador oficial en doc ni metadata'),
+ 'CNMV-OIR-41640': ('HUMAN_RELATION_REQUIRED', 'Reig Jofre (name-only)', 'sin identificador oficial en doc ni metadata'),
  'CNMV-OIR-41981': ('RESOLVABLE_AUTOMATICALLY', 'pagina porta ISINs; la fila mas reciente (ES0109260291, inscripcion 14/07/2026) es el instrumento post-agrupacion', 'SOURCE_CARRIED binding no explotado; multi-fila requiere regla determinista (fila vigente)'),
- 'POEX-DOC-22422': ('RESOLVABLE_VIA_OFFICIAL_CROSS_REFERENCE', 'AOFI SHENI via pagina de emisor POEX', 'doc name-only'),
- 'POEX-DOC-36171': ('RESOLVABLE_VIA_OFFICIAL_CROSS_REFERENCE', 'DARIA 323 via pagina de emisor POEX', 'doc name-only'),
- 'POEX-DOC-4666': ('RESOLVABLE_VIA_OFFICIAL_CROSS_REFERENCE', 'AOFI SHENI via pagina de emisor POEX', 'doc name-only'),
- 'POEX-DOC-7021': ('RESOLVABLE_VIA_OFFICIAL_CROSS_REFERENCE', 'AC RESIDENCIAL via pagina de emisor POEX', 'doc name-only'),
+ 'POEX-DOC-22422': ('RESOLVABLE_VIA_OFFICIAL_CROSS_REFERENCE', 'ES0105801007 via metadata.product_url oficial POEX', 'structured source identifier: slug emisor porta ISIN'),
+ 'POEX-DOC-36171': ('RESOLVABLE_VIA_OFFICIAL_CROSS_REFERENCE', 'ES0105902003 via metadata.product_url oficial POEX', 'structured source identifier: slug emisor porta ISIN'),
+ 'POEX-DOC-4666': ('RESOLVABLE_VIA_OFFICIAL_CROSS_REFERENCE', 'ES0105801007 via metadata.product_url oficial POEX', 'structured source identifier: slug emisor porta ISIN'),
+ 'POEX-DOC-7021': ('RESOLVABLE_VIA_OFFICIAL_CROSS_REFERENCE', 'ES0105746004 via metadata.product_url oficial POEX', 'structured source identifier: slug emisor porta ISIN'),
 }
 
 
@@ -395,6 +428,7 @@ def seed_row(fid):
         'family': fam,
         'lifecycle_stage': stage,
         'affected_instrument_note': affected,
+        'implementation_mechanism': MECHANISM.get(fid),
         'evidence': {'quote': quote, 'title': None},
         'evidence_locator': f'g1r/adjudication/dev-text/{fid}.txt',
         'proposed_at': TS, 'proposed_by': REV, 'status': 'PROPOSED',
@@ -410,6 +444,8 @@ def miss_row(fid):
                 'frame_item_id': fid, 'seed_verdict': 'NOT_CA', 'family': None,
                 'field': f, 'applicability': 'NOT_APPLICABLE',
                 'classification': 'NOT_APPLICABLE',
+                'p0_error': ('FALSE_POSITIVE_EVENT' if f == 'event_type'
+                             and emitted(fid, f) else None),
                 'pipeline': {'populated': bool(emitted(fid, f)),
                              'emitted_claims': emitted(fid, f)},
                 'expected_claims': None,
@@ -427,6 +463,7 @@ def miss_row(fid):
         rows.append({
             'frame_item_id': fid, 'seed_verdict': verdict, 'family': fam,
             'field': f, 'applicability': app, 'classification': cls,
+            'p0_error': P0_ERROR.get((fid, f)),
             'pipeline': {'populated': bool(em), 'emitted_claims': em},
             'expected_claims': expected,
             'source_review': {'published_status': pub,
@@ -471,9 +508,10 @@ CATALOG = [
   'description': 'fecha de un rol adyacente (record, fin de plazo) se emite como ex_date/record_date; el documento publica varias fechas etiquetadas y el parser captura la incorrecta',
   'safety': 'P0'},
  {'failure_class': 'EVENT_TYPE_FAMILY_BOUNDARY',
-  'seeds': ['CNMV-OIR-40758', 'CNMV-OIR-41381', 'CNMV-OIR-41640'],
-  'description': 'scrip dividend implementado via aumento de capital liberado: el parser emite CAPITAL_INCREASE o CASH_DIVIDEND en lugar de SCRIP_DIVIDEND; la familia canonica exige el tipo economico del evento',
-  'safety': 'P0 (frontera de taxonomia, confirmar en firma)'},
+  'seeds': ['CNMV-OIR-40758', 'CNMV-OIR-41381', 'CNMV-OIR-41640',
+            'BMEG-NewListings-ES0105650008-2026-03-06'],
+  'description': 'el parser emite el tipo del mecanismo/fase (CAPITAL_INCREASE, CASH_DIVIDEND, NEW_LISTING) en lugar del tipo economico canonico del evento (SCRIP_DIVIDEND; CAPITAL_INCREASE/ADMISSION para admisiones post-ampliacion). Fronteras FIRMADAS: scrip via aumento liberado = SCRIP_DIVIDEND; admision de acciones fungibles != NEW_LISTING',
+  'safety': 'P0 -> WRONG_EVENT_TYPE'},
  {'failure_class': 'FALSE_POSITIVE_EVENT',
   'seeds': ['CNMV-OIR-37970'],
   'description': 'documento regulatorio procedural (solicitud de dispensa de OPA obligatoria) sin evento sobre el titulo; el parser emite TAKEOVER_BID',
@@ -540,6 +578,9 @@ def main():
         'baseline': 'c431830de42acef3d108525edb575ed83be4fc13',
         'baseline_results': 'g1r/results/baseline-c431830-results.json',
         'rule': 'clases genericas del fenomeno documental; prohibido condicionar por seed/issuer/documento',
+        'p0_axis': 'los errores P0 son ortogonales a MISSING: el campo correcto publicado no extraido cuenta como MISSING en completeness y ademas registra su p0_error desagregado',
+        'p0_summary': {'FALSE_FINANCIAL_FACT': 1, 'DATE_MISBINDING': 3,
+                       'WRONG_EVENT_TYPE': 4, 'FALSE_POSITIVE_EVENT': 1},
         'failures': CATALOG,
     }
     res_dir = REPO / 'g1r/results'
