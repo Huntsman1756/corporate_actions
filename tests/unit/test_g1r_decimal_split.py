@@ -90,6 +90,37 @@ def test_decimal_roto_magnitud_abstiene():
         c.value.normalized != 88.2 for c in total)
 
 
+def test_unit_gross_exige_familia_dividendo():
+    """El canal etiquetado no promueve bajo event_type UNKNOWN."""
+    parsed = cnmv.parse(
+        _cnmv_html(
+            "Se comunica la siguiente informacion registrada. "
+            "Importe bruto unitario: 0,5000 Euros."
+        ),
+        _doc(),
+        {},
+    )
+    assert parsed.event_type == "UNKNOWN"
+    assert not _claim(parsed, "amount.gross_per_share")
+
+
+def test_gross_net_no_confunde_bruto_y_neto():
+    """Deuda pre-iter-2: 'X brutos y Y netos' debe emitir gross=X y
+    net=Y, no duplicar el bruto en el neto."""
+    parsed = cnmv.parse(
+        _cnmv_html(
+            "La Junta acordo un dividendo complementario: 0,53 "
+            "euros brutos y 0,43 euros netos por accion."
+        ),
+        _doc(),
+        {},
+    )
+    gross = _claim(parsed, "amount.gross_per_share")
+    net = _claim(parsed, "amount.net_per_share")
+    assert gross and gross[0].value.normalized == Decimal("0.53")
+    assert net and net[0].value.normalized == Decimal("0.43")
+
+
 def test_decimal_intacto_sigue_emitiendo():
     """Regresion: un decimal intacto promueve con normalidad."""
     parsed = cnmv.parse(

@@ -1,0 +1,72 @@
+{
+ "state_version": "CA_ES_G1R_STATE_V1",
+ "updated_at": "2026-09-14",
+ "protocol": "docs/gates/g1r-execution-runbook.md",
+ "last_approved_checkpoint": {
+  "phase": "dev-iter-1",
+  "commit": "b2f6f84",
+  "tag": "g1r-iter1-checkpoint",
+  "status": "APPROVED"
+ },
+ "semantic_freeze": {
+  "commit": "cad072f4c25a5d9cc201cb6d5c3a729ad7bdfee0",
+  "tag": "g1r-semantic-freeze",
+  "status": "APPROVED"
+ },
+ "failure_classes": {
+  "resolved": [
+   "FALSE_FINANCIAL_SEMANTIC_ANCHOR"
+  ],
+  "in_review": [
+   "DECIMAL_SPLIT_PDF"
+  ],
+  "queue": [
+   "EVENT_TYPE_FAMILY_BOUNDARY",
+   "DATE_MISBINDING",
+   "FALSE_POSITIVE_EVENT"
+  ],
+  "backlog_p1_p2": [
+   "CENTS_PER_SHARE_LEXEME",
+   "STRUCTURED_AMOUNT_LABEL_VARIANT",
+   "UNLABELED_TOTAL_AMOUNT",
+   "CROSS_DOC_LIFECYCLE_EVENT_TYPE",
+   "OFFICIAL_TITLE_EVENT_TYPE_NOT_USED",
+   "EXPLICIT_SOURCE_INSTRUMENT_NOT_USED",
+   "SOURCE_CARRIED_INSTRUMENT_NOT_USED",
+   "PARTIAL_AMOUNT_EXTRACTION",
+   "INSTRUMENT_NAME_ONLY"
+  ]
+ },
+ "g1_oracle": {
+  "oracle": "g1r/manifests/g1-regression-oracle.json",
+  "known_open_failures": [
+   "CNMV-OIR-36680 :: event_type",
+   "CNMV-OIR-40729 :: ex_date"
+  ],
+  "note": "todo FAIL fuera de known_open_failures detiene la iteracion; un FAIL resuelto se retira de la lista al aprobar el checkpoint"
+ },
+ "dev_oracle": {
+  "claims": "g1r/adjudication/dev-oracle-claims.jsonl",
+  "required_status": {
+   "REGRESSED": 0,
+   "EMITTED_OTHER": 0
+  }
+ },
+ "holdout": {
+  "status": "SEALED",
+  "paths": [
+   "g1r/corpus/raw/holdout",
+   "g1r/manifests/holdout",
+   "g1/corpus/raw/holdout"
+  ],
+  "rule": "sin inspeccion manual ni parseo hasta g1r-parser-freeze; el runner solo puede re-adquirir sha en modo acquire-only"
+ },
+ "after_queue_empty": "parser freeze -> HOLDOUT virgin",
+ "stop_conditions": [
+  "cualquier FAIL nuevo en el regression oracle fuera de known_open_failures",
+  "REGRESSED o EMITTED_OTHER > 0 en el dev oracle",
+  "git diff toca paths de holdout",
+  "fallo no preregistrado en dev-failure-catalog",
+  "regla que requiera condicionar por seed/issuer/documento/hash"
+ ]
+}

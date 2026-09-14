@@ -327,7 +327,7 @@ def main(argv: list[str] | None = None) -> int:
     body["batch_sha256"] = batch_sha
 
     RESULTS_DIR.mkdir(parents=True, exist_ok=True)
-    out = args.out or RESULTS_DIR / f"{args.phase}-c431830-results.json"
+    out = args.out or RESULTS_DIR / f"{args.phase}-{commit[:7]}-results.json"
     out.write_text(
         json.dumps(body, indent=2, ensure_ascii=False) + "\n", encoding="utf-8"
     )

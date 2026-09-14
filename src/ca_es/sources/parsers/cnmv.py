@@ -360,7 +360,8 @@ def _parse_text(text: str, document: SourceDocument) -> ParsedDocument:
             and dividend_lexeme_ok and per_share_ok \
             and not _role_blocked("dividend_gross_net"):
         match = re.search(
-            rf"{_AMOUNT} euros brutos y ({_AMOUNT}) euros netos por acci[oó]n",
+            rf"(?P<gross>{_AMOUNT}) euros brutos y (?P<net>{_AMOUNT})"
+            rf" euros netos por acci[oó]n",
             anchors["dividend_gross_net"]["matched"],
             re.I,
         )
@@ -376,7 +377,7 @@ def _parse_text(text: str, document: SourceDocument) -> ParsedDocument:
             claims.append(
                 Claim(
                     field_path="amount.net_per_share",
-                    value=FinancialAmount.parse_localized(match.group(1), currency="EUR"),
+                    value=FinancialAmount.parse_localized(match.group("net"), currency="EUR"),
                     evidence_locator=cite("dividend_gross_net"),
                     raw_pointer="/anchors/dividend_gross_net/matched",
                 )
@@ -390,14 +391,14 @@ def _parse_text(text: str, document: SourceDocument) -> ParsedDocument:
 
     # Campo etiquetado del emisor ("Importe bruto unitario: X Euros"):
     # canal estructurado del propio documento; promueve solo si el
-    # evento es de familia dividendo y ninguna ancla de prosa ya
-    # emitio el importe por accion.
+    # evento es de familia dividendo demostrada (UNKNOWN abstiene) y
+    # ninguna ancla de prosa ya emitio el importe por accion.
     unit_gross = _intact("unit_gross", grab(
         "unit_gross",
         rf"importe bruto unitario[^0-9]{{0,15}}{_AMOUNT}\s*euros",
         flags=re.I,
     ))
-    if unit_gross and dividend_lexeme_ok \
+    if unit_gross and event_type in {"CASH_DIVIDEND", "SCRIP_DIVIDEND"} \
             and not _role_blocked("unit_gross") \
             and not any(
                 c.field_path == "amount.gross_per_share" for c in claims):

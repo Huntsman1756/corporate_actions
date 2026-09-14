@@ -46,6 +46,17 @@ No hay linter/formatter configurado; el estilo es PEP 8 + stdlib.
 - Un gate solo pasa si hay evidencia; `NOT_RUN` ≠ `PASS`.
 - No reescribir historia ni artefactos congelados.
 
+## G1-R
+
+G1-R se ejecuta por runbook, nunca por prompt ad hoc:
+
+- Protocolo: `docs/gates/g1r-execution-runbook.md`.
+- Estado: `g1r/state.json` (checkpoint aprobado, clases
+  resolved/in_review/queue, HOLDOUT=SEALED).
+- Driver: `python scripts/g1r_next.py status|next|begin|gates`.
+- HOLDOUT: sin inspeccion ni parseo hasta parser freeze; los gates
+  abortan si git reporta cambios en sus paths.
+
 ## Estructura
 
 ```
