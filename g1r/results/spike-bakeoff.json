@@ -1,0 +1,413 @@
+{
+ "pdfplumber": {
+  "words_with_bbox": 5231,
+  "evidence_spans": true,
+  "deterministic": true,
+  "notes": "words con x0/x1/top/bottom por pagina; lexemas decimales conservados como tokens (0,6000 etc.)"
+ },
+ "docling_parse": {
+  "cells_with_bbox": 5313,
+  "evidence_spans": true,
+  "notes": "celdas de pagina con bbox"
+ },
+ "price_parser": {
+  "gt_hits": [
+   "BMEG-CapitalIncreases-ES0105561007-2025-01-13:amount.disbursement_per_share",
+   "BMEG-CapitalIncreases-ES0105606190-2025-04-07:amount.price",
+   "BMEG-Dividends-ES0105224002-2025-05-08:amount.gross_per_share",
+   "BMEG-Dividends-ES0105224002-2025-05-08:amount.net_per_share",
+   "BMEG-Dividends-ES0105290003-2025-06-25:amount.gross_per_share",
+   "BMEG-Dividends-ES0105290003-2025-06-25:amount.net_per_share",
+   "BMEG-Dividends-ES0105407003-2026-09-11:amount.gross_per_share",
+   "BMEG-Dividends-ES0105407003-2026-09-11:amount.net_per_share",
+   "BMEG-Dividends-ES0105659009-2025-07-03:amount.gross_per_share",
+   "BMEG-OtherPayments-ES0105323002-2025-01-08:amount.effective_total",
+   "BMEG-OtherPayments-ES0105323002-2025-01-08:amount.gross_per_share",
+   "CNMV-OIR-32783:amount.gross_per_share",
+   "CNMV-OIR-35005:amount.gross_per_share",
+   "CNMV-OIR-37702:amount.gross_per_share",
+   "CNMV-OIR-39819:amount.gross_per_share",
+   "CNMV-OIR-41381:amount.gross_total",
+   "POEX-DOC-21984:amount.nominal_total",
+   "POEX-DOC-22422:amount.gross_per_share",
+   "POEX-DOC-22422:amount.gross_total",
+   "POEX-DOC-36171:amount.nominal_total",
+   "POEX-DOC-4666:amount.gross_per_share",
+   "POEX-DOC-4666:amount.gross_total",
+   "POEX-DOC-7021:amount.gross_per_share",
+   "POEX-DOC-7021:amount.net_per_share",
+   "POEX-DOC-7021:amount.reduction_total"
+  ],
+  "gt_misses": [
+   "BMEG-CapitalIncreases-ES0105561007-2025-01-13:amount.nominal_total",
+   "BMEG-CapitalIncreases-ES0105606190-2025-04-07:amount.nominal_total",
+   "BMEG-NewListings-ES0105650008-2026-03-06:amount.nominal",
+   "CNMV-IP-3011:amount.gross_per_share"
+  ],
+  "candidates_total": 164,
+  "deterministic": true,
+  "extra_candidates_not_in_gt": 136
+ },
+ "recognizers_text": {
+  "gt_hits": [
+   "BMEG-CapitalIncreases-ES0105606190-2025-04-07:amount.nominal_total",
+   "POEX-DOC-21984:amount.nominal_total",
+   "POEX-DOC-22422:amount.gross_total",
+   "POEX-DOC-36171:amount.nominal_total"
+  ],
+  "gt_misses": [
+   "BMEG-CapitalIncreases-ES0105561007-2025-01-13:amount.disbursement_per_share",
+   "BMEG-CapitalIncreases-ES0105561007-2025-01-13:amount.nominal_total",
+   "BMEG-CapitalIncreases-ES0105606190-2025-04-07:amount.price",
+   "BMEG-Dividends-ES0105224002-2025-05-08:amount.gross_per_share",
+   "BMEG-Dividends-ES0105224002-2025-05-08:amount.net_per_share",
+   "BMEG-Dividends-ES0105290003-2025-06-25:amount.gross_per_share",
+   "BMEG-Dividends-ES0105290003-2025-06-25:amount.net_per_share",
+   "BMEG-Dividends-ES0105407003-2026-09-11:amount.gross_per_share",
+   "BMEG-Dividends-ES0105407003-2026-09-11:amount.net_per_share",
+   "BMEG-Dividends-ES0105659009-2025-07-03:amount.gross_per_share",
+   "BMEG-NewListings-ES0105650008-2026-03-06:amount.nominal",
+   "BMEG-OtherPayments-ES0105323002-2025-01-08:amount.effective_total",
+   "BMEG-OtherPayments-ES0105323002-2025-01-08:amount.gross_per_share",
+   "CNMV-IP-3011:amount.gross_per_share",
+   "CNMV-OIR-32783:amount.gross_per_share",
+   "CNMV-OIR-35005:amount.gross_per_share",
+   "CNMV-OIR-37702:amount.gross_per_share",
+   "CNMV-OIR-39819:amount.gross_per_share",
+   "CNMV-OIR-41381:amount.gross_total",
+   "POEX-DOC-22422:amount.gross_per_share",
+   "POEX-DOC-4666:amount.gross_per_share",
+   "POEX-DOC-4666:amount.gross_total",
+   "POEX-DOC-7021:amount.gross_per_share",
+   "POEX-DOC-7021:amount.net_per_share",
+   "POEX-DOC-7021:amount.reduction_total"
+  ],
+  "candidates_total": 777,
+  "date_hits": [
+   "CNMV-OIR-32783:date.payment_date",
+   "CNMV-OIR-40758:date.ex_date",
+   "CNMV-OIR-40758:date.record_date",
+   "CNMV-OIR-40758:date.payment_date",
+   "POEX-DOC-22422:date.ex_date",
+   "POEX-DOC-22422:date.record_date",
+   "POEX-DOC-22422:date.payment_date",
+   "POEX-DOC-4666:date.ex_date",
+   "POEX-DOC-4666:date.record_date",
+   "POEX-DOC-4666:date.payment_date",
+   "POEX-DOC-7021:date.ex_date",
+   "POEX-DOC-7021:date.record_date",
+   "POEX-DOC-7021:date.payment_date"
+  ],
+  "date_misses": [
+   "BMEG-Dividends-ES0105224002-2025-05-08:date.ex_date",
+   "BMEG-Dividends-ES0105224002-2025-05-08:date.payment_date",
+   "BMEG-Dividends-ES0105290003-2025-06-25:date.ex_date",
+   "BMEG-Dividends-ES0105290003-2025-06-25:date.payment_date",
+   "BMEG-Dividends-ES0105407003-2026-09-11:date.ex_date",
+   "BMEG-Dividends-ES0105407003-2026-09-11:date.payment_date",
+   "BMEG-Dividends-ES0105659009-2025-07-03:date.ex_date",
+   "BMEG-Dividends-ES0105659009-2025-07-03:date.payment_date",
+   "BMEG-OtherPayments-ES0105323002-2025-01-08:date.ex_date",
+   "BMEG-OtherPayments-ES0105323002-2025-01-08:date.payment_date",
+   "CNMV-OIR-35005:date.ex_date",
+   "CNMV-OIR-35005:date.record_date",
+   "CNMV-OIR-35005:date.payment_date",
+   "CNMV-OIR-37702:date.ex_date",
+   "CNMV-OIR-37702:date.record_date",
+   "CNMV-OIR-37702:date.payment_date",
+   "CNMV-OIR-39819:date.ex_date",
+   "CNMV-OIR-39819:date.record_date",
+   "CNMV-OIR-39819:date.payment_date",
+   "CNMV-OIR-41381:date.payment_date"
+  ],
+  "deterministic": true
+ },
+ "dateparser": {
+  "gt_hits": [
+   "CNMV-OIR-32783:date.payment_date",
+   "CNMV-OIR-35005:date.ex_date",
+   "CNMV-OIR-35005:date.record_date",
+   "CNMV-OIR-35005:date.payment_date",
+   "CNMV-OIR-37702:date.ex_date",
+   "CNMV-OIR-37702:date.record_date",
+   "CNMV-OIR-37702:date.payment_date",
+   "CNMV-OIR-39819:date.ex_date",
+   "CNMV-OIR-39819:date.record_date",
+   "CNMV-OIR-39819:date.payment_date",
+   "CNMV-OIR-40758:date.ex_date",
+   "CNMV-OIR-40758:date.record_date",
+   "CNMV-OIR-40758:date.payment_date",
+   "CNMV-OIR-41381:date.payment_date",
+   "POEX-DOC-22422:date.ex_date",
+   "POEX-DOC-22422:date.record_date",
+   "POEX-DOC-22422:date.payment_date",
+   "POEX-DOC-4666:date.ex_date",
+   "POEX-DOC-4666:date.record_date",
+   "POEX-DOC-4666:date.payment_date",
+   "POEX-DOC-7021:date.ex_date",
+   "POEX-DOC-7021:date.record_date",
+   "POEX-DOC-7021:date.payment_date"
+  ],
+  "gt_misses": [
+   "BMEG-Dividends-ES0105224002-2025-05-08:date.ex_date",
+   "BMEG-Dividends-ES0105224002-2025-05-08:date.payment_date",
+   "BMEG-Dividends-ES0105290003-2025-06-25:date.ex_date",
+   "BMEG-Dividends-ES0105290003-2025-06-25:date.payment_date",
+   "BMEG-Dividends-ES0105407003-2026-09-11:date.ex_date",
+   "BMEG-Dividends-ES0105407003-2026-09-11:date.payment_date",
+   "BMEG-Dividends-ES0105659009-2025-07-03:date.ex_date",
+   "BMEG-Dividends-ES0105659009-2025-07-03:date.payment_date",
+   "BMEG-OtherPayments-ES0105323002-2025-01-08:date.ex_date",
+   "BMEG-OtherPayments-ES0105323002-2025-01-08:date.payment_date"
+  ],
+  "candidates_total": 98,
+  "deterministic": true
+ },
+ "spacy_matcher": {
+  "role_matches_total": 127,
+  "deterministic": true,
+  "notes": "blank(\"es\") + Matcher; aporta roles lexicos, no decision"
+ },
+ "stdnum_isin": {
+  "per_seed": {
+   "BMEG-CapitalIncreases-ES0105561007-2025-01-13": {
+    "baseline_resolved": true,
+    "resolution_class": "RESOLVED_BASELINE",
+    "valid_isins_in_doc": [
+     "ES0105561007",
+     "ES0105561007",
+     "ES0105561007"
+    ],
+    "expected_in_text": [
+     "ES0105561007"
+    ]
+   },
+   "BMEG-CapitalIncreases-ES0105606190-2025-04-07": {
+    "baseline_resolved": true,
+    "resolution_class": "RESOLVED_BASELINE",
+    "valid_isins_in_doc": [
+     "ES0105606190",
+     "ES0105606190",
+     "ES0105606190"
+    ],
+    "expected_in_text": [
+     "ES0105606190"
+    ]
+   },
+   "BMEG-Dividends-ES0105224002-2025-05-08": {
+    "baseline_resolved": true,
+    "resolution_class": "RESOLVED_BASELINE",
+    "valid_isins_in_doc": [
+     "ES0105224002",
+     "ES0105224002",
+     "ES0105224002"
+    ],
+    "expected_in_text": [
+     "ES0105224002"
+    ]
+   },
+   "BMEG-Dividends-ES0105290003-2025-06-25": {
+    "baseline_resolved": true,
+    "resolution_class": "RESOLVED_BASELINE",
+    "valid_isins_in_doc": [
+     "ES0105290003",
+     "ES0105290003",
+     "ES0105290003"
+    ],
+    "expected_in_text": [
+     "ES0105290003"
+    ]
+   },
+   "BMEG-Dividends-ES0105407003-2026-09-11": {
+    "baseline_resolved": true,
+    "resolution_class": "RESOLVED_BASELINE",
+    "valid_isins_in_doc": [
+     "ES0105407003",
+     "ES0105407003",
+     "ES0105407003"
+    ],
+    "expected_in_text": [
+     "ES0105407003"
+    ]
+   },
+   "BMEG-Dividends-ES0105659009-2025-07-03": {
+    "baseline_resolved": true,
+    "resolution_class": "RESOLVED_BASELINE",
+    "valid_isins_in_doc": [
+     "ES0105659009",
+     "ES0105659009",
+     "ES0105659009"
+    ],
+    "expected_in_text": [
+     "ES0105659009"
+    ]
+   },
+   "BMEG-NewListings-ES0105650008-2026-03-06": {
+    "baseline_resolved": true,
+    "resolution_class": "RESOLVED_BASELINE",
+    "valid_isins_in_doc": [
+     "ES0105650008",
+     "ES0105650008",
+     "ES0105650008"
+    ],
+    "expected_in_text": [
+     "ES0105650008"
+    ]
+   },
+   "BMEG-OtherPayments-ES0105323002-2025-01-08": {
+    "baseline_resolved": true,
+    "resolution_class": "RESOLVED_BASELINE",
+    "valid_isins_in_doc": [
+     "ES0105323002",
+     "ES0105323002",
+     "ES0105323002"
+    ],
+    "expected_in_text": [
+     "ES0105323002"
+    ]
+   },
+   "CNMV-IP-3011": {
+    "baseline_resolved": false,
+    "resolution_class": "RESOLVABLE_VIA_OFFICIAL_CROSS_REFERENCE",
+    "valid_isins_in_doc": [],
+    "expected_in_text": []
+   },
+   "CNMV-OIR-32783": {
+    "baseline_resolved": false,
+    "resolution_class": "RESOLVABLE_VIA_OFFICIAL_CROSS_REFERENCE",
+    "valid_isins_in_doc": [],
+    "expected_in_text": []
+   },
+   "CNMV-OIR-35005": {
+    "baseline_resolved": true,
+    "resolution_class": "RESOLVED_BASELINE",
+    "valid_isins_in_doc": [
+     "ES0173093024"
+    ],
+    "expected_in_text": [
+     "ES0173093024"
+    ]
+   },
+   "CNMV-OIR-35263": {
+    "baseline_resolved": false,
+    "resolution_class": "RESOLVABLE_AUTOMATICALLY",
+    "valid_isins_in_doc": [
+     "ES0105046017",
+     "ES0105046017"
+    ],
+    "expected_in_text": [
+     "ES0105046017"
+    ]
+   },
+   "CNMV-OIR-36798": {
+    "baseline_resolved": false,
+    "resolution_class": "RESOLVABLE_VIA_OFFICIAL_CROSS_REFERENCE",
+    "valid_isins_in_doc": [],
+    "expected_in_text": []
+   },
+   "CNMV-OIR-37702": {
+    "baseline_resolved": false,
+    "resolution_class": "RESOLVABLE_VIA_OFFICIAL_CROSS_REFERENCE",
+    "valid_isins_in_doc": [],
+    "expected_in_text": []
+   },
+   "CNMV-OIR-37970": {
+    "baseline_resolved": false,
+    "resolution_class": "NOT_APPLICABLE",
+    "valid_isins_in_doc": [],
+    "expected_in_text": []
+   },
+   "CNMV-OIR-39819": {
+    "baseline_resolved": false,
+    "resolution_class": "RESOLVABLE_VIA_OFFICIAL_CROSS_REFERENCE",
+    "valid_isins_in_doc": [],
+    "expected_in_text": []
+   },
+   "CNMV-OIR-40758": {
+    "baseline_resolved": false,
+    "resolution_class": "RESOLVABLE_VIA_OFFICIAL_CROSS_REFERENCE",
+    "valid_isins_in_doc": [],
+    "expected_in_text": []
+   },
+   "CNMV-OIR-41381": {
+    "baseline_resolved": false,
+    "resolution_class": "RESOLVABLE_VIA_OFFICIAL_CROSS_REFERENCE",
+    "valid_isins_in_doc": [],
+    "expected_in_text": []
+   },
+   "CNMV-OIR-41640": {
+    "baseline_resolved": false,
+    "resolution_class": "RESOLVABLE_VIA_OFFICIAL_CROSS_REFERENCE",
+    "valid_isins_in_doc": [],
+    "expected_in_text": []
+   },
+   "CNMV-OIR-41981": {
+    "baseline_resolved": false,
+    "resolution_class": "RESOLVABLE_AUTOMATICALLY",
+    "valid_isins_in_doc": [
+     "ES0109260291",
+     "ES0109260531",
+     "ES0109260531",
+     "ES0109260531",
+     "ES0109260531",
+     "ES0109260531",
+     "ES0109260531",
+     "ES0109260531",
+     "ES0109260531",
+     "ES0109260531",
+     "ES0109260531",
+     "ES0109260531",
+     "ES0109260531",
+     "ES0109260531",
+     "ES0109260531"
+    ],
+    "expected_in_text": [
+     "ES0109260291"
+    ]
+   },
+   "POEX-DOC-21984": {
+    "baseline_resolved": true,
+    "resolution_class": "RESOLVED_BASELINE",
+    "valid_isins_in_doc": [
+     "ES0105801007",
+     "ES0105801007"
+    ],
+    "expected_in_text": [
+     "ES0105801007"
+    ]
+   },
+   "POEX-DOC-22422": {
+    "baseline_resolved": false,
+    "resolution_class": "RESOLVABLE_VIA_OFFICIAL_CROSS_REFERENCE",
+    "valid_isins_in_doc": [],
+    "expected_in_text": []
+   },
+   "POEX-DOC-36171": {
+    "baseline_resolved": false,
+    "resolution_class": "RESOLVABLE_VIA_OFFICIAL_CROSS_REFERENCE",
+    "valid_isins_in_doc": [],
+    "expected_in_text": []
+   },
+   "POEX-DOC-4666": {
+    "baseline_resolved": false,
+    "resolution_class": "RESOLVABLE_VIA_OFFICIAL_CROSS_REFERENCE",
+    "valid_isins_in_doc": [],
+    "expected_in_text": []
+   },
+   "POEX-DOC-7021": {
+    "baseline_resolved": false,
+    "resolution_class": "RESOLVABLE_VIA_OFFICIAL_CROSS_REFERENCE",
+    "valid_isins_in_doc": [],
+    "expected_in_text": []
+   }
+  },
+  "resolvable_auto_seeds": [
+   "CNMV-OIR-35263",
+   "CNMV-OIR-41981"
+  ],
+  "resolvable_auto_hit": 2,
+  "candidates_total": 44,
+  "deterministic": true,
+  "invalid_checksums": 0
+ }
+}

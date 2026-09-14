@@ -41,3 +41,5 @@ Thumbs.db
 # G1-R adjudicacion: extractos de texto y dump intermedio (artefactos de trabajo)
 g1r/adjudication/dev-text/
 g1r/adjudication/_dev_facts.json
+.venv-spikes/
+!g1r/results/spike-bakeoff.json
