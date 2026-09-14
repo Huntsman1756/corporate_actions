@@ -1,0 +1,23 @@
+{
+  "manifest_version": "CA_ES_SOURCE_MANIFEST_V1",
+  "corpus_id": "G1_DEV_CNMV-IP-2594",
+  "retrieved_at": "2026-09-14",
+  "documents": [
+    {
+      "source_id": "CNMV",
+      "official_document_id": "CNMV-IP-2594",
+      "content_sha256": "ebb8e9a07031c7a47c6511959d3e268963b32475bb25d7fdf2889fce480c399b",
+      "retrieved_at": "2026-09-14",
+      "publication_date": "2025-02-07",
+      "media_type": "application/pdf",
+      "raw_relpath": "g1/corpus/raw/holdout/CNMV-IP-2594.pdf",
+      "synthetic": false,
+      "retrieval_status": "OK",
+      "acquisition": {
+        "url": "https://www.cnmv.es/webservices/verdocumento/ver?t=%7b73819d20-965b-497c-b6a6-b177c9f78cc8%7d",
+        "retrieval_method": "HTTP_GET"
+      },
+      "relations": []
+    }
+  ]
+}

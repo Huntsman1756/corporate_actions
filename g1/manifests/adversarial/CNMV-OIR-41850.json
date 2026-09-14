@@ -1,0 +1,23 @@
+{
+  "manifest_version": "CA_ES_SOURCE_MANIFEST_V1",
+  "corpus_id": "G1_DEV_CNMV-OIR-41850",
+  "retrieved_at": "2026-09-14",
+  "documents": [
+    {
+      "source_id": "CNMV",
+      "official_document_id": "CNMV-OIR-41850",
+      "content_sha256": "d91a0128ee58e427eb4f2b7e80b2aaf56c4cb8e43fb07aaacd6ace6b8d86fa73",
+      "retrieved_at": "2026-09-14",
+      "publication_date": "2026-07-10",
+      "media_type": "text/html",
+      "raw_relpath": "g1/corpus/raw/adversarial/CNMV-OIR-41850.html",
+      "synthetic": false,
+      "retrieval_status": "OK",
+      "acquisition": {
+        "url": "https://www.cnmv.es/portal/otra-informacion-regulada-corporativa/derechos-voto-capital.aspx?Nif=A-01003946",
+        "retrieval_method": "HTTP_GET"
+      },
+      "relations": []
+    }
+  ]
+}

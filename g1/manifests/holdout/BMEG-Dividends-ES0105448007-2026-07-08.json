@@ -1,0 +1,23 @@
+{
+  "manifest_version": "CA_ES_SOURCE_MANIFEST_V1",
+  "corpus_id": "G1_DEV_BMEG-Dividends-ES0105448007-2026-07-08",
+  "retrieved_at": "2026-09-14",
+  "documents": [
+    {
+      "source_id": "BME_GROWTH",
+      "official_document_id": "BMEG-Dividends-ES0105448007-2026-07-08",
+      "content_sha256": "d379114c4b659f25f1eeb57fb2c11ac95db9a91dfa4f65bf86a57b2d9cea3ea5",
+      "retrieved_at": "2026-09-14",
+      "publication_date": "2026-07-08",
+      "media_type": "application/json",
+      "raw_relpath": "g1/corpus/raw/holdout/BMEG-Dividends-ES0105448007-2026-07-08.json",
+      "synthetic": false,
+      "retrieval_status": "OK",
+      "acquisition": {
+        "url": "https://apiweb.bolsasymercados.es/Market/v1/EQ/CorporateActions/Dividends",
+        "retrieval_method": "BME_API_ROW_SNAPSHOT"
+      },
+      "relations": []
+    }
+  ]
+}

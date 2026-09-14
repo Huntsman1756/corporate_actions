@@ -1,82 +1,85 @@
 {
- "development": [
-  "BMEG-CapitalIncreases-ES0105425021-2026-02-23",
-  "BMEG-Dividends-ES0105318002-2026-07-03",
-  "BMEG-Dividends-ES0131172001-2026-07-07",
-  "BMEG-NewListings-ES0105495008-2025-06-10",
-  "BMEG-OtherPayments-ES0105421004-2025-03-18",
-  "BMEG-OtherPayments-ES0105685004-2026-05-25",
-  "CNMV-IP-2864",
-  "CNMV-OIR-33627",
-  "CNMV-OIR-34234",
-  "CNMV-OIR-34483",
-  "CNMV-OIR-34753",
-  "CNMV-OIR-35116",
-  "CNMV-OIR-38180",
-  "CNMV-OIR-38198",
-  "CNMV-OIR-38513",
-  "CNMV-OIR-39905",
-  "CNMV-OIR-40136",
-  "POEX-DOC-36298",
-  "POEX-DOC-36615",
-  "POEX-DOC-39667",
-  "POEX-DOC-39954",
-  "POEX-DOC-40270",
-  "POEX-DOC-41986",
-  "POEX-DOC-4665",
-  "POEX-DOC-7018"
- ],
- "frame_sha256": "edc785ebbe007ad5eec000edc06abaff15b2c674698c27e726cc41253dc94188",
- "frozen_at": "2026-09-13",
- "holdout": [
-  "BMEG-CapitalIncreases-ES0105606190-2025-03-27",
-  "BMEG-Dividends-ES0105448007-2026-07-08",
-  "BMEG-OtherPayments-ES0105273009-2026-01-02",
-  "BMEG-OtherPayments-ES0105389003-2025-05-22",
-  "CNMV-IP-2594",
-  "CNMV-OIR-35466",
-  "CNMV-OIR-35946",
-  "CNMV-OIR-36141",
-  "CNMV-OIR-36507",
-  "CNMV-OIR-36680",
-  "CNMV-OIR-38190",
-  "CNMV-OIR-41467",
-  "CNMV-OIR-41942",
-  "POEX-DOC-18666",
-  "POEX-DOC-4662"
- ],
- "holdout_runs": [],
- "policy": {
-  "baseline_rule": "first_run = mismo parser commit para los 25 DEV; sin cambios de codigo entre ejecuciones",
-  "development": 35,
-  "frame_precision": "ACTUAL_CA/(ACTUAL_CA+NOT_CA); possible incluye AMBIGUOUS",
-  "generic_fix_rule": "un fix cuya condicion sea identificador/emisor/documento especifico del seed queda rechazado",
-  "holdout": 15,
-  "holdout_content_sealed_until": "PARSER_FREEZE",
-  "holdout_frozen_before_parser_tuning": true,
-  "no_manual_holdout_inspection": true,
-  "on_holdout_fix_keep": [
-   "first_run_result",
-   "final_run_result",
-   "reason_for_change"
+  "development": [
+    "BMEG-CapitalIncreases-ES0105425021-2026-02-23",
+    "BMEG-Dividends-ES0105318002-2026-07-03",
+    "BMEG-Dividends-ES0131172001-2026-07-07",
+    "BMEG-NewListings-ES0105495008-2025-06-10",
+    "BMEG-OtherPayments-ES0105421004-2025-03-18",
+    "BMEG-OtherPayments-ES0105685004-2026-05-25",
+    "CNMV-IP-2864",
+    "CNMV-OIR-33627",
+    "CNMV-OIR-34234",
+    "CNMV-OIR-34483",
+    "CNMV-OIR-34753",
+    "CNMV-OIR-35116",
+    "CNMV-OIR-38180",
+    "CNMV-OIR-38198",
+    "CNMV-OIR-38513",
+    "CNMV-OIR-39905",
+    "CNMV-OIR-40136",
+    "POEX-DOC-36298",
+    "POEX-DOC-36615",
+    "POEX-DOC-39667",
+    "POEX-DOC-39954",
+    "POEX-DOC-40270",
+    "POEX-DOC-41986",
+    "POEX-DOC-4665",
+    "POEX-DOC-7018"
   ],
-  "record_runs_per_event": [
-   "first_run_result",
-   "final_run_result",
-   "reason_for_change"
+  "frame_sha256": "edc785ebbe007ad5eec000edc06abaff15b2c674698c27e726cc41253dc94188",
+  "frozen_at": "2026-09-13",
+  "holdout": [
+    "BMEG-CapitalIncreases-ES0105606190-2025-03-27",
+    "BMEG-Dividends-ES0105448007-2026-07-08",
+    "BMEG-OtherPayments-ES0105273009-2026-01-02",
+    "BMEG-OtherPayments-ES0105389003-2025-05-22",
+    "CNMV-IP-2594",
+    "CNMV-OIR-35466",
+    "CNMV-OIR-35946",
+    "CNMV-OIR-36141",
+    "CNMV-OIR-36507",
+    "CNMV-OIR-36680",
+    "CNMV-OIR-38190",
+    "CNMV-OIR-41467",
+    "CNMV-OIR-41942",
+    "POEX-DOC-18666",
+    "POEX-DOC-4662"
   ],
-  "regression_fixtures_excluded_from_metrics": [
-   "MFE",
-   "Santander",
-   "Parlem",
-   "P3"
-  ],
-  "sealed_sets_until_parser_freeze": [
-   "holdout",
-   "PRESELECTED_ADVERSARIAL"
-  ],
-  "seed_verdict": "ACTUAL_CA | NOT_CA | AMBIGUOUS — adjudicacion independiente del pipeline; NOT_CA permanece en el corpus (mide frame precision); metricas de extraccion solo sobre ACTUAL_CA"
- },
- "split_version": "CA_ES_G1_DEV_HOLDOUT_V1",
- "status": "FROZEN_POPULATED"
+  "holdout_runs": 1,
+  "policy": {
+    "baseline_rule": "first_run = mismo parser commit para los 25 DEV; sin cambios de codigo entre ejecuciones",
+    "development": 35,
+    "frame_precision": "ACTUAL_CA/(ACTUAL_CA+NOT_CA); possible incluye AMBIGUOUS",
+    "generic_fix_rule": "un fix cuya condicion sea identificador/emisor/documento especifico del seed queda rechazado",
+    "holdout": 15,
+    "holdout_content_sealed_until": "PARSER_FREEZE",
+    "holdout_frozen_before_parser_tuning": true,
+    "no_manual_holdout_inspection": true,
+    "on_holdout_fix_keep": [
+      "first_run_result",
+      "final_run_result",
+      "reason_for_change"
+    ],
+    "record_runs_per_event": [
+      "first_run_result",
+      "final_run_result",
+      "reason_for_change"
+    ],
+    "regression_fixtures_excluded_from_metrics": [
+      "MFE",
+      "Santander",
+      "Parlem",
+      "P3"
+    ],
+    "sealed_sets_until_parser_freeze": [
+      "holdout",
+      "PRESELECTED_ADVERSARIAL"
+    ],
+    "seed_verdict": "ACTUAL_CA | NOT_CA | AMBIGUOUS â€” adjudicacion independiente del pipeline; NOT_CA permanece en el corpus (mide frame precision); metricas de extraccion solo sobre ACTUAL_CA"
+  },
+  "split_version": "CA_ES_G1_DEV_HOLDOUT_V1",
+  "status": "FROZEN_POPULATED",
+  "sealed_opened_at": "2026-09-14",
+  "sealed_opened_commit": "1ac372e5bf4825cefd8ee16aaec9323f978eda91",
+  "parser_code_equals_freeze": "c431830de42acef3d108525edb575ed83be4fc13 (src/ diff vacio)"
 }

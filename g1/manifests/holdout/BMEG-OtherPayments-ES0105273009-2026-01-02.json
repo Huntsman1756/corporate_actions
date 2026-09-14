@@ -1,0 +1,23 @@
+{
+  "manifest_version": "CA_ES_SOURCE_MANIFEST_V1",
+  "corpus_id": "G1_DEV_BMEG-OtherPayments-ES0105273009-2026-01-02",
+  "retrieved_at": "2026-09-14",
+  "documents": [
+    {
+      "source_id": "BME_GROWTH",
+      "official_document_id": "BMEG-OtherPayments-ES0105273009-2026-01-02",
+      "content_sha256": "df30bb310d178660aa8c64e7643138cd7268a9fe5b497418af62b43fc256fa31",
+      "retrieved_at": "2026-09-14",
+      "publication_date": "2026-01-02",
+      "media_type": "application/json",
+      "raw_relpath": "g1/corpus/raw/holdout/BMEG-OtherPayments-ES0105273009-2026-01-02.json",
+      "synthetic": false,
+      "retrieval_status": "OK",
+      "acquisition": {
+        "url": "https://apiweb.bolsasymercados.es/Market/v1/EQ/CorporateActions/OtherPayments",
+        "retrieval_method": "BME_API_ROW_SNAPSHOT"
+      },
+      "relations": []
+    }
+  ]
+}
