@@ -247,6 +247,21 @@ def seed_result(item: dict, acq: dict, run: dict | None, exc: str | None) -> dic
     return entry
 
 
+VERDICTS_PATH = REPO_ROOT / "g1" / "adjudication" / "seed-verdicts.jsonl"
+
+
+def load_verdicts() -> dict[str, str]:
+    if not VERDICTS_PATH.exists():
+        return {}
+    return {
+        v["frame_item_id"]: v["seed_verdict"]
+        for v in map(
+            json.loads, VERDICTS_PATH.read_text(encoding="utf-8").splitlines()
+        )
+        if v.strip() and v.get("seed_verdict")
+    }
+
+
 def funnel(entries: list[dict]) -> dict:
     """Conteo por capa; n/N nunca esconde el denominador."""
     layers = [
@@ -336,10 +351,12 @@ def main(argv: list[str] | None = None) -> int:
                 for r in json.loads(first_path.read_text(encoding="utf-8"))["results"]
             }
 
+    verdicts = load_verdicts()
     entries = []
     for result in results:
         record = dict(result)
         record["parser_commit"] = commit
+        record["seed_verdict"] = verdicts.get(result["frame_item_id"])
         if first_run is not None:
             record["first_run_result"] = first_run.get(result["frame_item_id"])
             record["final_run_result"] = result
@@ -353,7 +370,15 @@ def main(argv: list[str] | None = None) -> int:
         "parser_commit_dirty": dirty,
         "executed_at": EXECUTED_AT,
         "seeds": len(entries),
+        "seed_verdicts": {
+            k: sum(1 for e in entries if e["seed_verdict"] == k)
+            for k in ("ACTUAL_CA", "NOT_CA", "AMBIGUOUS", None)
+        },
         "funnel": funnel(entries),
+        # metricas de extraccion solo sobre corporate actions reales
+        "funnel_actual_ca": funnel(
+            [e for e in entries if e["seed_verdict"] == "ACTUAL_CA"]
+        ),
         "results": entries,
     }
     batch_sha = sha256_hex(body)

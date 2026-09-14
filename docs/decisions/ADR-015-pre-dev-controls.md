@@ -120,6 +120,31 @@ FASE C — DEV FINAL
 - Tras el freeze, **ninguna decisión metodológica nueva** hasta ver los
   resultados DEV.
 
+### 4a. Veredicto de seed (`seed_verdict`)
+
+Cada seed DEV lleva etiqueta humana independiente del pipeline
+(`g1/adjudication/seed-verdicts.jsonl`):
+
+```
+ACTUAL_CA | NOT_CA | AMBIGUOUS
+```
+
+Un seed `NOT_CA` seleccionado legítimamente **permanece en el corpus** —
+mide la precision del frame (`frame_selection_precision =
+ACTUAL_CA / (ACTUAL_CA + NOT_CA)`; `possible = +AMBIGUOUS / N`), no se
+elimina retrospectivamente. Las metricas de extraccion solo se calculan
+sobre `ACTUAL_CA` donde el campo es APPLICABLE; `AMBIGUOUS` se reporta
+aparte, nunca coaccionado.
+
+Separacion de causas:
+
+```
+NOT_CA                                   → falso positivo del frame
+ACTUAL_CA + published + no extraction    → MISSING (fallo del parser)
+ACTUAL_CA + not published                → UNKNOWN
+ACTUAL_CA + campo NOT_APPLICABLE         → fuera del denominador
+```
+
 ### 4b. Reporte del negative control
 
 El audit `no-match-audit.jsonl` puede ejecutarse en paralelo a DEV (no
