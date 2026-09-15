@@ -1,0 +1,50 @@
+{
+ "POEX-DOC-2657": {
+  "event_type": "CAPITAL_INCREASE"
+ },
+ "POEX-DOC-2680": {
+  "event_type": "CAPITAL_INCREASE"
+ },
+ "POEX-DOC-2702": {
+  "event_type": "CAPITAL_INCREASE"
+ },
+ "POEX-DOC-2719": {
+  "event_type": "CAPITAL_INCREASE"
+ },
+ "POEX-DOC-3143": {
+  "event_type": "CAPITAL_INCREASE"
+ },
+ "POEX-DOC-3194": {
+  "event_type": "CAPITAL_INCREASE"
+ },
+ "POEX-DOC-3507": {
+  "amount.issue_price_per_share": {
+   "__financial__": true,
+   "currency": "EUR",
+   "normalized": "0.58",
+   "raw_lexeme": "0,58",
+   "scale": 2
+  },
+  "event_type": "CAPITAL_INCREASE"
+ },
+ "POEX-DOC-36228": {
+  "event_type": "CAPITAL_INCREASE"
+ },
+ "POEX-DOC-36595": {
+  "event_type": "CAPITAL_INCREASE"
+ },
+ "POEX-DOC-38393": {
+  "event_type": "CAPITAL_INCREASE",
+  "instrument.isin": "ES0605829904"
+ },
+ "POEX-DOC-39939": {
+  "amount.issue_price_per_share": {
+   "__financial__": true,
+   "currency": "EUR",
+   "normalized": "1.34",
+   "raw_lexeme": "1,34",
+   "scale": 2
+  },
+  "event_type": "CAPITAL_INCREASE"
+ }
+}

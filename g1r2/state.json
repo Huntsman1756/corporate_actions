@@ -3,7 +3,7 @@
  "updated_at": "2026-09-15",
  "protocol": "docs/gates/g1r2-preregistered.json",
  "protocol_tag": "g1r2-protocol",
- "phase": "DEVELOPMENT_ITER1_CLEAN",
+ "phase": "HOLDOUT_EXECUTED_PENDING_ADJUDICATION",
  "snapshot": "g1r2/manifests/snapshot-portfolio-2026-09-15.json",
  "precondition": {
   "min_stratum_cas": 8,
@@ -31,5 +31,25 @@
    }
   }
  },
- "next": "g1r2-parser-freeze tag -> HOLDOUT virgen x2 -> adjudicacion humana"
+ "parser_freeze": {
+  "tag": "g1r2-parser-freeze",
+  "commit": "17fca52"
+ },
+ "holdout_runs": {
+  "run1": "g1r2/results/holdout-run-1-17fca52-results.json",
+  "run2": "g1r2/results/holdout-run-2-17fca52-results.json",
+  "second_run_determinism": "1.0 (0 diffs excluyendo result_sha con run_id embebido)",
+  "emitted": "issue_price_per_share en POEX-DOC-3507 y POEX-DOC-39939; event_type en 11/11; conflicts=1 en POEX-DOC-38393"
+ },
+ "adjudication_pack": {
+  "texts": "g1r2/adjudication/holdout-text/ (11 docs)",
+  "facts": "g1r2/adjudication/holdout-facts.json",
+  "reviews": [
+   "g1r2/adjudication/holdout-missingness-review.jsonl",
+   "g1r2/adjudication/holdout-seed-review.jsonl",
+   "g1r2/adjudication/holdout-instrument-review.jsonl"
+  ],
+  "status": "PENDING_ADJUDICATION"
+ },
+ "next": "adjudicacion humana del holdout -> veredicto PASS / FAIL / INCONCLUSIVE"
 }

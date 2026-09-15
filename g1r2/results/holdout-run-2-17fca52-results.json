@@ -1,0 +1,366 @@
+{
+ "results_version": "CA_ES_G1R2_RESULTS_V1",
+ "phase": "holdout",
+ "seed_set": "holdout",
+ "run": 2,
+ "parser_commit": "17fca52de7c5abce9997ed013e36f61a681e5ed1",
+ "parser_commit_dirty": false,
+ "executed_at": "2026-09-15T00:00:00Z",
+ "seeds": 11,
+ "funnel": {
+  "seeds": 11,
+  "seed_retrieved": 11,
+  "document_resolved": 11,
+  "parser_available": 11,
+  "document_parsed": 11,
+  "event_detected": 11,
+  "critical_facts_extracted": 2,
+  "instrument_resolved": 0
+ },
+ "results": [
+  {
+   "frame_item_id": "POEX-DOC-2657",
+   "stratum": "PORTFOLIO",
+   "retrieval_status": "OK",
+   "parse_status": "OK",
+   "event_detected": true,
+   "instrument_resolved": false,
+   "facts": {
+    "total": 1,
+    "populated_fields": [
+     "event_type"
+    ]
+   },
+   "missing": [],
+   "unknown": [],
+   "conflicts": 0,
+   "identity_status": "UNRESOLVED",
+   "exception": null,
+   "result_sha": "622fc690f6f6e43df2da001c6f2b63b70eceba0cdecca7791432702391d237e6",
+   "layers": {
+    "seed_retrieved": true,
+    "document_resolved": true,
+    "parser_available": true,
+    "document_parsed": true,
+    "event_detected": true,
+    "critical_facts_extracted": false,
+    "instrument_resolved": false
+   },
+   "ca_group_sealed": true,
+   "parser_commit": "17fca52de7c5abce9997ed013e36f61a681e5ed1"
+  },
+  {
+   "frame_item_id": "POEX-DOC-2680",
+   "stratum": "PORTFOLIO",
+   "retrieval_status": "OK",
+   "parse_status": "OK",
+   "event_detected": true,
+   "instrument_resolved": false,
+   "facts": {
+    "total": 1,
+    "populated_fields": [
+     "event_type"
+    ]
+   },
+   "missing": [],
+   "unknown": [],
+   "conflicts": 0,
+   "identity_status": "UNRESOLVED",
+   "exception": null,
+   "result_sha": "cf93892071979e6a1999dfd6cd62e566f1f91d93c7dbb79c6518a90b8ed56a33",
+   "layers": {
+    "seed_retrieved": true,
+    "document_resolved": true,
+    "parser_available": true,
+    "document_parsed": true,
+    "event_detected": true,
+    "critical_facts_extracted": false,
+    "instrument_resolved": false
+   },
+   "ca_group_sealed": true,
+   "parser_commit": "17fca52de7c5abce9997ed013e36f61a681e5ed1"
+  },
+  {
+   "frame_item_id": "POEX-DOC-2702",
+   "stratum": "PORTFOLIO",
+   "retrieval_status": "OK",
+   "parse_status": "OK",
+   "event_detected": true,
+   "instrument_resolved": false,
+   "facts": {
+    "total": 1,
+    "populated_fields": [
+     "event_type"
+    ]
+   },
+   "missing": [],
+   "unknown": [],
+   "conflicts": 0,
+   "identity_status": "UNRESOLVED",
+   "exception": null,
+   "result_sha": "ae7d5f29efdf6d28a5e5c570dd8a971c96886d885904eb13dbb03686f71c070a",
+   "layers": {
+    "seed_retrieved": true,
+    "document_resolved": true,
+    "parser_available": true,
+    "document_parsed": true,
+    "event_detected": true,
+    "critical_facts_extracted": false,
+    "instrument_resolved": false
+   },
+   "ca_group_sealed": true,
+   "parser_commit": "17fca52de7c5abce9997ed013e36f61a681e5ed1"
+  },
+  {
+   "frame_item_id": "POEX-DOC-2719",
+   "stratum": "PORTFOLIO",
+   "retrieval_status": "OK",
+   "parse_status": "OK",
+   "event_detected": true,
+   "instrument_resolved": false,
+   "facts": {
+    "total": 1,
+    "populated_fields": [
+     "event_type"
+    ]
+   },
+   "missing": [],
+   "unknown": [],
+   "conflicts": 0,
+   "identity_status": "UNRESOLVED",
+   "exception": null,
+   "result_sha": "70ece41bf0d67dedcec7292efc01e361b9a269211141299e249bd155cc9b749b",
+   "layers": {
+    "seed_retrieved": true,
+    "document_resolved": true,
+    "parser_available": true,
+    "document_parsed": true,
+    "event_detected": true,
+    "critical_facts_extracted": false,
+    "instrument_resolved": false
+   },
+   "ca_group_sealed": true,
+   "parser_commit": "17fca52de7c5abce9997ed013e36f61a681e5ed1"
+  },
+  {
+   "frame_item_id": "POEX-DOC-3143",
+   "stratum": "PORTFOLIO",
+   "retrieval_status": "OK",
+   "parse_status": "OK",
+   "event_detected": true,
+   "instrument_resolved": false,
+   "facts": {
+    "total": 1,
+    "populated_fields": [
+     "event_type"
+    ]
+   },
+   "missing": [],
+   "unknown": [],
+   "conflicts": 0,
+   "identity_status": "UNRESOLVED",
+   "exception": null,
+   "result_sha": "e18bb5d81e804dbf10c74d3062b39a6745216dc5c2240b74b04f00df01957124",
+   "layers": {
+    "seed_retrieved": true,
+    "document_resolved": true,
+    "parser_available": true,
+    "document_parsed": true,
+    "event_detected": true,
+    "critical_facts_extracted": false,
+    "instrument_resolved": false
+   },
+   "ca_group_sealed": true,
+   "parser_commit": "17fca52de7c5abce9997ed013e36f61a681e5ed1"
+  },
+  {
+   "frame_item_id": "POEX-DOC-3194",
+   "stratum": "PORTFOLIO",
+   "retrieval_status": "OK",
+   "parse_status": "OK",
+   "event_detected": true,
+   "instrument_resolved": false,
+   "facts": {
+    "total": 1,
+    "populated_fields": [
+     "event_type"
+    ]
+   },
+   "missing": [],
+   "unknown": [],
+   "conflicts": 0,
+   "identity_status": "UNRESOLVED",
+   "exception": null,
+   "result_sha": "d001d44e7169745ce4c4fee1d7bef7da10b7be26e2a8de8116f1cc18c028057d",
+   "layers": {
+    "seed_retrieved": true,
+    "document_resolved": true,
+    "parser_available": true,
+    "document_parsed": true,
+    "event_detected": true,
+    "critical_facts_extracted": false,
+    "instrument_resolved": false
+   },
+   "ca_group_sealed": true,
+   "parser_commit": "17fca52de7c5abce9997ed013e36f61a681e5ed1"
+  },
+  {
+   "frame_item_id": "POEX-DOC-3507",
+   "stratum": "PORTFOLIO",
+   "retrieval_status": "OK",
+   "parse_status": "OK",
+   "event_detected": true,
+   "instrument_resolved": false,
+   "facts": {
+    "total": 2,
+    "populated_fields": [
+     "amount.issue_price_per_share",
+     "event_type"
+    ]
+   },
+   "missing": [],
+   "unknown": [],
+   "conflicts": 0,
+   "identity_status": "UNRESOLVED",
+   "exception": null,
+   "result_sha": "0635a17befb39de66fb3129acaaf30d795bdc9a3ef81523fdcdd480805571e6c",
+   "layers": {
+    "seed_retrieved": true,
+    "document_resolved": true,
+    "parser_available": true,
+    "document_parsed": true,
+    "event_detected": true,
+    "critical_facts_extracted": true,
+    "instrument_resolved": false
+   },
+   "ca_group_sealed": true,
+   "parser_commit": "17fca52de7c5abce9997ed013e36f61a681e5ed1"
+  },
+  {
+   "frame_item_id": "POEX-DOC-36228",
+   "stratum": "PORTFOLIO",
+   "retrieval_status": "OK",
+   "parse_status": "OK",
+   "event_detected": true,
+   "instrument_resolved": false,
+   "facts": {
+    "total": 1,
+    "populated_fields": [
+     "event_type"
+    ]
+   },
+   "missing": [],
+   "unknown": [],
+   "conflicts": 0,
+   "identity_status": "UNRESOLVED",
+   "exception": null,
+   "result_sha": "283b0e113085364b3773ca30fd33ed9244f5c1ba96f1f56e6172e93cc357952f",
+   "layers": {
+    "seed_retrieved": true,
+    "document_resolved": true,
+    "parser_available": true,
+    "document_parsed": true,
+    "event_detected": true,
+    "critical_facts_extracted": false,
+    "instrument_resolved": false
+   },
+   "ca_group_sealed": true,
+   "parser_commit": "17fca52de7c5abce9997ed013e36f61a681e5ed1"
+  },
+  {
+   "frame_item_id": "POEX-DOC-36595",
+   "stratum": "PORTFOLIO",
+   "retrieval_status": "OK",
+   "parse_status": "OK",
+   "event_detected": true,
+   "instrument_resolved": false,
+   "facts": {
+    "total": 1,
+    "populated_fields": [
+     "event_type"
+    ]
+   },
+   "missing": [],
+   "unknown": [],
+   "conflicts": 0,
+   "identity_status": "UNRESOLVED",
+   "exception": null,
+   "result_sha": "3c5fac63419cefae1512a89f4ce21c1ff5ef58662207589f665eda5d7ab40212",
+   "layers": {
+    "seed_retrieved": true,
+    "document_resolved": true,
+    "parser_available": true,
+    "document_parsed": true,
+    "event_detected": true,
+    "critical_facts_extracted": false,
+    "instrument_resolved": false
+   },
+   "ca_group_sealed": true,
+   "parser_commit": "17fca52de7c5abce9997ed013e36f61a681e5ed1"
+  },
+  {
+   "frame_item_id": "POEX-DOC-38393",
+   "stratum": "PORTFOLIO",
+   "retrieval_status": "OK",
+   "parse_status": "OK",
+   "event_detected": true,
+   "instrument_resolved": false,
+   "facts": {
+    "total": 4,
+    "populated_fields": [
+     "event_type",
+     "instrument.isin"
+    ]
+   },
+   "missing": [],
+   "unknown": [],
+   "conflicts": 1,
+   "identity_status": "UNRESOLVED",
+   "exception": null,
+   "result_sha": "049a8f5fccfe9bb0352cae20d03d95acb95000923f1bd28d20d74cb089f8a8c5",
+   "layers": {
+    "seed_retrieved": true,
+    "document_resolved": true,
+    "parser_available": true,
+    "document_parsed": true,
+    "event_detected": true,
+    "critical_facts_extracted": false,
+    "instrument_resolved": false
+   },
+   "ca_group_sealed": true,
+   "parser_commit": "17fca52de7c5abce9997ed013e36f61a681e5ed1"
+  },
+  {
+   "frame_item_id": "POEX-DOC-39939",
+   "stratum": "PORTFOLIO",
+   "retrieval_status": "OK",
+   "parse_status": "OK",
+   "event_detected": true,
+   "instrument_resolved": false,
+   "facts": {
+    "total": 2,
+    "populated_fields": [
+     "amount.issue_price_per_share",
+     "event_type"
+    ]
+   },
+   "missing": [],
+   "unknown": [],
+   "conflicts": 0,
+   "identity_status": "UNRESOLVED",
+   "exception": null,
+   "result_sha": "2121b7e09182ce50c0b650be06722832dfd887ef101e6f31c50521aacb2646c3",
+   "layers": {
+    "seed_retrieved": true,
+    "document_resolved": true,
+    "parser_available": true,
+    "document_parsed": true,
+    "event_detected": true,
+    "critical_facts_extracted": true,
+    "instrument_resolved": false
+   },
+   "ca_group_sealed": true,
+   "parser_commit": "17fca52de7c5abce9997ed013e36f61a681e5ed1"
+  }
+ ]
+}

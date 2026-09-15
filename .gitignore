@@ -81,3 +81,7 @@ g1r2/results/*.json
 !g1r2/results/iter1-dev-oracle-eval.json
 !g1r2/results/iter1-spent-holdout-results.json
 !g1r2/results/iter1-spent-holdout-facts.json
+!g1r2/results/holdout-run-1-17fca52-results.json
+!g1r2/results/holdout-run-1-17fca52-results.sha256
+!g1r2/results/holdout-run-2-17fca52-results.json
+!g1r2/results/holdout-run-2-17fca52-results.sha256
