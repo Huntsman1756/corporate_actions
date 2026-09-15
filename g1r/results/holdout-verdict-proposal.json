@@ -1,0 +1,64 @@
+{
+ "proposal_version": "CA_ES_G1R_HOLDOUT_VERDICT_PROPOSAL_V1",
+ "status": "PROPOSED_PENDING_HUMAN_SIGN",
+ "parser_freeze": "g1r-parser-freeze @ a6a0674",
+ "runs": [
+  "holdout-run-1-a6a0674",
+  "holdout-run-2-a6a0674"
+ ],
+ "second_run_determinism": 1.0,
+ "p0_on_reviewed_documents": {
+  "false_financial_facts": 0,
+  "wrong_attribution": 0,
+  "wrong_event_type": 0,
+  "date_misbinding": 0,
+  "false_positive_event": 0,
+  "review_flags_for_human": [
+   "POEX-DOC-39649 amount.gross_per_share=4: slot gross_per_share vs issue_price_per_share (ver nota)",
+   "POEX-DOC-39649 instrument.isin: 3 ISIN emitidos como Conflict registrado, no merge silencioso"
+  ]
+ },
+ "p0_review_coverage": {
+  "reviewable_documents": 13,
+  "requires_human_review": [
+   "CNMV-OIR-34719",
+   "POEX-DOC-15339"
+  ],
+  "emitted_p0_facts_reviewed": 39,
+  "coverage_on_reviewable": 1.0,
+  "blind_spot": "los 2 PDF escaneados no emiten facts; su missingness queda pendiente de inspeccion humana"
+ },
+ "parser_miss_rate_guard": {
+  "published_field_rows": 44,
+  "missing_field_rows": 13,
+  "pending_human_rows": 12,
+  "rule": "missing * 60 <= published * 23",
+  "lhs": 780,
+  "rhs": 1012,
+  "pass": true,
+  "caveat": "excluye las 12 filas REQUIRES_HUMAN_REVIEW de los 2 PDF sin capa de texto"
+ },
+ "invariants": {
+  "field_provenance_rate": 1.0,
+  "silent_conflicts": 0,
+  "unproven_auto_merges": 0,
+  "human_authored_facts": 0,
+  "second_run_determinism": 1.0,
+  "field_provenance_note": "63/63 facts promovidos con evidence_locator; los 8 claims event_type=UNKNOWN son marcadores de abstencion, no facts promovidos"
+ },
+ "measured_not_binding": {
+  "event_detected": "15/15",
+  "instrument_resolved": "2/15",
+  "critical_facts_extracted": "8/15",
+  "funnel": {
+   "seeds": 15,
+   "seed_retrieved": 15,
+   "document_resolved": 15,
+   "parser_available": 15,
+   "document_parsed": 15,
+   "event_detected": 15,
+   "critical_facts_extracted": 8,
+   "instrument_resolved": 2
+  }
+ }
+}

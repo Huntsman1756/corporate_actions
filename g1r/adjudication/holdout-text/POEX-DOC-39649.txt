@@ -1,0 +1,66 @@
+*El ISIN de las acciones nuevas es temporal y no estará admitido a negociación. Su equiparación con el ISIN de las acciones co tizables se realizará
+posteriormente, una vez completados los trámites correspondientes.
+AMPLIACION DE CAPITAL CON DERECHOS DE SUSCRIPCIÓN PREFERENTE Y ASIGNACIÓN
+ADICIONAL/DISCRECIONAL
+INSTRUCCIÓN OPERATIVA
+Emisor NEXTLOG, S.A.
+ISIN acciones cotizables ES0105969002
+ISIN derechos ES0605969908
+ISIN acciones nuevas* ES0105969028
+1 acción actual = 1 derecho SÍ (1 ACCIÓN ACTUAL = 1 DERECHO)
+Ratio (derechos → acciones nuevas) 2 DERECHOS → 1 ACCIÓN NUEVA
+Precio de suscripción por acción nueva (nominal + prima) 4€ POR ACCIÓN NUEVA
+(1€ DE VALOR NOMINAL + 3€ DE PRIMA DE EMISIÓN)
+Publicación BORME 13 JULIO 2026
+Inicio del periodo de suscripción preferente e inicio del
+período global de solicitudes de acciones nuevas
+(preferente, adicional y discrecional)
+14 JULIO 2026
+Asignación de derechos e inicio negociación de derechos
+en mercado 17 de JULIO 2026
+Fin de negociación de derechos en mercado 27 JULIO 2026; 14H CET
+Fin del periodo global de solicitudes (preferente, adicional
+y discrecional) y bloqueo de todas las solicitudes 27 DE JULIO 2026; 23:59H CET
+Fecha prevista de asignación acciones preferentes
+(ejercicio de derechos)
+ENTRE EL 28 Y EL 30 DE JULIO DE 2026, AMBOS
+INCLUIDOS.
+Fecha prevista de asignación de acciones
+adicionales/discrecionales (si procede)
+ENTRE EL 28 Y EL 30 DE JULIO DE 2026, AMBOS
+INCLUIDOS.
+Fecha prevista de desembolso / liquidación 30 JULIO 2026
+Fecha prevista de alta/entrega de acciones nuevas* 30 JULIO 2026
+La asignación de acciones nuevas se realizará por prioridad de tramo:
+(1) preferente – según los derechos que el inversor haya mantenido en su cuenta de valores de Portfolio Stock Exchange
+al cierre del periodo, estos se ejercitarán para cubrir las acciones solicitadas durante el periodo global de solicitudes de
+manera prioritaria cumpliendo el ratio de la ampliación.
+(2) adicional – en caso de que haya acciones sobrantes y los inversores anteriores (que hayan recibido acciones
+preferentes) hubieran solicitado más acciones durante el periodo global de solicitudes, se les asignar án como
+adicionales. En caso de haber sobresuscripción, se aplicará el prorrateo indicado en el anuncio del BORME.
+(3) discrecional – en caso de que siga habiendo acciones sobrantes y se hayan cubierto todas las solicitudes de preferente
+y adicional, el emisor asignará el resto de manera discrecional entre el resto de las solicitudes.
+El inversor podrá comprar/vender derechos en mercado durante el periodo de negociación .
+Durante el periodo global de solicitudes, cualquier inversor podrá solicitar acciones nuevas desde la opción habilitada en mercado
+(suscripciones) tantas veces como desee y tanto si dispone de derechos en su cuenta de valores de Portfolio Stock Exchange
+como si no. Las solicitudes se acumularán para determinar el número total de acciones solicitado por cada inversor.
+Las solicitudes se clasificarán posteriormente, durante el proceso de asignación, conforme a la posición de derechos que mantenga
+cada inversor en su cuenta de valores de Portfolio Stock Exchange al cierre del periodo global de solicitudes, la fecha y hor a de
+envío de la solicitud y el orden de prioridad preferente, adicional y discrecional.
+*El ISIN de las acciones nuevas es temporal y no estará admitido a negociación. Su equiparación con el ISIN de las acciones co tizables se realizará
+posteriormente, una vez completados los trámites correspondientes.
+En todo caso, tendrán prioridad las solicitudes de aquellos inversores que mantengan derechos suficientes en su cuenta de valores,
+que se ejercitarán para atender la suscripción solicitada conforme al ratio de la ampliación. Si la solicitud excediera del n úmero
+de acciones que correspondan por los derechos mantenidos, el exceso se tratará, en su caso, como solicitud adicional o
+discrecional conforme a las reglas de asignación previstas para la operación.
+El importe del desembolso de la suscripción de acciones nuevas se mantendrá retenido desde el envío de la solicitud. Si se cancela
+la instrucción dentro del plazo permitido o finalmente no se le asignan acciones, total o parcialmente (según procedimiento), los
+fondos se liberarán automáticamente.
+Al cierre del periodo global de solicitudes se bloquearán todas las solicitudes que permanezcan activas y pasarán a ser
+irrevocables, iniciándose el periodo de asignación de las acciones nuevas conforme a las condiciones publicadas.
+La opción por defecto de la operación es no hacer nada, por lo que los derechos de los inversores que no hayan enviado ninguna
+solicitud de acciones nuevas antes del cierre del periodo global de solicitudes expirarán sin compensación, al considerarse
+derechos no ejercidos.
+En la fecha de liquidación y desembolso, se generarán los movimientos de ejercicio de derechos, suscripción de acciones nuevas,
+expiración de derechos, cancelación de solicitudes no atendidas y liberación de fondos, según aplique.
+Para más información, puede consultar la web de la sociedad https://nextlog.es/

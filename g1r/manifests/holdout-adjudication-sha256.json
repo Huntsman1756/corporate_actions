@@ -1,0 +1,10 @@
+{
+ "manifest_version": "CA_ES_G1R_HOLDOUT_ADJUDICATION_V1",
+ "frozen_at": "2026-09-14",
+ "status": "PROPOSED_PENDING_HUMAN_SIGN",
+ "files": {
+  "g1r/adjudication/holdout-seed-review.jsonl": "e5e57554f09c96af33846cc67d7a82fb7f451f3cb4f6557b1fac79d3d1a0a3ad",
+  "g1r/adjudication/holdout-missingness-review.jsonl": "7175c0f87299cea7128e792e56532793b19eed650b60e721699e355d57edced1",
+  "g1r/adjudication/holdout-instrument-review.jsonl": "a8faa3906be18069ea6daf1f79ceb76e87d58c725708666ab2a8afec7c2d4ff0"
+ }
+}
