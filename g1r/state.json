@@ -20,9 +20,10 @@
    "DECIMAL_SPLIT_PDF",
    "EVENT_TYPE_FAMILY_BOUNDARY"
   ],
-  "in_review": [],
+  "in_review": [
+   "DATE_MISBINDING"
+  ],
   "queue": [
-   "DATE_MISBINDING",
    "FALSE_POSITIVE_EVENT"
   ],
   "backlog_p1_p2": [

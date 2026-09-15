@@ -16,7 +16,7 @@ from ...source_policy import SourcePolicy
 from ..documents import SourceDocument
 from .base import Claim, DocumentReference, ParsedDocument, parse_structured
 from .html_text import decode as decode_html, html_to_text, spanish_date_to_iso
-from .labeled_dates import find_labeled_date
+from .labeled_dates import best_role_date, find_labeled_date
 from .magnitude_amounts import find_magnitude_amounts
 from .span_integrity import interrupted_decimal
 from .pdf_text import extract_text, normalize_text
@@ -516,18 +516,56 @@ def _parse_text(text: str, document: SourceDocument) -> ParsedDocument:
             )
         )
 
-    add_relative_date(
-        "ex_date",
-        r"ex ?-?dividendo[^0-9]{0,40}(\d{1,2}\s+de\s+\w+(?:\s+de\s+\d{4})?)",
-        "date.ex_date",
-        "EX_DATE",
-    )
-    add_relative_date(
-        "record_date",
-        r"(?:record date\)?[^0-9]{0,40}|fecha de registro[^0-9]{0,40})(\d{1,2}\s+de\s+\w+(?:\s+de\s+\d{4})?)",
-        "date.record_date",
-        "RECORD_DATE",
-    )
+    # Ligadura rol <-> fecha: el candidato se elige entre todas las
+    # etiquetas del rol con predicado de rol en el span y sin que la
+    # fecha este "claimed" por una etiqueta de otro rol mas cercana.
+    # Fallback: patrones relativos (lexemas sin anio -> DERIVED) y el
+    # buscador etiquetado generico.
+    for role, name, field_path, date_kind in (
+        ("EX_DATE", "bound_ex_date", "date.ex_date", "EX_DATE"),
+        ("RECORD_DATE", "bound_record_date", "date.record_date", "RECORD_DATE"),
+    ):
+        bound = best_role_date(text, role)
+        if not bound:
+            continue
+        iso = bound["iso"]
+        explicit = bound["explicit"]
+        if not iso:
+            iso = _daymonth_to_iso(bound["value"], default_year)
+        if not iso:
+            continue
+        anchors[name] = {
+            "value": bound["value"],
+            "matched": bound["matched"],
+            "offset": bound["offset"],
+            "pattern": "role_bound",
+        }
+        claims.append(
+            Claim(
+                field_path=field_path,
+                value=iso,
+                date_kind=date_kind,
+                evidence_locator=cite(name)
+                + ("" if explicit else f" (anio derivado de la fecha de pago: {default_year})"),
+                raw_pointer=f"/anchors/{name}/value",
+                evidence_mode="EXPLICIT" if explicit else "DERIVED_BY_DEFINITION",
+                fact_origin="SOURCE_ASSERTION" if explicit else "DETERMINISTIC_DERIVATION",
+            )
+        )
+    if "date.ex_date" not in {c.field_path for c in claims}:
+        add_relative_date(
+            "ex_date",
+            r"ex ?-?dividendo[^0-9]{0,40}(\d{1,2}\s+de\s+\w+(?:\s+de\s+\d{4})?)",
+            "date.ex_date",
+            "EX_DATE",
+        )
+    if "date.record_date" not in {c.field_path for c in claims}:
+        add_relative_date(
+            "record_date",
+            r"(?:record date\)?[^0-9]{0,40}|fecha de registro[^0-9]{0,40})(\d{1,2}\s+de\s+\w+(?:\s+de\s+\d{4})?)",
+            "date.record_date",
+            "RECORD_DATE",
+        )
 
     # Fallback generico: fechas etiquetadas (Ex-Date / record date /
     # payment date / fecha de pago / fecha valor / "se concreta en el
