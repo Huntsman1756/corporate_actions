@@ -40,22 +40,34 @@ SCANNED_PDF_NO_TEXT_LAYER                          -> gate propio, fuera
 ## Target stratum — población explícita (no búsqueda oportunista)
 
 ```
-G1R2_TARGET_STRATUM_V1
+ELIGIBILITY_V1  (sobre la fila de metadata {document_id, title,
+                 subtype, type, section, date, product} que produce
+                 enumerate_portfolio, scripts/build_g1_frame.py)
 
-source = PORTFOLIO_PRODUCT_DOCUMENTS
+normalize(s) = literal de build_g1_frame.py:138:
+               NFKD -> strip combining marks -> collapse whitespace
+               -> lowercase -> strip
 
-eligible iff metadata oficial pre-documento:
-  subtype/type indica CAPITAL_INCREASE
-  OR title satisface regex preregistrada:
-    ampliación/aumento de capital
-    suscripción preferente
-    derechos de suscripción
+TYPE_LIST_V1    = []          # el vocabulario type observado no porta
+                              # familia de evento; cualquier valor
+                              # futuro no es elegible hasta
+                              # ELIGIBILITY_V2 + re-tag
+SUBTYPE_LIST_V1 = ["ampliacion de capital"]
+TITLE_REGEX_V1  = "ampliacion de capital|aumento de capital|"
+                  "suscripcion preferente|derechos de suscripcion"
+                  (re.search sobre normalize(title))
+
+eligible iff normalize(type)    in TYPE_LIST_V1
+          or normalize(subtype) in SUBTYPE_LIST_V1
+          or re.search(TITLE_REGEX_V1, normalize(title))
 
 NO (señales de selección prohibidas):
   contenido PDF
   importe
   parser output
   resultado esperado
+
+ Cambiar cualquier lista/regex = nueva versión de ELIGIBILITY + tag.
 ```
 
 El claim de G1-R2 es deliberadamente limitado: **generalización dentro
@@ -72,19 +84,43 @@ pueden ser la misma operación. Si uno cae en DEV y otro en HOLDOUT, el
 holdout deja de ser independiente aunque los IDs difieran.
 
 ```
-ca_group_id =
-    función determinista únicamente de metadata estructurada congelada
+CA_GROUP_V1  (función literal y versionada)
+
+inputs por documento (metadata estructurada congelada solamente):
+  isin   = ES[A-Z0-9]{10} extraído del product slug
+           (PORTFOLIO_PRODUCT_RE); null si ausente
+  family = "CAPITAL_INCREASE" si el doc satisface ELIGIBILITY_V1;
+           "CAPITAL_REDUCTION" si
+           normalize(subtype)=="reduccion del capital social";
+           "OTHER" en cualquier otro caso
+  date   = date (ISO day del metadata)
+  document_id
+
+algoritmo:
+  1. isin null -> ca_group_id = "DOC:" + document_id  (singleton)
+  2. agrupar docs por (isin, family)
+  3. dentro de cada grupo: ordenar por date y aplicar
+     single-linkage — docs consecutivos se fusionan si
+     gap <= 62 días
+  4. ca_group_id = SHA256("CA_ES_G1R2_CAGROUP_V1|" + isin + "|"
+                          + family + "|" + min(date del cluster))
 
 partition(ca_group_id), nunca partition(document_id)
 
-todos los documentos de una CA-group:
-    mismo lado (aquí: HOLDOUT), nunca ambos
-```
+spent-equivalence usa EXACTAMENTE la misma función, aplicada
+conjuntamente a docs nuevos elegibles + docs ya vistos con metadata:
+todo cluster que contenga >= 1 doc visto queda excluido del
+generalization set.
 
-El mismo agrupamiento aplica contra evidencia gastada: cualquier CA
-demostrablemente equivalente a `POEX-DOC-39649` queda excluida del
-generalization set. Ante ambigüedad, **no se fusionan grupos**
-(duplicado documentado > contaminación).
+NO:
+  inspección del PDF
+  parser output
+  adjudicación
+  ajuste manual posterior
+
+Sin metadata suficiente para demostrar misma-CA -> grupos distintos.
+Cambiar la función = CA_GROUP_V2 + re-tag.
+```
 
 ## Restricción descubierta (verificada sobre el universo congelado)
 

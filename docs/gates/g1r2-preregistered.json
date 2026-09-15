@@ -21,13 +21,19 @@
   "target_stratum": {
     "name": "G1R2_TARGET_STRATUM_V1",
     "source": "PORTFOLIO_PRODUCT_DOCUMENTS",
-    "eligibility": {
-      "rule": "metadata oficial pre-documento: subtype/type indica CAPITAL_INCREASE OR title satisface regex preregistrada",
-      "title_regex": ["ampliaci(o|ó)n de capital", "aumento de capital", "suscripci(o|ó)n preferente", "derechos de suscripci(o|ó)n"],
+    "claim_limit": "generalizacion dentro del estrato enriquecido de operaciones de capital de Portfolio; NO estimacion de prevalencia sobre todo Portfolio",
+    "eligibility_v1": {
+      "input_row": "{document_id, title, subtype, type, section, date, product} segun enumerate_portfolio (scripts/build_g1_frame.py)",
+      "normalize": "literal build_g1_frame.py:138: NFKD -> strip combining marks -> collapse whitespace -> lowercase -> strip",
+      "type_list": [],
+      "type_list_note": "el vocabulario type observado no porta familia de evento; valores futuros no elegibles hasta ELIGIBILITY_V2 + re-tag",
+      "subtype_list": ["ampliacion de capital"],
+      "title_regex": "ampliacion de capital|aumento de capital|suscripcion preferente|derechos de suscripcion",
+      "title_regex_semantics": "re.search sobre normalize(title)",
+      "rule": "eligible iff normalize(type) in type_list or normalize(subtype) in subtype_list or re.search(title_regex, normalize(title))",
       "forbidden_signals": ["contenido PDF", "importe", "parser output", "resultado esperado"],
-      "precedent": "G1 eligibility INCL_TITLE_KEYWORDS (metadata oficial antes de leer documentos)"
-    },
-    "claim_limit": "generalizacion dentro del estrato enriquecido de operaciones de capital de Portfolio; NO estimacion de prevalencia sobre todo Portfolio"
+      "versioning": "cambiar cualquier lista/regex = ELIGIBILITY_V2 + re-tag"
+    }
   },
   "corpus": {
     "snapshot": "NEW_PORTFOLIO_SNAPSHOT versionado y acumulable (frame drift aceptado: pregunta nueva)",
@@ -35,11 +41,24 @@
       "seen_ids": "150 G1 + 40 G1-R = 190",
       "spent_ca_groups": "CAs demostrablemente equivalentes a evidencia gastada (p. ej. cadena NEXTLOG = POEX-DOC-39649) excluidas del generalization set via metadata estructurada"
     },
-    "ca_grouping": {
-      "ca_group_id": "funcion determinista unicamente de metadata estructurada congelada",
+    "ca_group_v1": {
+      "inputs_per_document": {
+        "isin": "ES[A-Z0-9]{10} del product slug (PORTFOLIO_PRODUCT_RE); null si ausente",
+        "family": "CAPITAL_INCREASE si satisface eligibility_v1; CAPITAL_REDUCTION si normalize(subtype)=='reduccion del capital social'; OTHER en otro caso",
+        "date": "date (ISO day del metadata)",
+        "document_id": "document_id"
+      },
+      "algorithm": [
+        "isin null -> ca_group_id = 'DOC:' + document_id (singleton)",
+        "agrupar por (isin, family)",
+        "ordenar por date; single-linkage: consecutivos se fusionan si gap <= 62 dias",
+        "ca_group_id = SHA256('CA_ES_G1R2_CAGROUP_V1|' + isin + '|' + family + '|' + min(date del cluster))"
+      ],
       "partition_unit": "ca_group_id, nunca document_id",
-      "rule": "todos los documentos de una CA-group al mismo lado; nunca DEV+HOLDOUT",
-      "ambiguity": "ante la duda no se fusionan grupos (duplicado documentado > contaminacion)"
+      "spent_equivalence": "misma funcion aplicada conjuntamente a docs nuevos elegibles + docs ya vistos con metadata; todo cluster con >=1 doc visto queda excluido del generalization set",
+      "forbidden": ["inspeccion del PDF", "parser output", "adjudicacion", "ajuste manual posterior"],
+      "ambiguity": "sin metadata suficiente para demostrar misma-CA -> grupos distintos",
+      "versioning": "cambiar la funcion = CA_GROUP_V2 + re-tag"
     },
     "selection": {
       "sample_score": "SHA256(CA_ES_G1R2_SAMPLE_V1 + ca_group_id)",
