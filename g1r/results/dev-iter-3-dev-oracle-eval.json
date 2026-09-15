@@ -1,0 +1,2955 @@
+{
+ "phase": "dev-iter-3",
+ "oracle": "g1r/adjudication/dev-missingness-review.jsonl (signed)",
+ "rows": 150,
+ "status_counts": {
+  "UNCHANGED_CORRECT": 66,
+  "UNCHANGED_NOT_APPLICABLE": 38,
+  "UNCHANGED_UNKNOWN": 17,
+  "P0_CORRECTED": 5,
+  "UNCHANGED_MISSING": 20,
+  "P0_UNRESOLVED": 4
+ },
+ "results": [
+  {
+   "oracle_claim_ids": [
+    "DEV::BMEG-CapitalIncreases-ES0105561007-2025-01-13::event_type::event_type"
+   ],
+   "frame_item_id": "BMEG-CapitalIncreases-ES0105561007-2025-01-13",
+   "field": "event_type",
+   "classification": "CORRECT",
+   "p0_error": null,
+   "expected": {
+    "event_type": "CAPITAL_INCREASE"
+   },
+   "baseline": {
+    "event_type": "CAPITAL_INCREASE"
+   },
+   "current": {
+    "event_type": "CAPITAL_INCREASE"
+   },
+   "status": "UNCHANGED_CORRECT"
+  },
+  {
+   "oracle_claim_ids": [
+    "DEV::BMEG-CapitalIncreases-ES0105561007-2025-01-13::ex_date"
+   ],
+   "frame_item_id": "BMEG-CapitalIncreases-ES0105561007-2025-01-13",
+   "field": "ex_date",
+   "classification": "NOT_APPLICABLE",
+   "p0_error": null,
+   "expected": null,
+   "baseline": "ABSENT",
+   "current": "ABSENT",
+   "status": "UNCHANGED_NOT_APPLICABLE"
+  },
+  {
+   "oracle_claim_ids": [
+    "DEV::BMEG-CapitalIncreases-ES0105561007-2025-01-13::record_date"
+   ],
+   "frame_item_id": "BMEG-CapitalIncreases-ES0105561007-2025-01-13",
+   "field": "record_date",
+   "classification": "NOT_APPLICABLE",
+   "p0_error": null,
+   "expected": null,
+   "baseline": "ABSENT",
+   "current": "ABSENT",
+   "status": "UNCHANGED_NOT_APPLICABLE"
+  },
+  {
+   "oracle_claim_ids": [
+    "DEV::BMEG-CapitalIncreases-ES0105561007-2025-01-13::payment_date"
+   ],
+   "frame_item_id": "BMEG-CapitalIncreases-ES0105561007-2025-01-13",
+   "field": "payment_date",
+   "classification": "NOT_APPLICABLE",
+   "p0_error": null,
+   "expected": null,
+   "baseline": "ABSENT",
+   "current": "ABSENT",
+   "status": "UNCHANGED_NOT_APPLICABLE"
+  },
+  {
+   "oracle_claim_ids": [
+    "DEV::BMEG-CapitalIncreases-ES0105561007-2025-01-13::amount_or_ratio::amount.disbursement_per_share",
+    "DEV::BMEG-CapitalIncreases-ES0105561007-2025-01-13::amount_or_ratio::amount.nominal_total"
+   ],
+   "frame_item_id": "BMEG-CapitalIncreases-ES0105561007-2025-01-13",
+   "field": "amount_or_ratio",
+   "classification": "CORRECT",
+   "p0_error": null,
+   "expected": {
+    "amount.disbursement_per_share": {
+     "currency": "EUR",
+     "normalized": "3.3795"
+    },
+    "amount.nominal_total": {
+     "currency": "EUR",
+     "normalized": "8992.5"
+    }
+   },
+   "baseline": {
+    "amount.disbursement_per_share": {
+     "__financial__": true,
+     "currency": "EUR",
+     "normalized": "3.3795",
+     "raw_lexeme": "3.3795",
+     "scale": 4
+    },
+    "amount.effective_total": {
+     "__financial__": true,
+     "currency": "EUR",
+     "normalized": "0.0",
+     "raw_lexeme": "0.0",
+     "scale": 1
+    },
+    "amount.liberated_percentage": {
+     "__financial__": true,
+     "currency": "EUR",
+     "normalized": "0.0",
+     "raw_lexeme": "0.0",
+     "scale": 1
+    },
+    "amount.nominal_total": {
+     "__financial__": true,
+     "currency": "EUR",
+     "normalized": "8992.5",
+     "raw_lexeme": "8992.5",
+     "scale": 1
+    },
+    "amount.price": {
+     "__financial__": true,
+     "currency": "EUR",
+     "normalized": "3.3795",
+     "raw_lexeme": "3.3795",
+     "scale": 4
+    },
+    "amount.rights_price": {
+     "__financial__": true,
+     "currency": "EUR",
+     "normalized": "0.0",
+     "raw_lexeme": "0.0",
+     "scale": 1
+    }
+   },
+   "current": {
+    "amount.disbursement_per_share": {
+     "normalized": "3.3795",
+     "currency": "EUR"
+    },
+    "amount.effective_total": {
+     "normalized": "0.0",
+     "currency": "EUR"
+    },
+    "amount.liberated_percentage": {
+     "normalized": "0.0",
+     "currency": "EUR"
+    },
+    "amount.nominal_total": {
+     "normalized": "8992.5",
+     "currency": "EUR"
+    },
+    "amount.price": {
+     "normalized": "3.3795",
+     "currency": "EUR"
+    },
+    "amount.rights_price": {
+     "normalized": "0.0",
+     "currency": "EUR"
+    }
+   },
+   "status": "UNCHANGED_CORRECT"
+  },
+  {
+   "oracle_claim_ids": [
+    "DEV::BMEG-CapitalIncreases-ES0105561007-2025-01-13::currency::instrument.currency"
+   ],
+   "frame_item_id": "BMEG-CapitalIncreases-ES0105561007-2025-01-13",
+   "field": "currency",
+   "classification": "CORRECT",
+   "p0_error": null,
+   "expected": {
+    "instrument.currency": "EUR"
+   },
+   "baseline": {
+    "amount.disbursement_per_share.currency": "EUR",
+    "amount.effective_total.currency": "EUR",
+    "amount.liberated_percentage.currency": "EUR",
+    "amount.nominal_total.currency": "EUR",
+    "amount.price.currency": "EUR",
+    "amount.rights_price.currency": "EUR",
+    "instrument.currency": "EUR"
+   },
+   "current": {
+    "instrument.currency": "EUR",
+    "amount.disbursement_per_share.currency": "EUR",
+    "amount.effective_total.currency": "EUR",
+    "amount.liberated_percentage.currency": "EUR",
+    "amount.nominal_total.currency": "EUR",
+    "amount.price.currency": "EUR",
+    "amount.rights_price.currency": "EUR"
+   },
+   "status": "UNCHANGED_CORRECT"
+  },
+  {
+   "oracle_claim_ids": [
+    "DEV::BMEG-CapitalIncreases-ES0105606190-2025-04-07::event_type::event_type"
+   ],
+   "frame_item_id": "BMEG-CapitalIncreases-ES0105606190-2025-04-07",
+   "field": "event_type",
+   "classification": "CORRECT",
+   "p0_error": null,
+   "expected": {
+    "event_type": "CAPITAL_INCREASE"
+   },
+   "baseline": {
+    "event_type": "CAPITAL_INCREASE"
+   },
+   "current": {
+    "event_type": "CAPITAL_INCREASE"
+   },
+   "status": "UNCHANGED_CORRECT"
+  },
+  {
+   "oracle_claim_ids": [
+    "DEV::BMEG-CapitalIncreases-ES0105606190-2025-04-07::ex_date"
+   ],
+   "frame_item_id": "BMEG-CapitalIncreases-ES0105606190-2025-04-07",
+   "field": "ex_date",
+   "classification": "NOT_APPLICABLE",
+   "p0_error": null,
+   "expected": null,
+   "baseline": "ABSENT",
+   "current": "ABSENT",
+   "status": "UNCHANGED_NOT_APPLICABLE"
+  },
+  {
+   "oracle_claim_ids": [
+    "DEV::BMEG-CapitalIncreases-ES0105606190-2025-04-07::record_date"
+   ],
+   "frame_item_id": "BMEG-CapitalIncreases-ES0105606190-2025-04-07",
+   "field": "record_date",
+   "classification": "NOT_APPLICABLE",
+   "p0_error": null,
+   "expected": null,
+   "baseline": "ABSENT",
+   "current": "ABSENT",
+   "status": "UNCHANGED_NOT_APPLICABLE"
+  },
+  {
+   "oracle_claim_ids": [
+    "DEV::BMEG-CapitalIncreases-ES0105606190-2025-04-07::payment_date"
+   ],
+   "frame_item_id": "BMEG-CapitalIncreases-ES0105606190-2025-04-07",
+   "field": "payment_date",
+   "classification": "NOT_APPLICABLE",
+   "p0_error": null,
+   "expected": null,
+   "baseline": "ABSENT",
+   "current": "ABSENT",
+   "status": "UNCHANGED_NOT_APPLICABLE"
+  },
+  {
+   "oracle_claim_ids": [
+    "DEV::BMEG-CapitalIncreases-ES0105606190-2025-04-07::amount_or_ratio::amount.nominal_total",
+    "DEV::BMEG-CapitalIncreases-ES0105606190-2025-04-07::amount_or_ratio::amount.price"
+   ],
+   "frame_item_id": "BMEG-CapitalIncreases-ES0105606190-2025-04-07",
+   "field": "amount_or_ratio",
+   "classification": "CORRECT",
+   "p0_error": null,
+   "expected": {
+    "amount.nominal_total": {
+     "currency": "EUR",
+     "normalized": "312500.0"
+    },
+    "amount.price": {
+     "currency": "EUR",
+     "normalized": "0.08"
+    }
+   },
+   "baseline": {
+    "amount.disbursement_per_share": {
+     "__financial__": true,
+     "currency": "EUR",
+     "normalized": "0.08",
+     "raw_lexeme": "0.08",
+     "scale": 2
+    },
+    "amount.effective_total": {
+     "__financial__": true,
+     "currency": "EUR",
+     "normalized": "0.0",
+     "raw_lexeme": "0.0",
+     "scale": 1
+    },
+    "amount.liberated_percentage": {
+     "__financial__": true,
+     "currency": "EUR",
+     "normalized": "0.0",
+     "raw_lexeme": "0.0",
+     "scale": 1
+    },
+    "amount.nominal_total": {
+     "__financial__": true,
+     "currency": "EUR",
+     "normalized": "312500.0",
+     "raw_lexeme": "312500.0",
+     "scale": 1
+    },
+    "amount.price": {
+     "__financial__": true,
+     "currency": "EUR",
+     "normalized": "0.08",
+     "raw_lexeme": "0.08",
+     "scale": 2
+    },
+    "amount.rights_price": {
+     "__financial__": true,
+     "currency": "EUR",
+     "normalized": "0.0",
+     "raw_lexeme": "0.0",
+     "scale": 1
+    }
+   },
+   "current": {
+    "amount.disbursement_per_share": {
+     "normalized": "0.08",
+     "currency": "EUR"
+    },
+    "amount.effective_total": {
+     "normalized": "0.0",
+     "currency": "EUR"
+    },
+    "amount.liberated_percentage": {
+     "normalized": "0.0",
+     "currency": "EUR"
+    },
+    "amount.nominal_total": {
+     "normalized": "312500.0",
+     "currency": "EUR"
+    },
+    "amount.price": {
+     "normalized": "0.08",
+     "currency": "EUR"
+    },
+    "amount.rights_price": {
+     "normalized": "0.0",
+     "currency": "EUR"
+    }
+   },
+   "status": "UNCHANGED_CORRECT"
+  },
+  {
+   "oracle_claim_ids": [
+    "DEV::BMEG-CapitalIncreases-ES0105606190-2025-04-07::currency::instrument.currency"
+   ],
+   "frame_item_id": "BMEG-CapitalIncreases-ES0105606190-2025-04-07",
+   "field": "currency",
+   "classification": "CORRECT",
+   "p0_error": null,
+   "expected": {
+    "instrument.currency": "EUR"
+   },
+   "baseline": {
+    "amount.disbursement_per_share.currency": "EUR",
+    "amount.effective_total.currency": "EUR",
+    "amount.liberated_percentage.currency": "EUR",
+    "amount.nominal_total.currency": "EUR",
+    "amount.price.currency": "EUR",
+    "amount.rights_price.currency": "EUR",
+    "instrument.currency": "EUR"
+   },
+   "current": {
+    "instrument.currency": "EUR",
+    "amount.disbursement_per_share.currency": "EUR",
+    "amount.effective_total.currency": "EUR",
+    "amount.liberated_percentage.currency": "EUR",
+    "amount.nominal_total.currency": "EUR",
+    "amount.price.currency": "EUR",
+    "amount.rights_price.currency": "EUR"
+   },
+   "status": "UNCHANGED_CORRECT"
+  },
+  {
+   "oracle_claim_ids": [
+    "DEV::BMEG-Dividends-ES0105224002-2025-05-08::event_type::event_type"
+   ],
+   "frame_item_id": "BMEG-Dividends-ES0105224002-2025-05-08",
+   "field": "event_type",
+   "classification": "CORRECT",
+   "p0_error": null,
+   "expected": {
+    "event_type": "CASH_DIVIDEND"
+   },
+   "baseline": {
+    "event_type": "CASH_DIVIDEND"
+   },
+   "current": {
+    "event_type": "CASH_DIVIDEND"
+   },
+   "status": "UNCHANGED_CORRECT"
+  },
+  {
+   "oracle_claim_ids": [
+    "DEV::BMEG-Dividends-ES0105224002-2025-05-08::ex_date::date.ex_date"
+   ],
+   "frame_item_id": "BMEG-Dividends-ES0105224002-2025-05-08",
+   "field": "ex_date",
+   "classification": "CORRECT",
+   "p0_error": null,
+   "expected": {
+    "date.ex_date": "2025-05-08"
+   },
+   "baseline": {
+    "date.ex_date": "2025-05-08"
+   },
+   "current": {
+    "date.ex_date": "2025-05-08"
+   },
+   "status": "UNCHANGED_CORRECT"
+  },
+  {
+   "oracle_claim_ids": [
+    "DEV::BMEG-Dividends-ES0105224002-2025-05-08::record_date"
+   ],
+   "frame_item_id": "BMEG-Dividends-ES0105224002-2025-05-08",
+   "field": "record_date",
+   "classification": "UNKNOWN",
+   "p0_error": null,
+   "expected": null,
+   "baseline": "ABSENT",
+   "current": "ABSENT",
+   "status": "UNCHANGED_UNKNOWN"
+  },
+  {
+   "oracle_claim_ids": [
+    "DEV::BMEG-Dividends-ES0105224002-2025-05-08::payment_date::date.payment_date"
+   ],
+   "frame_item_id": "BMEG-Dividends-ES0105224002-2025-05-08",
+   "field": "payment_date",
+   "classification": "CORRECT",
+   "p0_error": null,
+   "expected": {
+    "date.payment_date": "2025-05-12"
+   },
+   "baseline": {
+    "date.payment_date": "2025-05-12"
+   },
+   "current": {
+    "date.payment_date": "2025-05-12"
+   },
+   "status": "UNCHANGED_CORRECT"
+  },
+  {
+   "oracle_claim_ids": [
+    "DEV::BMEG-Dividends-ES0105224002-2025-05-08::amount_or_ratio::amount.gross_per_share",
+    "DEV::BMEG-Dividends-ES0105224002-2025-05-08::amount_or_ratio::amount.net_per_share"
+   ],
+   "frame_item_id": "BMEG-Dividends-ES0105224002-2025-05-08",
+   "field": "amount_or_ratio",
+   "classification": "CORRECT",
+   "p0_error": null,
+   "expected": {
+    "amount.gross_per_share": {
+     "currency": "EUR",
+     "normalized": "0.02756119"
+    },
+    "amount.net_per_share": {
+     "currency": "EUR",
+     "normalized": "0.02232456"
+    }
+   },
+   "baseline": {
+    "amount.gross_per_share": {
+     "__financial__": true,
+     "currency": "EUR",
+     "normalized": "0.02756119",
+     "raw_lexeme": "0.02756119",
+     "scale": 8
+    },
+    "amount.net_per_share": {
+     "__financial__": true,
+     "currency": "EUR",
+     "normalized": "0.02232456",
+     "raw_lexeme": "0.02232456",
+     "scale": 8
+    }
+   },
+   "current": {
+    "amount.gross_per_share": {
+     "normalized": "0.02756119",
+     "currency": "EUR"
+    },
+    "amount.net_per_share": {
+     "normalized": "0.02232456",
+     "currency": "EUR"
+    }
+   },
+   "status": "UNCHANGED_CORRECT"
+  },
+  {
+   "oracle_claim_ids": [
+    "DEV::BMEG-Dividends-ES0105224002-2025-05-08::currency::instrument.currency"
+   ],
+   "frame_item_id": "BMEG-Dividends-ES0105224002-2025-05-08",
+   "field": "currency",
+   "classification": "CORRECT",
+   "p0_error": null,
+   "expected": {
+    "instrument.currency": "EUR"
+   },
+   "baseline": {
+    "amount.gross_per_share.currency": "EUR",
+    "amount.net_per_share.currency": "EUR",
+    "instrument.currency": "EUR"
+   },
+   "current": {
+    "instrument.currency": "EUR",
+    "amount.gross_per_share.currency": "EUR",
+    "amount.net_per_share.currency": "EUR"
+   },
+   "status": "UNCHANGED_CORRECT"
+  },
+  {
+   "oracle_claim_ids": [
+    "DEV::BMEG-Dividends-ES0105290003-2025-06-25::event_type::event_type"
+   ],
+   "frame_item_id": "BMEG-Dividends-ES0105290003-2025-06-25",
+   "field": "event_type",
+   "classification": "CORRECT",
+   "p0_error": null,
+   "expected": {
+    "event_type": "CASH_DIVIDEND"
+   },
+   "baseline": {
+    "event_type": "CASH_DIVIDEND"
+   },
+   "current": {
+    "event_type": "CASH_DIVIDEND"
+   },
+   "status": "UNCHANGED_CORRECT"
+  },
+  {
+   "oracle_claim_ids": [
+    "DEV::BMEG-Dividends-ES0105290003-2025-06-25::ex_date::date.ex_date"
+   ],
+   "frame_item_id": "BMEG-Dividends-ES0105290003-2025-06-25",
+   "field": "ex_date",
+   "classification": "CORRECT",
+   "p0_error": null,
+   "expected": {
+    "date.ex_date": "2025-06-25"
+   },
+   "baseline": {
+    "date.ex_date": "2025-06-25"
+   },
+   "current": {
+    "date.ex_date": "2025-06-25"
+   },
+   "status": "UNCHANGED_CORRECT"
+  },
+  {
+   "oracle_claim_ids": [
+    "DEV::BMEG-Dividends-ES0105290003-2025-06-25::record_date"
+   ],
+   "frame_item_id": "BMEG-Dividends-ES0105290003-2025-06-25",
+   "field": "record_date",
+   "classification": "UNKNOWN",
+   "p0_error": null,
+   "expected": null,
+   "baseline": "ABSENT",
+   "current": "ABSENT",
+   "status": "UNCHANGED_UNKNOWN"
+  },
+  {
+   "oracle_claim_ids": [
+    "DEV::BMEG-Dividends-ES0105290003-2025-06-25::payment_date::date.payment_date"
+   ],
+   "frame_item_id": "BMEG-Dividends-ES0105290003-2025-06-25",
+   "field": "payment_date",
+   "classification": "CORRECT",
+   "p0_error": null,
+   "expected": {
+    "date.payment_date": "2025-06-27"
+   },
+   "baseline": {
+    "date.payment_date": "2025-06-27"
+   },
+   "current": {
+    "date.payment_date": "2025-06-27"
+   },
+   "status": "UNCHANGED_CORRECT"
+  },
+  {
+   "oracle_claim_ids": [
+    "DEV::BMEG-Dividends-ES0105290003-2025-06-25::amount_or_ratio::amount.gross_per_share",
+    "DEV::BMEG-Dividends-ES0105290003-2025-06-25::amount_or_ratio::amount.net_per_share"
+   ],
+   "frame_item_id": "BMEG-Dividends-ES0105290003-2025-06-25",
+   "field": "amount_or_ratio",
+   "classification": "CORRECT",
+   "p0_error": null,
+   "expected": {
+    "amount.gross_per_share": {
+     "currency": "EUR",
+     "normalized": "0.33473427"
+    },
+    "amount.net_per_share": {
+     "currency": "EUR",
+     "normalized": "0.27113476"
+    }
+   },
+   "baseline": {
+    "amount.gross_per_share": {
+     "__financial__": true,
+     "currency": "EUR",
+     "normalized": "0.33473427",
+     "raw_lexeme": "0.33473427",
+     "scale": 8
+    },
+    "amount.net_per_share": {
+     "__financial__": true,
+     "currency": "EUR",
+     "normalized": "0.27113476",
+     "raw_lexeme": "0.27113476",
+     "scale": 8
+    }
+   },
+   "current": {
+    "amount.gross_per_share": {
+     "normalized": "0.33473427",
+     "currency": "EUR"
+    },
+    "amount.net_per_share": {
+     "normalized": "0.27113476",
+     "currency": "EUR"
+    }
+   },
+   "status": "UNCHANGED_CORRECT"
+  },
+  {
+   "oracle_claim_ids": [
+    "DEV::BMEG-Dividends-ES0105290003-2025-06-25::currency::instrument.currency"
+   ],
+   "frame_item_id": "BMEG-Dividends-ES0105290003-2025-06-25",
+   "field": "currency",
+   "classification": "CORRECT",
+   "p0_error": null,
+   "expected": {
+    "instrument.currency": "EUR"
+   },
+   "baseline": {
+    "amount.gross_per_share.currency": "EUR",
+    "amount.net_per_share.currency": "EUR",
+    "instrument.currency": "EUR"
+   },
+   "current": {
+    "instrument.currency": "EUR",
+    "amount.gross_per_share.currency": "EUR",
+    "amount.net_per_share.currency": "EUR"
+   },
+   "status": "UNCHANGED_CORRECT"
+  },
+  {
+   "oracle_claim_ids": [
+    "DEV::BMEG-Dividends-ES0105407003-2026-09-11::event_type::event_type"
+   ],
+   "frame_item_id": "BMEG-Dividends-ES0105407003-2026-09-11",
+   "field": "event_type",
+   "classification": "CORRECT",
+   "p0_error": null,
+   "expected": {
+    "event_type": "CASH_DIVIDEND"
+   },
+   "baseline": {
+    "event_type": "CASH_DIVIDEND"
+   },
+   "current": {
+    "event_type": "CASH_DIVIDEND"
+   },
+   "status": "UNCHANGED_CORRECT"
+  },
+  {
+   "oracle_claim_ids": [
+    "DEV::BMEG-Dividends-ES0105407003-2026-09-11::ex_date::date.ex_date"
+   ],
+   "frame_item_id": "BMEG-Dividends-ES0105407003-2026-09-11",
+   "field": "ex_date",
+   "classification": "CORRECT",
+   "p0_error": null,
+   "expected": {
+    "date.ex_date": "2026-09-11"
+   },
+   "baseline": {
+    "date.ex_date": "2026-09-11"
+   },
+   "current": {
+    "date.ex_date": "2026-09-11"
+   },
+   "status": "UNCHANGED_CORRECT"
+  },
+  {
+   "oracle_claim_ids": [
+    "DEV::BMEG-Dividends-ES0105407003-2026-09-11::record_date"
+   ],
+   "frame_item_id": "BMEG-Dividends-ES0105407003-2026-09-11",
+   "field": "record_date",
+   "classification": "UNKNOWN",
+   "p0_error": null,
+   "expected": null,
+   "baseline": "ABSENT",
+   "current": "ABSENT",
+   "status": "UNCHANGED_UNKNOWN"
+  },
+  {
+   "oracle_claim_ids": [
+    "DEV::BMEG-Dividends-ES0105407003-2026-09-11::payment_date::date.payment_date"
+   ],
+   "frame_item_id": "BMEG-Dividends-ES0105407003-2026-09-11",
+   "field": "payment_date",
+   "classification": "CORRECT",
+   "p0_error": null,
+   "expected": {
+    "date.payment_date": "2026-09-15"
+   },
+   "baseline": {
+    "date.payment_date": "2026-09-15"
+   },
+   "current": {
+    "date.payment_date": "2026-09-15"
+   },
+   "status": "UNCHANGED_CORRECT"
+  },
+  {
+   "oracle_claim_ids": [
+    "DEV::BMEG-Dividends-ES0105407003-2026-09-11::amount_or_ratio::amount.gross_per_share",
+    "DEV::BMEG-Dividends-ES0105407003-2026-09-11::amount_or_ratio::amount.net_per_share"
+   ],
+   "frame_item_id": "BMEG-Dividends-ES0105407003-2026-09-11",
+   "field": "amount_or_ratio",
+   "classification": "CORRECT",
+   "p0_error": null,
+   "expected": {
+    "amount.gross_per_share": {
+     "currency": "EUR",
+     "normalized": "0.0612"
+    },
+    "amount.net_per_share": {
+     "currency": "EUR",
+     "normalized": "0.049572"
+    }
+   },
+   "baseline": {
+    "amount.gross_per_share": {
+     "__financial__": true,
+     "currency": "EUR",
+     "normalized": "0.0612",
+     "raw_lexeme": "0.0612",
+     "scale": 4
+    },
+    "amount.net_per_share": {
+     "__financial__": true,
+     "currency": "EUR",
+     "normalized": "0.049572",
+     "raw_lexeme": "0.049572",
+     "scale": 6
+    }
+   },
+   "current": {
+    "amount.gross_per_share": {
+     "normalized": "0.0612",
+     "currency": "EUR"
+    },
+    "amount.net_per_share": {
+     "normalized": "0.049572",
+     "currency": "EUR"
+    }
+   },
+   "status": "UNCHANGED_CORRECT"
+  },
+  {
+   "oracle_claim_ids": [
+    "DEV::BMEG-Dividends-ES0105407003-2026-09-11::currency::instrument.currency"
+   ],
+   "frame_item_id": "BMEG-Dividends-ES0105407003-2026-09-11",
+   "field": "currency",
+   "classification": "CORRECT",
+   "p0_error": null,
+   "expected": {
+    "instrument.currency": "EUR"
+   },
+   "baseline": {
+    "amount.gross_per_share.currency": "EUR",
+    "amount.net_per_share.currency": "EUR",
+    "instrument.currency": "EUR"
+   },
+   "current": {
+    "instrument.currency": "EUR",
+    "amount.gross_per_share.currency": "EUR",
+    "amount.net_per_share.currency": "EUR"
+   },
+   "status": "UNCHANGED_CORRECT"
+  },
+  {
+   "oracle_claim_ids": [
+    "DEV::BMEG-Dividends-ES0105659009-2025-07-03::event_type::event_type"
+   ],
+   "frame_item_id": "BMEG-Dividends-ES0105659009-2025-07-03",
+   "field": "event_type",
+   "classification": "CORRECT",
+   "p0_error": null,
+   "expected": {
+    "event_type": "CASH_DIVIDEND"
+   },
+   "baseline": {
+    "event_type": "CASH_DIVIDEND"
+   },
+   "current": {
+    "event_type": "CASH_DIVIDEND"
+   },
+   "status": "UNCHANGED_CORRECT"
+  },
+  {
+   "oracle_claim_ids": [
+    "DEV::BMEG-Dividends-ES0105659009-2025-07-03::ex_date::date.ex_date"
+   ],
+   "frame_item_id": "BMEG-Dividends-ES0105659009-2025-07-03",
+   "field": "ex_date",
+   "classification": "CORRECT",
+   "p0_error": null,
+   "expected": {
+    "date.ex_date": "2025-07-03"
+   },
+   "baseline": {
+    "date.ex_date": "2025-07-03"
+   },
+   "current": {
+    "date.ex_date": "2025-07-03"
+   },
+   "status": "UNCHANGED_CORRECT"
+  },
+  {
+   "oracle_claim_ids": [
+    "DEV::BMEG-Dividends-ES0105659009-2025-07-03::record_date"
+   ],
+   "frame_item_id": "BMEG-Dividends-ES0105659009-2025-07-03",
+   "field": "record_date",
+   "classification": "UNKNOWN",
+   "p0_error": null,
+   "expected": null,
+   "baseline": "ABSENT",
+   "current": "ABSENT",
+   "status": "UNCHANGED_UNKNOWN"
+  },
+  {
+   "oracle_claim_ids": [
+    "DEV::BMEG-Dividends-ES0105659009-2025-07-03::payment_date::date.payment_date"
+   ],
+   "frame_item_id": "BMEG-Dividends-ES0105659009-2025-07-03",
+   "field": "payment_date",
+   "classification": "CORRECT",
+   "p0_error": null,
+   "expected": {
+    "date.payment_date": "2025-07-17"
+   },
+   "baseline": {
+    "date.payment_date": "2025-07-17"
+   },
+   "current": {
+    "date.payment_date": "2025-07-17"
+   },
+   "status": "UNCHANGED_CORRECT"
+  },
+  {
+   "oracle_claim_ids": [
+    "DEV::BMEG-Dividends-ES0105659009-2025-07-03::amount_or_ratio::amount.gross_per_share"
+   ],
+   "frame_item_id": "BMEG-Dividends-ES0105659009-2025-07-03",
+   "field": "amount_or_ratio",
+   "classification": "CORRECT",
+   "p0_error": null,
+   "expected": {
+    "amount.gross_per_share": {
+     "currency": "EUR",
+     "normalized": "0.74"
+    }
+   },
+   "baseline": {
+    "amount.gross_per_share": {
+     "__financial__": true,
+     "currency": "EUR",
+     "normalized": "0.74",
+     "raw_lexeme": "0.74",
+     "scale": 2
+    },
+    "amount.net_per_share": {
+     "__financial__": true,
+     "currency": "EUR",
+     "normalized": "0.0",
+     "raw_lexeme": "0.0",
+     "scale": 1
+    }
+   },
+   "current": {
+    "amount.gross_per_share": {
+     "normalized": "0.74",
+     "currency": "EUR"
+    },
+    "amount.net_per_share": {
+     "normalized": "0.0",
+     "currency": "EUR"
+    }
+   },
+   "status": "UNCHANGED_CORRECT"
+  },
+  {
+   "oracle_claim_ids": [
+    "DEV::BMEG-Dividends-ES0105659009-2025-07-03::currency::instrument.currency"
+   ],
+   "frame_item_id": "BMEG-Dividends-ES0105659009-2025-07-03",
+   "field": "currency",
+   "classification": "CORRECT",
+   "p0_error": null,
+   "expected": {
+    "instrument.currency": "EUR"
+   },
+   "baseline": {
+    "amount.gross_per_share.currency": "EUR",
+    "amount.net_per_share.currency": "EUR",
+    "instrument.currency": "EUR"
+   },
+   "current": {
+    "instrument.currency": "EUR",
+    "amount.gross_per_share.currency": "EUR",
+    "amount.net_per_share.currency": "EUR"
+   },
+   "status": "UNCHANGED_CORRECT"
+  },
+  {
+   "oracle_claim_ids": [
+    "DEV::BMEG-NewListings-ES0105650008-2026-03-06::event_type::event_type"
+   ],
+   "frame_item_id": "BMEG-NewListings-ES0105650008-2026-03-06",
+   "field": "event_type",
+   "classification": "MISSING",
+   "p0_error": "WRONG_EVENT_TYPE",
+   "expected": {
+    "event_type": "CAPITAL_INCREASE"
+   },
+   "baseline": {
+    "event_type": "NEW_LISTING"
+   },
+   "current": {
+    "event_type": "CAPITAL_INCREASE"
+   },
+   "status": "P0_CORRECTED"
+  },
+  {
+   "oracle_claim_ids": [
+    "DEV::BMEG-NewListings-ES0105650008-2026-03-06::ex_date"
+   ],
+   "frame_item_id": "BMEG-NewListings-ES0105650008-2026-03-06",
+   "field": "ex_date",
+   "classification": "NOT_APPLICABLE",
+   "p0_error": null,
+   "expected": null,
+   "baseline": "ABSENT",
+   "current": "ABSENT",
+   "status": "UNCHANGED_NOT_APPLICABLE"
+  },
+  {
+   "oracle_claim_ids": [
+    "DEV::BMEG-NewListings-ES0105650008-2026-03-06::record_date"
+   ],
+   "frame_item_id": "BMEG-NewListings-ES0105650008-2026-03-06",
+   "field": "record_date",
+   "classification": "NOT_APPLICABLE",
+   "p0_error": null,
+   "expected": null,
+   "baseline": "ABSENT",
+   "current": "ABSENT",
+   "status": "UNCHANGED_NOT_APPLICABLE"
+  },
+  {
+   "oracle_claim_ids": [
+    "DEV::BMEG-NewListings-ES0105650008-2026-03-06::payment_date"
+   ],
+   "frame_item_id": "BMEG-NewListings-ES0105650008-2026-03-06",
+   "field": "payment_date",
+   "classification": "NOT_APPLICABLE",
+   "p0_error": null,
+   "expected": null,
+   "baseline": "ABSENT",
+   "current": "ABSENT",
+   "status": "UNCHANGED_NOT_APPLICABLE"
+  },
+  {
+   "oracle_claim_ids": [
+    "DEV::BMEG-NewListings-ES0105650008-2026-03-06::amount_or_ratio::amount.nominal"
+   ],
+   "frame_item_id": "BMEG-NewListings-ES0105650008-2026-03-06",
+   "field": "amount_or_ratio",
+   "classification": "CORRECT",
+   "p0_error": null,
+   "expected": {
+    "amount.nominal": {
+     "currency": null,
+     "normalized": "960136.5"
+    }
+   },
+   "baseline": {
+    "amount.nominal": {
+     "__financial__": true,
+     "currency": null,
+     "normalized": "960136.5",
+     "raw_lexeme": "960136.5",
+     "scale": 1
+    },
+    "amount.turnover": {
+     "__financial__": true,
+     "currency": null,
+     "normalized": "750826.743",
+     "raw_lexeme": "750826.743",
+     "scale": 3
+    }
+   },
+   "current": {
+    "amount.nominal": {
+     "normalized": "960136.5",
+     "currency": null
+    },
+    "amount.turnover": {
+     "normalized": "750826.743",
+     "currency": null
+    }
+   },
+   "status": "UNCHANGED_CORRECT"
+  },
+  {
+   "oracle_claim_ids": [
+    "DEV::BMEG-NewListings-ES0105650008-2026-03-06::currency"
+   ],
+   "frame_item_id": "BMEG-NewListings-ES0105650008-2026-03-06",
+   "field": "currency",
+   "classification": "UNKNOWN",
+   "p0_error": null,
+   "expected": null,
+   "baseline": {
+    "amount.nominal.currency": null,
+    "amount.turnover.currency": null
+   },
+   "current": {
+    "amount.nominal.currency": null,
+    "amount.turnover.currency": null
+   },
+   "status": "UNCHANGED_UNKNOWN"
+  },
+  {
+   "oracle_claim_ids": [
+    "DEV::BMEG-OtherPayments-ES0105323002-2025-01-08::event_type::event_type"
+   ],
+   "frame_item_id": "BMEG-OtherPayments-ES0105323002-2025-01-08",
+   "field": "event_type",
+   "classification": "CORRECT",
+   "p0_error": null,
+   "expected": {
+    "event_type": "OTHER_PAYMENT"
+   },
+   "baseline": {
+    "event_type": "OTHER_PAYMENT"
+   },
+   "current": {
+    "event_type": "OTHER_PAYMENT"
+   },
+   "status": "UNCHANGED_CORRECT"
+  },
+  {
+   "oracle_claim_ids": [
+    "DEV::BMEG-OtherPayments-ES0105323002-2025-01-08::ex_date::date.ex_date"
+   ],
+   "frame_item_id": "BMEG-OtherPayments-ES0105323002-2025-01-08",
+   "field": "ex_date",
+   "classification": "CORRECT",
+   "p0_error": null,
+   "expected": {
+    "date.ex_date": "2025-01-08"
+   },
+   "baseline": {
+    "date.ex_date": "2025-01-08"
+   },
+   "current": {
+    "date.ex_date": "2025-01-08"
+   },
+   "status": "UNCHANGED_CORRECT"
+  },
+  {
+   "oracle_claim_ids": [
+    "DEV::BMEG-OtherPayments-ES0105323002-2025-01-08::record_date"
+   ],
+   "frame_item_id": "BMEG-OtherPayments-ES0105323002-2025-01-08",
+   "field": "record_date",
+   "classification": "UNKNOWN",
+   "p0_error": null,
+   "expected": null,
+   "baseline": "ABSENT",
+   "current": "ABSENT",
+   "status": "UNCHANGED_UNKNOWN"
+  },
+  {
+   "oracle_claim_ids": [
+    "DEV::BMEG-OtherPayments-ES0105323002-2025-01-08::payment_date::date.payment_date"
+   ],
+   "frame_item_id": "BMEG-OtherPayments-ES0105323002-2025-01-08",
+   "field": "payment_date",
+   "classification": "CORRECT",
+   "p0_error": null,
+   "expected": {
+    "date.payment_date": "2025-01-10"
+   },
+   "baseline": {
+    "date.payment_date": "2025-01-10"
+   },
+   "current": {
+    "date.payment_date": "2025-01-10"
+   },
+   "status": "UNCHANGED_CORRECT"
+  },
+  {
+   "oracle_claim_ids": [
+    "DEV::BMEG-OtherPayments-ES0105323002-2025-01-08::amount_or_ratio::amount.effective_total",
+    "DEV::BMEG-OtherPayments-ES0105323002-2025-01-08::amount_or_ratio::amount.gross_per_share"
+   ],
+   "frame_item_id": "BMEG-OtherPayments-ES0105323002-2025-01-08",
+   "field": "amount_or_ratio",
+   "classification": "CORRECT",
+   "p0_error": null,
+   "expected": {
+    "amount.effective_total": {
+     "currency": "EUR",
+     "normalized": "5004739.71"
+    },
+    "amount.gross_per_share": {
+     "currency": "EUR",
+     "normalized": "0.1484908"
+    }
+   },
+   "baseline": {
+    "amount.effective_total": {
+     "__financial__": true,
+     "currency": "EUR",
+     "normalized": "5004739.71",
+     "raw_lexeme": "5004739.71",
+     "scale": 2
+    },
+    "amount.gross_per_share": {
+     "__financial__": true,
+     "currency": "EUR",
+     "normalized": "0.1484908",
+     "raw_lexeme": "0.1484908",
+     "scale": 7
+    },
+    "amount.net_per_share": {
+     "__financial__": true,
+     "currency": "EUR",
+     "normalized": "0.0",
+     "raw_lexeme": "0.0",
+     "scale": 1
+    }
+   },
+   "current": {
+    "amount.effective_total": {
+     "normalized": "5004739.71",
+     "currency": "EUR"
+    },
+    "amount.gross_per_share": {
+     "normalized": "0.1484908",
+     "currency": "EUR"
+    },
+    "amount.net_per_share": {
+     "normalized": "0.0",
+     "currency": "EUR"
+    }
+   },
+   "status": "UNCHANGED_CORRECT"
+  },
+  {
+   "oracle_claim_ids": [
+    "DEV::BMEG-OtherPayments-ES0105323002-2025-01-08::currency::instrument.currency"
+   ],
+   "frame_item_id": "BMEG-OtherPayments-ES0105323002-2025-01-08",
+   "field": "currency",
+   "classification": "CORRECT",
+   "p0_error": null,
+   "expected": {
+    "instrument.currency": "EUR"
+   },
+   "baseline": {
+    "amount.effective_total.currency": "EUR",
+    "amount.gross_per_share.currency": "EUR",
+    "amount.net_per_share.currency": "EUR",
+    "instrument.currency": "EUR"
+   },
+   "current": {
+    "instrument.currency": "EUR",
+    "amount.effective_total.currency": "EUR",
+    "amount.gross_per_share.currency": "EUR",
+    "amount.net_per_share.currency": "EUR"
+   },
+   "status": "UNCHANGED_CORRECT"
+  },
+  {
+   "oracle_claim_ids": [
+    "DEV::CNMV-IP-3011::event_type::event_type"
+   ],
+   "frame_item_id": "CNMV-IP-3011",
+   "field": "event_type",
+   "classification": "CORRECT",
+   "p0_error": null,
+   "expected": {
+    "event_type": "TAKEOVER_BID"
+   },
+   "baseline": {
+    "event_type": "TAKEOVER_BID"
+   },
+   "current": {
+    "event_type": "TAKEOVER_BID"
+   },
+   "status": "UNCHANGED_CORRECT"
+  },
+  {
+   "oracle_claim_ids": [
+    "DEV::CNMV-IP-3011::ex_date"
+   ],
+   "frame_item_id": "CNMV-IP-3011",
+   "field": "ex_date",
+   "classification": "NOT_APPLICABLE",
+   "p0_error": null,
+   "expected": null,
+   "baseline": "ABSENT",
+   "current": "ABSENT",
+   "status": "UNCHANGED_NOT_APPLICABLE"
+  },
+  {
+   "oracle_claim_ids": [
+    "DEV::CNMV-IP-3011::record_date"
+   ],
+   "frame_item_id": "CNMV-IP-3011",
+   "field": "record_date",
+   "classification": "NOT_APPLICABLE",
+   "p0_error": null,
+   "expected": null,
+   "baseline": "ABSENT",
+   "current": "ABSENT",
+   "status": "UNCHANGED_NOT_APPLICABLE"
+  },
+  {
+   "oracle_claim_ids": [
+    "DEV::CNMV-IP-3011::payment_date"
+   ],
+   "frame_item_id": "CNMV-IP-3011",
+   "field": "payment_date",
+   "classification": "UNKNOWN",
+   "p0_error": null,
+   "expected": null,
+   "baseline": "ABSENT",
+   "current": "ABSENT",
+   "status": "UNCHANGED_UNKNOWN"
+  },
+  {
+   "oracle_claim_ids": [
+    "DEV::CNMV-IP-3011::amount_or_ratio::amount.gross_per_share"
+   ],
+   "frame_item_id": "CNMV-IP-3011",
+   "field": "amount_or_ratio",
+   "classification": "MISSING",
+   "p0_error": "FALSE_FINANCIAL_FACT",
+   "expected": {
+    "amount.gross_per_share": {
+     "currency": "EUR",
+     "normalized": "21.335"
+    }
+   },
+   "baseline": {
+    "amount.gross_per_share": {
+     "__financial__": true,
+     "currency": "EUR",
+     "normalized": "27.15",
+     "raw_lexeme": "27,15",
+     "scale": 2
+    }
+   },
+   "current": {
+    "amount.gross_per_share": {
+     "normalized": "21.335",
+     "currency": "EUR"
+    }
+   },
+   "status": "P0_CORRECTED"
+  },
+  {
+   "oracle_claim_ids": [
+    "DEV::CNMV-IP-3011::currency::instrument.currency"
+   ],
+   "frame_item_id": "CNMV-IP-3011",
+   "field": "currency",
+   "classification": "CORRECT",
+   "p0_error": null,
+   "expected": {
+    "instrument.currency": "EUR"
+   },
+   "baseline": {
+    "amount.gross_per_share.currency": "EUR"
+   },
+   "current": {
+    "amount.gross_per_share.currency": "EUR"
+   },
+   "status": "UNCHANGED_CORRECT"
+  },
+  {
+   "oracle_claim_ids": [
+    "DEV::CNMV-OIR-32783::event_type::event_type"
+   ],
+   "frame_item_id": "CNMV-OIR-32783",
+   "field": "event_type",
+   "classification": "CORRECT",
+   "p0_error": null,
+   "expected": {
+    "event_type": "CASH_DIVIDEND"
+   },
+   "baseline": {
+    "event_type": "CASH_DIVIDEND"
+   },
+   "current": {
+    "event_type": "CASH_DIVIDEND"
+   },
+   "status": "UNCHANGED_CORRECT"
+  },
+  {
+   "oracle_claim_ids": [
+    "DEV::CNMV-OIR-32783::ex_date"
+   ],
+   "frame_item_id": "CNMV-OIR-32783",
+   "field": "ex_date",
+   "classification": "UNKNOWN",
+   "p0_error": null,
+   "expected": null,
+   "baseline": "ABSENT",
+   "current": "ABSENT",
+   "status": "UNCHANGED_UNKNOWN"
+  },
+  {
+   "oracle_claim_ids": [
+    "DEV::CNMV-OIR-32783::record_date"
+   ],
+   "frame_item_id": "CNMV-OIR-32783",
+   "field": "record_date",
+   "classification": "UNKNOWN",
+   "p0_error": null,
+   "expected": null,
+   "baseline": "ABSENT",
+   "current": "ABSENT",
+   "status": "UNCHANGED_UNKNOWN"
+  },
+  {
+   "oracle_claim_ids": [
+    "DEV::CNMV-OIR-32783::payment_date::date.payment_date"
+   ],
+   "frame_item_id": "CNMV-OIR-32783",
+   "field": "payment_date",
+   "classification": "CORRECT",
+   "p0_error": null,
+   "expected": {
+    "date.payment_date": "2025-04-24"
+   },
+   "baseline": {
+    "date.payment_date": "2025-04-24"
+   },
+   "current": {
+    "date.payment_date": "2025-04-24"
+   },
+   "status": "UNCHANGED_CORRECT"
+  },
+  {
+   "oracle_claim_ids": [
+    "DEV::CNMV-OIR-32783::amount_or_ratio::amount.gross_per_share"
+   ],
+   "frame_item_id": "CNMV-OIR-32783",
+   "field": "amount_or_ratio",
+   "classification": "CORRECT",
+   "p0_error": null,
+   "expected": {
+    "amount.gross_per_share": {
+     "currency": "EUR",
+     "normalized": "9.76"
+    }
+   },
+   "baseline": {
+    "amount.gross_per_share": {
+     "__financial__": true,
+     "currency": "EUR",
+     "normalized": "9.76",
+     "raw_lexeme": "9,76",
+     "scale": 2
+    }
+   },
+   "current": {
+    "amount.gross_per_share": {
+     "normalized": "9.76",
+     "currency": "EUR"
+    }
+   },
+   "status": "UNCHANGED_CORRECT"
+  },
+  {
+   "oracle_claim_ids": [
+    "DEV::CNMV-OIR-32783::currency::instrument.currency"
+   ],
+   "frame_item_id": "CNMV-OIR-32783",
+   "field": "currency",
+   "classification": "CORRECT",
+   "p0_error": null,
+   "expected": {
+    "instrument.currency": "EUR"
+   },
+   "baseline": {
+    "amount.gross_per_share.currency": "EUR"
+   },
+   "current": {
+    "amount.gross_per_share.currency": "EUR"
+   },
+   "status": "UNCHANGED_CORRECT"
+  },
+  {
+   "oracle_claim_ids": [
+    "DEV::CNMV-OIR-35005::event_type::event_type"
+   ],
+   "frame_item_id": "CNMV-OIR-35005",
+   "field": "event_type",
+   "classification": "CORRECT",
+   "p0_error": null,
+   "expected": {
+    "event_type": "CASH_DIVIDEND"
+   },
+   "baseline": {
+    "event_type": "CASH_DIVIDEND"
+   },
+   "current": {
+    "event_type": "CASH_DIVIDEND"
+   },
+   "status": "UNCHANGED_CORRECT"
+  },
+  {
+   "oracle_claim_ids": [
+    "DEV::CNMV-OIR-35005::ex_date::date.ex_date"
+   ],
+   "frame_item_id": "CNMV-OIR-35005",
+   "field": "ex_date",
+   "classification": "CORRECT",
+   "p0_error": null,
+   "expected": {
+    "date.ex_date": "2025-07-04"
+   },
+   "baseline": {
+    "date.ex_date": "2025-07-04"
+   },
+   "current": {
+    "date.ex_date": "2025-07-04"
+   },
+   "status": "UNCHANGED_CORRECT"
+  },
+  {
+   "oracle_claim_ids": [
+    "DEV::CNMV-OIR-35005::record_date::date.record_date"
+   ],
+   "frame_item_id": "CNMV-OIR-35005",
+   "field": "record_date",
+   "classification": "CORRECT",
+   "p0_error": null,
+   "expected": {
+    "date.record_date": "2025-07-07"
+   },
+   "baseline": {
+    "date.record_date": "2025-07-07"
+   },
+   "current": {
+    "date.record_date": "2025-07-07"
+   },
+   "status": "UNCHANGED_CORRECT"
+  },
+  {
+   "oracle_claim_ids": [
+    "DEV::CNMV-OIR-35005::payment_date::date.payment_date"
+   ],
+   "frame_item_id": "CNMV-OIR-35005",
+   "field": "payment_date",
+   "classification": "CORRECT",
+   "p0_error": null,
+   "expected": {
+    "date.payment_date": "2025-07-08"
+   },
+   "baseline": {
+    "date.payment_date": "2025-07-08"
+   },
+   "current": {
+    "date.payment_date": "2025-07-08"
+   },
+   "status": "UNCHANGED_CORRECT"
+  },
+  {
+   "oracle_claim_ids": [
+    "DEV::CNMV-OIR-35005::amount_or_ratio::amount.gross_per_share"
+   ],
+   "frame_item_id": "CNMV-OIR-35005",
+   "field": "amount_or_ratio",
+   "classification": "MISSING",
+   "p0_error": null,
+   "expected": {
+    "amount.gross_per_share": {
+     "currency": "EUR",
+     "normalized": "0.60"
+    }
+   },
+   "baseline": "ABSENT",
+   "current": "ABSENT",
+   "status": "UNCHANGED_MISSING"
+  },
+  {
+   "oracle_claim_ids": [
+    "DEV::CNMV-OIR-35005::currency::instrument.currency"
+   ],
+   "frame_item_id": "CNMV-OIR-35005",
+   "field": "currency",
+   "classification": "MISSING",
+   "p0_error": null,
+   "expected": {
+    "instrument.currency": "EUR"
+   },
+   "baseline": "ABSENT",
+   "current": "ABSENT",
+   "status": "UNCHANGED_MISSING"
+  },
+  {
+   "oracle_claim_ids": [
+    "DEV::CNMV-OIR-35263::event_type::event_type"
+   ],
+   "frame_item_id": "CNMV-OIR-35263",
+   "field": "event_type",
+   "classification": "MISSING",
+   "p0_error": null,
+   "expected": {
+    "event_type": "SPLIT"
+   },
+   "baseline": "ABSENT",
+   "current": "ABSENT",
+   "status": "UNCHANGED_MISSING"
+  },
+  {
+   "oracle_claim_ids": [
+    "DEV::CNMV-OIR-35263::ex_date"
+   ],
+   "frame_item_id": "CNMV-OIR-35263",
+   "field": "ex_date",
+   "classification": "NOT_APPLICABLE",
+   "p0_error": null,
+   "expected": null,
+   "baseline": "ABSENT",
+   "current": "ABSENT",
+   "status": "UNCHANGED_NOT_APPLICABLE"
+  },
+  {
+   "oracle_claim_ids": [
+    "DEV::CNMV-OIR-35263::record_date"
+   ],
+   "frame_item_id": "CNMV-OIR-35263",
+   "field": "record_date",
+   "classification": "NOT_APPLICABLE",
+   "p0_error": null,
+   "expected": null,
+   "baseline": "ABSENT",
+   "current": "ABSENT",
+   "status": "UNCHANGED_NOT_APPLICABLE"
+  },
+  {
+   "oracle_claim_ids": [
+    "DEV::CNMV-OIR-35263::payment_date"
+   ],
+   "frame_item_id": "CNMV-OIR-35263",
+   "field": "payment_date",
+   "classification": "NOT_APPLICABLE",
+   "p0_error": null,
+   "expected": null,
+   "baseline": "ABSENT",
+   "current": "ABSENT",
+   "status": "UNCHANGED_NOT_APPLICABLE"
+  },
+  {
+   "oracle_claim_ids": [
+    "DEV::CNMV-OIR-35263::amount_or_ratio"
+   ],
+   "frame_item_id": "CNMV-OIR-35263",
+   "field": "amount_or_ratio",
+   "classification": "UNKNOWN",
+   "p0_error": null,
+   "expected": null,
+   "baseline": "ABSENT",
+   "current": "ABSENT",
+   "status": "UNCHANGED_UNKNOWN"
+  },
+  {
+   "oracle_claim_ids": [
+    "DEV::CNMV-OIR-35263::currency"
+   ],
+   "frame_item_id": "CNMV-OIR-35263",
+   "field": "currency",
+   "classification": "NOT_APPLICABLE",
+   "p0_error": null,
+   "expected": null,
+   "baseline": "ABSENT",
+   "current": "ABSENT",
+   "status": "UNCHANGED_NOT_APPLICABLE"
+  },
+  {
+   "oracle_claim_ids": [
+    "DEV::CNMV-OIR-36798::event_type::event_type"
+   ],
+   "frame_item_id": "CNMV-OIR-36798",
+   "field": "event_type",
+   "classification": "CORRECT",
+   "p0_error": null,
+   "expected": {
+    "event_type": "TAKEOVER_BID"
+   },
+   "baseline": {
+    "event_type": "TAKEOVER_BID"
+   },
+   "current": {
+    "event_type": "TAKEOVER_BID"
+   },
+   "status": "UNCHANGED_CORRECT"
+  },
+  {
+   "oracle_claim_ids": [
+    "DEV::CNMV-OIR-36798::ex_date"
+   ],
+   "frame_item_id": "CNMV-OIR-36798",
+   "field": "ex_date",
+   "classification": "NOT_APPLICABLE",
+   "p0_error": null,
+   "expected": null,
+   "baseline": "ABSENT",
+   "current": "ABSENT",
+   "status": "UNCHANGED_NOT_APPLICABLE"
+  },
+  {
+   "oracle_claim_ids": [
+    "DEV::CNMV-OIR-36798::record_date"
+   ],
+   "frame_item_id": "CNMV-OIR-36798",
+   "field": "record_date",
+   "classification": "NOT_APPLICABLE",
+   "p0_error": null,
+   "expected": null,
+   "baseline": "ABSENT",
+   "current": "ABSENT",
+   "status": "UNCHANGED_NOT_APPLICABLE"
+  },
+  {
+   "oracle_claim_ids": [
+    "DEV::CNMV-OIR-36798::payment_date"
+   ],
+   "frame_item_id": "CNMV-OIR-36798",
+   "field": "payment_date",
+   "classification": "UNKNOWN",
+   "p0_error": null,
+   "expected": null,
+   "baseline": "ABSENT",
+   "current": "ABSENT",
+   "status": "UNCHANGED_UNKNOWN"
+  },
+  {
+   "oracle_claim_ids": [
+    "DEV::CNMV-OIR-36798::amount_or_ratio"
+   ],
+   "frame_item_id": "CNMV-OIR-36798",
+   "field": "amount_or_ratio",
+   "classification": "UNKNOWN",
+   "p0_error": null,
+   "expected": null,
+   "baseline": "ABSENT",
+   "current": "ABSENT",
+   "status": "UNCHANGED_UNKNOWN"
+  },
+  {
+   "oracle_claim_ids": [
+    "DEV::CNMV-OIR-36798::currency"
+   ],
+   "frame_item_id": "CNMV-OIR-36798",
+   "field": "currency",
+   "classification": "UNKNOWN",
+   "p0_error": null,
+   "expected": null,
+   "baseline": "ABSENT",
+   "current": "ABSENT",
+   "status": "UNCHANGED_UNKNOWN"
+  },
+  {
+   "oracle_claim_ids": [
+    "DEV::CNMV-OIR-37702::event_type::event_type"
+   ],
+   "frame_item_id": "CNMV-OIR-37702",
+   "field": "event_type",
+   "classification": "CORRECT",
+   "p0_error": null,
+   "expected": {
+    "event_type": "CASH_DIVIDEND"
+   },
+   "baseline": {
+    "event_type": "CASH_DIVIDEND"
+   },
+   "current": {
+    "event_type": "CASH_DIVIDEND"
+   },
+   "status": "UNCHANGED_CORRECT"
+  },
+  {
+   "oracle_claim_ids": [
+    "DEV::CNMV-OIR-37702::ex_date::date.ex_date"
+   ],
+   "frame_item_id": "CNMV-OIR-37702",
+   "field": "ex_date",
+   "classification": "CORRECT",
+   "p0_error": null,
+   "expected": {
+    "date.ex_date": "2025-11-21"
+   },
+   "baseline": {
+    "date.ex_date": "2025-11-21"
+   },
+   "current": {
+    "date.ex_date": "2025-11-21"
+   },
+   "status": "UNCHANGED_CORRECT"
+  },
+  {
+   "oracle_claim_ids": [
+    "DEV::CNMV-OIR-37702::record_date::date.record_date"
+   ],
+   "frame_item_id": "CNMV-OIR-37702",
+   "field": "record_date",
+   "classification": "CORRECT",
+   "p0_error": null,
+   "expected": {
+    "date.record_date": "2025-11-24"
+   },
+   "baseline": {
+    "date.record_date": "2025-11-24"
+   },
+   "current": {
+    "date.record_date": "2025-11-24"
+   },
+   "status": "UNCHANGED_CORRECT"
+  },
+  {
+   "oracle_claim_ids": [
+    "DEV::CNMV-OIR-37702::payment_date::date.payment_date"
+   ],
+   "frame_item_id": "CNMV-OIR-37702",
+   "field": "payment_date",
+   "classification": "CORRECT",
+   "p0_error": null,
+   "expected": {
+    "date.payment_date": "2025-12-10"
+   },
+   "baseline": {
+    "date.payment_date": "2025-12-10"
+   },
+   "current": {
+    "date.payment_date": "2025-12-10"
+   },
+   "status": "UNCHANGED_CORRECT"
+  },
+  {
+   "oracle_claim_ids": [
+    "DEV::CNMV-OIR-37702::amount_or_ratio::amount.gross_per_share"
+   ],
+   "frame_item_id": "CNMV-OIR-37702",
+   "field": "amount_or_ratio",
+   "classification": "MISSING",
+   "p0_error": null,
+   "expected": {
+    "amount.gross_per_share": {
+     "currency": "EUR",
+     "normalized": "0.20"
+    }
+   },
+   "baseline": "ABSENT",
+   "current": "ABSENT",
+   "status": "UNCHANGED_MISSING"
+  },
+  {
+   "oracle_claim_ids": [
+    "DEV::CNMV-OIR-37702::currency::instrument.currency"
+   ],
+   "frame_item_id": "CNMV-OIR-37702",
+   "field": "currency",
+   "classification": "MISSING",
+   "p0_error": null,
+   "expected": {
+    "instrument.currency": "EUR"
+   },
+   "baseline": "ABSENT",
+   "current": "ABSENT",
+   "status": "UNCHANGED_MISSING"
+  },
+  {
+   "oracle_claim_ids": [
+    "DEV::CNMV-OIR-37970::event_type"
+   ],
+   "frame_item_id": "CNMV-OIR-37970",
+   "field": "event_type",
+   "classification": "NOT_APPLICABLE",
+   "p0_error": "FALSE_POSITIVE_EVENT",
+   "expected": null,
+   "baseline": {
+    "event_type": "TAKEOVER_BID"
+   },
+   "current": {
+    "event_type": "TAKEOVER_BID"
+   },
+   "status": "P0_UNRESOLVED"
+  },
+  {
+   "oracle_claim_ids": [
+    "DEV::CNMV-OIR-37970::ex_date"
+   ],
+   "frame_item_id": "CNMV-OIR-37970",
+   "field": "ex_date",
+   "classification": "NOT_APPLICABLE",
+   "p0_error": null,
+   "expected": null,
+   "baseline": "ABSENT",
+   "current": "ABSENT",
+   "status": "UNCHANGED_NOT_APPLICABLE"
+  },
+  {
+   "oracle_claim_ids": [
+    "DEV::CNMV-OIR-37970::record_date"
+   ],
+   "frame_item_id": "CNMV-OIR-37970",
+   "field": "record_date",
+   "classification": "NOT_APPLICABLE",
+   "p0_error": null,
+   "expected": null,
+   "baseline": "ABSENT",
+   "current": "ABSENT",
+   "status": "UNCHANGED_NOT_APPLICABLE"
+  },
+  {
+   "oracle_claim_ids": [
+    "DEV::CNMV-OIR-37970::payment_date"
+   ],
+   "frame_item_id": "CNMV-OIR-37970",
+   "field": "payment_date",
+   "classification": "NOT_APPLICABLE",
+   "p0_error": null,
+   "expected": null,
+   "baseline": "ABSENT",
+   "current": "ABSENT",
+   "status": "UNCHANGED_NOT_APPLICABLE"
+  },
+  {
+   "oracle_claim_ids": [
+    "DEV::CNMV-OIR-37970::amount_or_ratio"
+   ],
+   "frame_item_id": "CNMV-OIR-37970",
+   "field": "amount_or_ratio",
+   "classification": "NOT_APPLICABLE",
+   "p0_error": null,
+   "expected": null,
+   "baseline": "ABSENT",
+   "current": "ABSENT",
+   "status": "UNCHANGED_NOT_APPLICABLE"
+  },
+  {
+   "oracle_claim_ids": [
+    "DEV::CNMV-OIR-37970::currency"
+   ],
+   "frame_item_id": "CNMV-OIR-37970",
+   "field": "currency",
+   "classification": "NOT_APPLICABLE",
+   "p0_error": null,
+   "expected": null,
+   "baseline": "ABSENT",
+   "current": "ABSENT",
+   "status": "UNCHANGED_NOT_APPLICABLE"
+  },
+  {
+   "oracle_claim_ids": [
+    "DEV::CNMV-OIR-39819::event_type::event_type"
+   ],
+   "frame_item_id": "CNMV-OIR-39819",
+   "field": "event_type",
+   "classification": "MISSING",
+   "p0_error": null,
+   "expected": {
+    "event_type": "CASH_DIVIDEND"
+   },
+   "baseline": "ABSENT",
+   "current": "ABSENT",
+   "status": "UNCHANGED_MISSING"
+  },
+  {
+   "oracle_claim_ids": [
+    "DEV::CNMV-OIR-39819::ex_date::date.ex_date"
+   ],
+   "frame_item_id": "CNMV-OIR-39819",
+   "field": "ex_date",
+   "classification": "MISSING",
+   "p0_error": "DATE_MISBINDING",
+   "expected": {
+    "date.ex_date": "2026-04-16"
+   },
+   "baseline": {
+    "date.ex_date": "2026-04-17"
+   },
+   "current": {
+    "date.ex_date": "2026-04-17"
+   },
+   "status": "P0_UNRESOLVED"
+  },
+  {
+   "oracle_claim_ids": [
+    "DEV::CNMV-OIR-39819::record_date::date.record_date"
+   ],
+   "frame_item_id": "CNMV-OIR-39819",
+   "field": "record_date",
+   "classification": "MISSING",
+   "p0_error": null,
+   "expected": {
+    "date.record_date": "2026-04-17"
+   },
+   "baseline": "ABSENT",
+   "current": "ABSENT",
+   "status": "UNCHANGED_MISSING"
+  },
+  {
+   "oracle_claim_ids": [
+    "DEV::CNMV-OIR-39819::payment_date::date.payment_date"
+   ],
+   "frame_item_id": "CNMV-OIR-39819",
+   "field": "payment_date",
+   "classification": "MISSING",
+   "p0_error": null,
+   "expected": {
+    "date.payment_date": "2026-04-20"
+   },
+   "baseline": "ABSENT",
+   "current": "ABSENT",
+   "status": "UNCHANGED_MISSING"
+  },
+  {
+   "oracle_claim_ids": [
+    "DEV::CNMV-OIR-39819::amount_or_ratio::amount.gross_per_share"
+   ],
+   "frame_item_id": "CNMV-OIR-39819",
+   "field": "amount_or_ratio",
+   "classification": "CORRECT",
+   "p0_error": null,
+   "expected": {
+    "amount.gross_per_share": {
+     "currency": "EUR",
+     "normalized": "0.05"
+    }
+   },
+   "baseline": {
+    "amount.gross_per_share": {
+     "__financial__": true,
+     "currency": "EUR",
+     "normalized": "0.05",
+     "raw_lexeme": "0,05",
+     "scale": 2
+    }
+   },
+   "current": {
+    "amount.gross_per_share": {
+     "normalized": "0.05",
+     "currency": "EUR"
+    }
+   },
+   "status": "UNCHANGED_CORRECT"
+  },
+  {
+   "oracle_claim_ids": [
+    "DEV::CNMV-OIR-39819::currency::instrument.currency"
+   ],
+   "frame_item_id": "CNMV-OIR-39819",
+   "field": "currency",
+   "classification": "CORRECT",
+   "p0_error": null,
+   "expected": {
+    "instrument.currency": "EUR"
+   },
+   "baseline": {
+    "amount.gross_per_share.currency": "EUR"
+   },
+   "current": {
+    "amount.gross_per_share.currency": "EUR"
+   },
+   "status": "UNCHANGED_CORRECT"
+  },
+  {
+   "oracle_claim_ids": [
+    "DEV::CNMV-OIR-40758::event_type::event_type"
+   ],
+   "frame_item_id": "CNMV-OIR-40758",
+   "field": "event_type",
+   "classification": "MISSING",
+   "p0_error": "WRONG_EVENT_TYPE",
+   "expected": {
+    "event_type": "SCRIP_DIVIDEND"
+   },
+   "baseline": {
+    "event_type": "CAPITAL_INCREASE"
+   },
+   "current": {
+    "event_type": "SCRIP_DIVIDEND"
+   },
+   "status": "P0_CORRECTED"
+  },
+  {
+   "oracle_claim_ids": [
+    "DEV::CNMV-OIR-40758::ex_date::date.ex_date"
+   ],
+   "frame_item_id": "CNMV-OIR-40758",
+   "field": "ex_date",
+   "classification": "MISSING",
+   "p0_error": "DATE_MISBINDING",
+   "expected": {
+    "date.ex_date": "2026-05-14"
+   },
+   "baseline": {
+    "date.ex_date": "2026-05-25"
+   },
+   "current": {
+    "date.ex_date": "2026-05-25"
+   },
+   "status": "P0_UNRESOLVED"
+  },
+  {
+   "oracle_claim_ids": [
+    "DEV::CNMV-OIR-40758::record_date::date.record_date"
+   ],
+   "frame_item_id": "CNMV-OIR-40758",
+   "field": "record_date",
+   "classification": "MISSING",
+   "p0_error": "DATE_MISBINDING",
+   "expected": {
+    "date.record_date": "2026-05-15"
+   },
+   "baseline": {
+    "date.record_date": "2026-06-01"
+   },
+   "current": {
+    "date.record_date": "2026-06-01"
+   },
+   "status": "P0_UNRESOLVED"
+  },
+  {
+   "oracle_claim_ids": [
+    "DEV::CNMV-OIR-40758::payment_date::date.payment_date"
+   ],
+   "frame_item_id": "CNMV-OIR-40758",
+   "field": "payment_date",
+   "classification": "MISSING",
+   "p0_error": null,
+   "expected": {
+    "date.payment_date": "2026-06-03"
+   },
+   "baseline": "ABSENT",
+   "current": "ABSENT",
+   "status": "UNCHANGED_MISSING"
+  },
+  {
+   "oracle_claim_ids": [
+    "DEV::CNMV-OIR-40758::amount_or_ratio"
+   ],
+   "frame_item_id": "CNMV-OIR-40758",
+   "field": "amount_or_ratio",
+   "classification": "UNKNOWN",
+   "p0_error": null,
+   "expected": null,
+   "baseline": "ABSENT",
+   "current": "ABSENT",
+   "status": "UNCHANGED_UNKNOWN"
+  },
+  {
+   "oracle_claim_ids": [
+    "DEV::CNMV-OIR-40758::currency"
+   ],
+   "frame_item_id": "CNMV-OIR-40758",
+   "field": "currency",
+   "classification": "UNKNOWN",
+   "p0_error": null,
+   "expected": null,
+   "baseline": "ABSENT",
+   "current": "ABSENT",
+   "status": "UNCHANGED_UNKNOWN"
+  },
+  {
+   "oracle_claim_ids": [
+    "DEV::CNMV-OIR-41381::event_type::event_type"
+   ],
+   "frame_item_id": "CNMV-OIR-41381",
+   "field": "event_type",
+   "classification": "MISSING",
+   "p0_error": "WRONG_EVENT_TYPE",
+   "expected": {
+    "event_type": "SCRIP_DIVIDEND"
+   },
+   "baseline": {
+    "event_type": "CASH_DIVIDEND"
+   },
+   "current": {
+    "event_type": "SCRIP_DIVIDEND"
+   },
+   "status": "P0_CORRECTED"
+  },
+  {
+   "oracle_claim_ids": [
+    "DEV::CNMV-OIR-41381::ex_date"
+   ],
+   "frame_item_id": "CNMV-OIR-41381",
+   "field": "ex_date",
+   "classification": "NOT_APPLICABLE",
+   "p0_error": null,
+   "expected": null,
+   "baseline": "ABSENT",
+   "current": "ABSENT",
+   "status": "UNCHANGED_NOT_APPLICABLE"
+  },
+  {
+   "oracle_claim_ids": [
+    "DEV::CNMV-OIR-41381::record_date"
+   ],
+   "frame_item_id": "CNMV-OIR-41381",
+   "field": "record_date",
+   "classification": "NOT_APPLICABLE",
+   "p0_error": null,
+   "expected": null,
+   "baseline": "ABSENT",
+   "current": "ABSENT",
+   "status": "UNCHANGED_NOT_APPLICABLE"
+  },
+  {
+   "oracle_claim_ids": [
+    "DEV::CNMV-OIR-41381::payment_date::date.payment_date"
+   ],
+   "frame_item_id": "CNMV-OIR-41381",
+   "field": "payment_date",
+   "classification": "MISSING",
+   "p0_error": null,
+   "expected": {
+    "date.payment_date": "2026-06-08"
+   },
+   "baseline": "ABSENT",
+   "current": "ABSENT",
+   "status": "UNCHANGED_MISSING"
+  },
+  {
+   "oracle_claim_ids": [
+    "DEV::CNMV-OIR-41381::amount_or_ratio::amount.gross_total"
+   ],
+   "frame_item_id": "CNMV-OIR-41381",
+   "field": "amount_or_ratio",
+   "classification": "MISSING",
+   "p0_error": null,
+   "expected": {
+    "amount.gross_total": {
+     "currency": "EUR",
+     "normalized": "135770.59"
+    }
+   },
+   "baseline": "ABSENT",
+   "current": "ABSENT",
+   "status": "UNCHANGED_MISSING"
+  },
+  {
+   "oracle_claim_ids": [
+    "DEV::CNMV-OIR-41381::currency::instrument.currency"
+   ],
+   "frame_item_id": "CNMV-OIR-41381",
+   "field": "currency",
+   "classification": "MISSING",
+   "p0_error": null,
+   "expected": {
+    "instrument.currency": "EUR"
+   },
+   "baseline": "ABSENT",
+   "current": "ABSENT",
+   "status": "UNCHANGED_MISSING"
+  },
+  {
+   "oracle_claim_ids": [
+    "DEV::CNMV-OIR-41640::event_type::event_type"
+   ],
+   "frame_item_id": "CNMV-OIR-41640",
+   "field": "event_type",
+   "classification": "MISSING",
+   "p0_error": "WRONG_EVENT_TYPE",
+   "expected": {
+    "event_type": "SCRIP_DIVIDEND"
+   },
+   "baseline": {
+    "event_type": "CASH_DIVIDEND"
+   },
+   "current": {
+    "event_type": "SCRIP_DIVIDEND"
+   },
+   "status": "P0_CORRECTED"
+  },
+  {
+   "oracle_claim_ids": [
+    "DEV::CNMV-OIR-41640::ex_date"
+   ],
+   "frame_item_id": "CNMV-OIR-41640",
+   "field": "ex_date",
+   "classification": "NOT_APPLICABLE",
+   "p0_error": null,
+   "expected": null,
+   "baseline": "ABSENT",
+   "current": "ABSENT",
+   "status": "UNCHANGED_NOT_APPLICABLE"
+  },
+  {
+   "oracle_claim_ids": [
+    "DEV::CNMV-OIR-41640::record_date"
+   ],
+   "frame_item_id": "CNMV-OIR-41640",
+   "field": "record_date",
+   "classification": "NOT_APPLICABLE",
+   "p0_error": null,
+   "expected": null,
+   "baseline": "ABSENT",
+   "current": "ABSENT",
+   "status": "UNCHANGED_NOT_APPLICABLE"
+  },
+  {
+   "oracle_claim_ids": [
+    "DEV::CNMV-OIR-41640::payment_date"
+   ],
+   "frame_item_id": "CNMV-OIR-41640",
+   "field": "payment_date",
+   "classification": "NOT_APPLICABLE",
+   "p0_error": null,
+   "expected": null,
+   "baseline": "ABSENT",
+   "current": "ABSENT",
+   "status": "UNCHANGED_NOT_APPLICABLE"
+  },
+  {
+   "oracle_claim_ids": [
+    "DEV::CNMV-OIR-41640::amount_or_ratio"
+   ],
+   "frame_item_id": "CNMV-OIR-41640",
+   "field": "amount_or_ratio",
+   "classification": "UNKNOWN",
+   "p0_error": null,
+   "expected": null,
+   "baseline": "ABSENT",
+   "current": "ABSENT",
+   "status": "UNCHANGED_UNKNOWN"
+  },
+  {
+   "oracle_claim_ids": [
+    "DEV::CNMV-OIR-41640::currency"
+   ],
+   "frame_item_id": "CNMV-OIR-41640",
+   "field": "currency",
+   "classification": "NOT_APPLICABLE",
+   "p0_error": null,
+   "expected": null,
+   "baseline": "ABSENT",
+   "current": "ABSENT",
+   "status": "UNCHANGED_NOT_APPLICABLE"
+  },
+  {
+   "oracle_claim_ids": [
+    "DEV::CNMV-OIR-41981::event_type::event_type"
+   ],
+   "frame_item_id": "CNMV-OIR-41981",
+   "field": "event_type",
+   "classification": "MISSING",
+   "p0_error": null,
+   "expected": {
+    "event_type": "SPLIT"
+   },
+   "baseline": "ABSENT",
+   "current": "ABSENT",
+   "status": "UNCHANGED_MISSING"
+  },
+  {
+   "oracle_claim_ids": [
+    "DEV::CNMV-OIR-41981::ex_date"
+   ],
+   "frame_item_id": "CNMV-OIR-41981",
+   "field": "ex_date",
+   "classification": "NOT_APPLICABLE",
+   "p0_error": null,
+   "expected": null,
+   "baseline": "ABSENT",
+   "current": "ABSENT",
+   "status": "UNCHANGED_NOT_APPLICABLE"
+  },
+  {
+   "oracle_claim_ids": [
+    "DEV::CNMV-OIR-41981::record_date"
+   ],
+   "frame_item_id": "CNMV-OIR-41981",
+   "field": "record_date",
+   "classification": "NOT_APPLICABLE",
+   "p0_error": null,
+   "expected": null,
+   "baseline": "ABSENT",
+   "current": "ABSENT",
+   "status": "UNCHANGED_NOT_APPLICABLE"
+  },
+  {
+   "oracle_claim_ids": [
+    "DEV::CNMV-OIR-41981::payment_date"
+   ],
+   "frame_item_id": "CNMV-OIR-41981",
+   "field": "payment_date",
+   "classification": "NOT_APPLICABLE",
+   "p0_error": null,
+   "expected": null,
+   "baseline": "ABSENT",
+   "current": "ABSENT",
+   "status": "UNCHANGED_NOT_APPLICABLE"
+  },
+  {
+   "oracle_claim_ids": [
+    "DEV::CNMV-OIR-41981::amount_or_ratio"
+   ],
+   "frame_item_id": "CNMV-OIR-41981",
+   "field": "amount_or_ratio",
+   "classification": "UNKNOWN",
+   "p0_error": null,
+   "expected": null,
+   "baseline": "ABSENT",
+   "current": "ABSENT",
+   "status": "UNCHANGED_UNKNOWN"
+  },
+  {
+   "oracle_claim_ids": [
+    "DEV::CNMV-OIR-41981::currency"
+   ],
+   "frame_item_id": "CNMV-OIR-41981",
+   "field": "currency",
+   "classification": "NOT_APPLICABLE",
+   "p0_error": null,
+   "expected": null,
+   "baseline": "ABSENT",
+   "current": "ABSENT",
+   "status": "UNCHANGED_NOT_APPLICABLE"
+  },
+  {
+   "oracle_claim_ids": [
+    "DEV::POEX-DOC-21984::event_type::event_type"
+   ],
+   "frame_item_id": "POEX-DOC-21984",
+   "field": "event_type",
+   "classification": "MISSING",
+   "p0_error": null,
+   "expected": {
+    "event_type": "CAPITAL_INCREASE"
+   },
+   "baseline": "ABSENT",
+   "current": "ABSENT",
+   "status": "UNCHANGED_MISSING"
+  },
+  {
+   "oracle_claim_ids": [
+    "DEV::POEX-DOC-21984::ex_date"
+   ],
+   "frame_item_id": "POEX-DOC-21984",
+   "field": "ex_date",
+   "classification": "NOT_APPLICABLE",
+   "p0_error": null,
+   "expected": null,
+   "baseline": "ABSENT",
+   "current": "ABSENT",
+   "status": "UNCHANGED_NOT_APPLICABLE"
+  },
+  {
+   "oracle_claim_ids": [
+    "DEV::POEX-DOC-21984::record_date"
+   ],
+   "frame_item_id": "POEX-DOC-21984",
+   "field": "record_date",
+   "classification": "NOT_APPLICABLE",
+   "p0_error": null,
+   "expected": null,
+   "baseline": "ABSENT",
+   "current": "ABSENT",
+   "status": "UNCHANGED_NOT_APPLICABLE"
+  },
+  {
+   "oracle_claim_ids": [
+    "DEV::POEX-DOC-21984::payment_date"
+   ],
+   "frame_item_id": "POEX-DOC-21984",
+   "field": "payment_date",
+   "classification": "NOT_APPLICABLE",
+   "p0_error": null,
+   "expected": null,
+   "baseline": "ABSENT",
+   "current": "ABSENT",
+   "status": "UNCHANGED_NOT_APPLICABLE"
+  },
+  {
+   "oracle_claim_ids": [
+    "DEV::POEX-DOC-21984::amount_or_ratio::amount.nominal_total"
+   ],
+   "frame_item_id": "POEX-DOC-21984",
+   "field": "amount_or_ratio",
+   "classification": "MISSING",
+   "p0_error": null,
+   "expected": {
+    "amount.nominal_total": {
+     "currency": "EUR",
+     "normalized": "6003600.00"
+    }
+   },
+   "baseline": "ABSENT",
+   "current": "ABSENT",
+   "status": "UNCHANGED_MISSING"
+  },
+  {
+   "oracle_claim_ids": [
+    "DEV::POEX-DOC-21984::currency::instrument.currency"
+   ],
+   "frame_item_id": "POEX-DOC-21984",
+   "field": "currency",
+   "classification": "MISSING",
+   "p0_error": null,
+   "expected": {
+    "instrument.currency": "EUR"
+   },
+   "baseline": "ABSENT",
+   "current": "ABSENT",
+   "status": "UNCHANGED_MISSING"
+  },
+  {
+   "oracle_claim_ids": [
+    "DEV::POEX-DOC-22422::event_type::event_type"
+   ],
+   "frame_item_id": "POEX-DOC-22422",
+   "field": "event_type",
+   "classification": "CORRECT",
+   "p0_error": null,
+   "expected": {
+    "event_type": "CASH_DIVIDEND"
+   },
+   "baseline": {
+    "event_type": "CASH_DIVIDEND"
+   },
+   "current": {
+    "event_type": "CASH_DIVIDEND"
+   },
+   "status": "UNCHANGED_CORRECT"
+  },
+  {
+   "oracle_claim_ids": [
+    "DEV::POEX-DOC-22422::ex_date::date.ex_date"
+   ],
+   "frame_item_id": "POEX-DOC-22422",
+   "field": "ex_date",
+   "classification": "CORRECT",
+   "p0_error": null,
+   "expected": {
+    "date.ex_date": "2026-01-20"
+   },
+   "baseline": {
+    "date.ex_date": "2026-01-20"
+   },
+   "current": {
+    "date.ex_date": "2026-01-20"
+   },
+   "status": "UNCHANGED_CORRECT"
+  },
+  {
+   "oracle_claim_ids": [
+    "DEV::POEX-DOC-22422::record_date::date.record_date"
+   ],
+   "frame_item_id": "POEX-DOC-22422",
+   "field": "record_date",
+   "classification": "CORRECT",
+   "p0_error": null,
+   "expected": {
+    "date.record_date": "2026-01-19"
+   },
+   "baseline": {
+    "date.record_date": "2026-01-19"
+   },
+   "current": {
+    "date.record_date": "2026-01-19"
+   },
+   "status": "UNCHANGED_CORRECT"
+  },
+  {
+   "oracle_claim_ids": [
+    "DEV::POEX-DOC-22422::payment_date::date.payment_date"
+   ],
+   "frame_item_id": "POEX-DOC-22422",
+   "field": "payment_date",
+   "classification": "CORRECT",
+   "p0_error": null,
+   "expected": {
+    "date.payment_date": "2026-01-20"
+   },
+   "baseline": {
+    "date.payment_date": "2026-01-20"
+   },
+   "current": {
+    "date.payment_date": "2026-01-20"
+   },
+   "status": "UNCHANGED_CORRECT"
+  },
+  {
+   "oracle_claim_ids": [
+    "DEV::POEX-DOC-22422::amount_or_ratio::amount.gross_per_share",
+    "DEV::POEX-DOC-22422::amount_or_ratio::amount.gross_total"
+   ],
+   "frame_item_id": "POEX-DOC-22422",
+   "field": "amount_or_ratio",
+   "classification": "CORRECT",
+   "p0_error": null,
+   "expected": {
+    "amount.gross_per_share": {
+     "currency": "EUR",
+     "normalized": "1.19928043"
+    },
+    "amount.gross_total": {
+     "currency": "EUR",
+     "normalized": "600000.00"
+    }
+   },
+   "baseline": {
+    "amount.gross_per_share": {
+     "__financial__": true,
+     "currency": "EUR",
+     "normalized": "1.19928043",
+     "raw_lexeme": "1,19928043",
+     "scale": 8
+    },
+    "amount.gross_total": {
+     "__financial__": true,
+     "currency": "EUR",
+     "normalized": "600000.00",
+     "raw_lexeme": "600.000,00",
+     "scale": 2
+    }
+   },
+   "current": {
+    "amount.gross_per_share": {
+     "normalized": "1.19928043",
+     "currency": "EUR"
+    },
+    "amount.gross_total": {
+     "normalized": "600000.00",
+     "currency": "EUR"
+    }
+   },
+   "status": "UNCHANGED_CORRECT"
+  },
+  {
+   "oracle_claim_ids": [
+    "DEV::POEX-DOC-22422::currency::instrument.currency"
+   ],
+   "frame_item_id": "POEX-DOC-22422",
+   "field": "currency",
+   "classification": "CORRECT",
+   "p0_error": null,
+   "expected": {
+    "instrument.currency": "EUR"
+   },
+   "baseline": {
+    "amount.gross_per_share.currency": "EUR",
+    "amount.gross_total.currency": "EUR"
+   },
+   "current": {
+    "amount.gross_per_share.currency": "EUR",
+    "amount.gross_total.currency": "EUR"
+   },
+   "status": "UNCHANGED_CORRECT"
+  },
+  {
+   "oracle_claim_ids": [
+    "DEV::POEX-DOC-36171::event_type::event_type"
+   ],
+   "frame_item_id": "POEX-DOC-36171",
+   "field": "event_type",
+   "classification": "MISSING",
+   "p0_error": null,
+   "expected": {
+    "event_type": "CAPITAL_INCREASE"
+   },
+   "baseline": "ABSENT",
+   "current": "ABSENT",
+   "status": "UNCHANGED_MISSING"
+  },
+  {
+   "oracle_claim_ids": [
+    "DEV::POEX-DOC-36171::ex_date"
+   ],
+   "frame_item_id": "POEX-DOC-36171",
+   "field": "ex_date",
+   "classification": "NOT_APPLICABLE",
+   "p0_error": null,
+   "expected": null,
+   "baseline": "ABSENT",
+   "current": "ABSENT",
+   "status": "UNCHANGED_NOT_APPLICABLE"
+  },
+  {
+   "oracle_claim_ids": [
+    "DEV::POEX-DOC-36171::record_date"
+   ],
+   "frame_item_id": "POEX-DOC-36171",
+   "field": "record_date",
+   "classification": "NOT_APPLICABLE",
+   "p0_error": null,
+   "expected": null,
+   "baseline": "ABSENT",
+   "current": "ABSENT",
+   "status": "UNCHANGED_NOT_APPLICABLE"
+  },
+  {
+   "oracle_claim_ids": [
+    "DEV::POEX-DOC-36171::payment_date"
+   ],
+   "frame_item_id": "POEX-DOC-36171",
+   "field": "payment_date",
+   "classification": "NOT_APPLICABLE",
+   "p0_error": null,
+   "expected": null,
+   "baseline": "ABSENT",
+   "current": "ABSENT",
+   "status": "UNCHANGED_NOT_APPLICABLE"
+  },
+  {
+   "oracle_claim_ids": [
+    "DEV::POEX-DOC-36171::amount_or_ratio::amount.nominal_total"
+   ],
+   "frame_item_id": "POEX-DOC-36171",
+   "field": "amount_or_ratio",
+   "classification": "MISSING",
+   "p0_error": null,
+   "expected": {
+    "amount.nominal_total": {
+     "currency": "EUR",
+     "normalized": "87690.00"
+    }
+   },
+   "baseline": "ABSENT",
+   "current": "ABSENT",
+   "status": "UNCHANGED_MISSING"
+  },
+  {
+   "oracle_claim_ids": [
+    "DEV::POEX-DOC-36171::currency::instrument.currency"
+   ],
+   "frame_item_id": "POEX-DOC-36171",
+   "field": "currency",
+   "classification": "MISSING",
+   "p0_error": null,
+   "expected": {
+    "instrument.currency": "EUR"
+   },
+   "baseline": "ABSENT",
+   "current": "ABSENT",
+   "status": "UNCHANGED_MISSING"
+  },
+  {
+   "oracle_claim_ids": [
+    "DEV::POEX-DOC-4666::event_type::event_type"
+   ],
+   "frame_item_id": "POEX-DOC-4666",
+   "field": "event_type",
+   "classification": "CORRECT",
+   "p0_error": null,
+   "expected": {
+    "event_type": "CASH_DIVIDEND"
+   },
+   "baseline": {
+    "event_type": "CASH_DIVIDEND"
+   },
+   "current": {
+    "event_type": "CASH_DIVIDEND"
+   },
+   "status": "UNCHANGED_CORRECT"
+  },
+  {
+   "oracle_claim_ids": [
+    "DEV::POEX-DOC-4666::ex_date::date.ex_date"
+   ],
+   "frame_item_id": "POEX-DOC-4666",
+   "field": "ex_date",
+   "classification": "CORRECT",
+   "p0_error": null,
+   "expected": {
+    "date.ex_date": "2025-07-16"
+   },
+   "baseline": {
+    "date.ex_date": "2025-07-16"
+   },
+   "current": {
+    "date.ex_date": "2025-07-16"
+   },
+   "status": "UNCHANGED_CORRECT"
+  },
+  {
+   "oracle_claim_ids": [
+    "DEV::POEX-DOC-4666::record_date::date.record_date"
+   ],
+   "frame_item_id": "POEX-DOC-4666",
+   "field": "record_date",
+   "classification": "CORRECT",
+   "p0_error": null,
+   "expected": {
+    "date.record_date": "2025-07-15"
+   },
+   "baseline": {
+    "date.record_date": "2025-07-15"
+   },
+   "current": {
+    "date.record_date": "2025-07-15"
+   },
+   "status": "UNCHANGED_CORRECT"
+  },
+  {
+   "oracle_claim_ids": [
+    "DEV::POEX-DOC-4666::payment_date::date.payment_date"
+   ],
+   "frame_item_id": "POEX-DOC-4666",
+   "field": "payment_date",
+   "classification": "CORRECT",
+   "p0_error": null,
+   "expected": {
+    "date.payment_date": "2025-07-16"
+   },
+   "baseline": {
+    "date.payment_date": "2025-07-16"
+   },
+   "current": {
+    "date.payment_date": "2025-07-16"
+   },
+   "status": "UNCHANGED_CORRECT"
+  },
+  {
+   "oracle_claim_ids": [
+    "DEV::POEX-DOC-4666::amount_or_ratio::amount.gross_per_share",
+    "DEV::POEX-DOC-4666::amount_or_ratio::amount.gross_total"
+   ],
+   "frame_item_id": "POEX-DOC-4666",
+   "field": "amount_or_ratio",
+   "classification": "CORRECT",
+   "p0_error": null,
+   "expected": {
+    "amount.gross_per_share": {
+     "currency": "EUR",
+     "normalized": "1.49485852"
+    },
+    "amount.gross_total": {
+     "currency": "EUR",
+     "normalized": "747877.72"
+    }
+   },
+   "baseline": {
+    "amount.gross_per_share": {
+     "__financial__": true,
+     "currency": "EUR",
+     "normalized": "1.49485852",
+     "raw_lexeme": "1,49485852",
+     "scale": 8
+    },
+    "amount.gross_total": {
+     "__financial__": true,
+     "currency": "EUR",
+     "normalized": "747877.72",
+     "raw_lexeme": "747.877,72",
+     "scale": 2
+    }
+   },
+   "current": {
+    "amount.gross_per_share": {
+     "normalized": "1.49485852",
+     "currency": "EUR"
+    },
+    "amount.gross_total": {
+     "normalized": "747877.72",
+     "currency": "EUR"
+    }
+   },
+   "status": "UNCHANGED_CORRECT"
+  },
+  {
+   "oracle_claim_ids": [
+    "DEV::POEX-DOC-4666::currency::instrument.currency"
+   ],
+   "frame_item_id": "POEX-DOC-4666",
+   "field": "currency",
+   "classification": "CORRECT",
+   "p0_error": null,
+   "expected": {
+    "instrument.currency": "EUR"
+   },
+   "baseline": {
+    "amount.gross_per_share.currency": "EUR",
+    "amount.gross_total.currency": "EUR"
+   },
+   "current": {
+    "amount.gross_per_share.currency": "EUR",
+    "amount.gross_total.currency": "EUR"
+   },
+   "status": "UNCHANGED_CORRECT"
+  },
+  {
+   "oracle_claim_ids": [
+    "DEV::POEX-DOC-7021::event_type::event_type"
+   ],
+   "frame_item_id": "POEX-DOC-7021",
+   "field": "event_type",
+   "classification": "CORRECT",
+   "p0_error": null,
+   "expected": {
+    "event_type": "CAPITAL_REDUCTION"
+   },
+   "baseline": {
+    "event_type": "CAPITAL_REDUCTION"
+   },
+   "current": {
+    "event_type": "CAPITAL_REDUCTION"
+   },
+   "status": "UNCHANGED_CORRECT"
+  },
+  {
+   "oracle_claim_ids": [
+    "DEV::POEX-DOC-7021::ex_date::date.ex_date"
+   ],
+   "frame_item_id": "POEX-DOC-7021",
+   "field": "ex_date",
+   "classification": "CORRECT",
+   "p0_error": null,
+   "expected": {
+    "date.ex_date": "2025-08-27"
+   },
+   "baseline": {
+    "date.ex_date": "2025-08-27"
+   },
+   "current": {
+    "date.ex_date": "2025-08-27"
+   },
+   "status": "UNCHANGED_CORRECT"
+  },
+  {
+   "oracle_claim_ids": [
+    "DEV::POEX-DOC-7021::record_date::date.record_date"
+   ],
+   "frame_item_id": "POEX-DOC-7021",
+   "field": "record_date",
+   "classification": "CORRECT",
+   "p0_error": null,
+   "expected": {
+    "date.record_date": "2025-08-26"
+   },
+   "baseline": {
+    "date.record_date": "2025-08-26"
+   },
+   "current": {
+    "date.record_date": "2025-08-26"
+   },
+   "status": "UNCHANGED_CORRECT"
+  },
+  {
+   "oracle_claim_ids": [
+    "DEV::POEX-DOC-7021::payment_date::date.payment_date"
+   ],
+   "frame_item_id": "POEX-DOC-7021",
+   "field": "payment_date",
+   "classification": "CORRECT",
+   "p0_error": null,
+   "expected": {
+    "date.payment_date": "2025-08-27"
+   },
+   "baseline": {
+    "date.payment_date": "2025-08-27"
+   },
+   "current": {
+    "date.payment_date": "2025-08-27"
+   },
+   "status": "UNCHANGED_CORRECT"
+  },
+  {
+   "oracle_claim_ids": [
+    "DEV::POEX-DOC-7021::amount_or_ratio::amount.gross_per_share",
+    "DEV::POEX-DOC-7021::amount_or_ratio::amount.net_per_share",
+    "DEV::POEX-DOC-7021::amount_or_ratio::amount.reduction_total"
+   ],
+   "frame_item_id": "POEX-DOC-7021",
+   "field": "amount_or_ratio",
+   "classification": "MISSING",
+   "p0_error": null,
+   "expected": {
+    "amount.gross_per_share": {
+     "currency": "EUR",
+     "normalized": "0.08"
+    },
+    "amount.net_per_share": {
+     "currency": "EUR",
+     "normalized": "0.0792"
+    },
+    "amount.reduction_total": {
+     "currency": "EUR",
+     "normalized": "2389825.92"
+    }
+   },
+   "baseline": {
+    "amount.gross_per_share": {
+     "__financial__": true,
+     "currency": "EUR",
+     "normalized": "0.08",
+     "raw_lexeme": "0,08",
+     "scale": 2
+    }
+   },
+   "current": {
+    "amount.gross_per_share": {
+     "normalized": "0.08",
+     "currency": "EUR"
+    }
+   },
+   "status": "UNCHANGED_MISSING"
+  },
+  {
+   "oracle_claim_ids": [
+    "DEV::POEX-DOC-7021::currency::instrument.currency"
+   ],
+   "frame_item_id": "POEX-DOC-7021",
+   "field": "currency",
+   "classification": "CORRECT",
+   "p0_error": null,
+   "expected": {
+    "instrument.currency": "EUR"
+   },
+   "baseline": {
+    "amount.gross_per_share.currency": "EUR"
+   },
+   "current": {
+    "amount.gross_per_share.currency": "EUR"
+   },
+   "status": "UNCHANGED_CORRECT"
+  }
+ ]
+}
