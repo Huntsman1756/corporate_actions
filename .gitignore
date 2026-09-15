@@ -62,3 +62,7 @@ g1r/adjudication/_dev_facts.json
 !g1r/results/dev-iter-5-d819f7f-results.sha256
 !g1r/results/dev-iter-5-dev-oracle-eval.json
 !g1r/results/dev-iter-5-g1-oracle-eval.json
+!g1r/results/holdout-run-1-a6a0674-results.json
+!g1r/results/holdout-run-1-a6a0674-results.sha256
+!g1r/results/holdout-run-2-a6a0674-results.json
+!g1r/results/holdout-run-2-a6a0674-results.sha256
