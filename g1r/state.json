@@ -3,10 +3,11 @@
  "updated_at": "2026-09-14",
  "protocol": "docs/gates/g1r-execution-runbook.md",
  "last_approved_checkpoint": {
-  "phase": "dev-iter-1",
-  "commit": "b2f6f84",
-  "tag": "g1r-iter1-checkpoint",
-  "status": "APPROVED"
+  "phase": "dev-iter-2",
+  "commit": "391ef699e76bd192e83e4aeb3731ac3873a601b5",
+  "parser_commit": "0b557b0c9260bf1f54029e4602cc9c5416d41074",
+  "status": "APPROVED",
+  "note": "DECIMAL_SPLIT_PDF signed; artifacts dev-iter-2-*-results/dev-oracle-eval/g1-oracle-eval"
  },
  "semantic_freeze": {
   "commit": "cad072f4c25a5d9cc201cb6d5c3a729ad7bdfee0",
@@ -15,11 +16,10 @@
  },
  "failure_classes": {
   "resolved": [
-   "FALSE_FINANCIAL_SEMANTIC_ANCHOR"
-  ],
-  "in_review": [
+   "FALSE_FINANCIAL_SEMANTIC_ANCHOR",
    "DECIMAL_SPLIT_PDF"
   ],
+  "in_review": [],
   "queue": [
    "EVENT_TYPE_FAMILY_BOUNDARY",
    "DATE_MISBINDING",
@@ -54,12 +54,25 @@
  },
  "holdout": {
   "status": "SEALED",
+  "freeze_ref": "9cac4f16e92437648289fe54378901825da2fa62",
+  "sealed_git_paths": [
+   "g1r/manifests/holdout",
+   "g1/manifests/holdout",
+   "g1/manifests/adversarial"
+  ],
+  "raw_manifest_dirs": [
+   "g1r/manifests/holdout",
+   "g1/manifests/holdout",
+   "g1/manifests/adversarial"
+  ],
   "paths": [
    "g1r/corpus/raw/holdout",
    "g1r/manifests/holdout",
-   "g1/corpus/raw/holdout"
+   "g1/corpus/raw/holdout",
+   "g1/manifests/holdout",
+   "g1/manifests/adversarial"
   ],
-  "rule": "sin inspeccion manual ni parseo hasta g1r-parser-freeze; el runner solo puede re-adquirir sha en modo acquire-only"
+  "rule": "sin inspeccion manual ni parseo hasta g1r-parser-freeze; manifests bajo git (diff vs freeze_ref + working tree); raw ignorados verificados por sha256 contra manifest, sin parsear"
  },
  "after_queue_empty": "parser freeze -> HOLDOUT virgin",
  "stop_conditions": [
@@ -68,5 +81,41 @@
   "git diff toca paths de holdout",
   "fallo no preregistrado en dev-failure-catalog",
   "regla que requiera condicionar por seed/issuer/documento/hash"
- ]
+ ],
+ "targets": {
+  "EVENT_TYPE_FAMILY_BOUNDARY": {
+   "dev": [
+    "CNMV-OIR-40758 :: event_type",
+    "CNMV-OIR-41381 :: event_type",
+    "CNMV-OIR-41640 :: event_type",
+    "BMEG-NewListings-ES0105650008-2026-03-06 :: event_type"
+   ],
+   "g1reg": [
+    "CNMV-OIR-36680 :: event_type"
+   ]
+  },
+  "DATE_MISBINDING": {
+   "dev": [
+    "CNMV-OIR-39819 :: ex_date",
+    "CNMV-OIR-40758 :: ex_date",
+    "CNMV-OIR-40758 :: record_date"
+   ],
+   "g1reg": [
+    "CNMV-OIR-40729 :: ex_date"
+   ]
+  },
+  "FALSE_POSITIVE_EVENT": {
+   "dev": [
+    "CNMV-OIR-37970 :: event_type"
+   ],
+   "g1reg": []
+  },
+  "DECIMAL_SPLIT_PDF": {
+   "dev": [],
+   "g1reg": [
+    "CNMV-OIR-38190 :: amount_or_ratio",
+    "CNMV-OIR-41467 :: amount_or_ratio"
+   ]
+  }
+ }
 }

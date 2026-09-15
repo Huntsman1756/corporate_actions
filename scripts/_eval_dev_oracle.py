@@ -10,10 +10,15 @@ Por cada fila compara tres claim-sets del campo:
 Estados por campo:
     UNCHANGED_CORRECT   baseline correcto, sin cambio
     CORRECTED           era MISSING/incorrecto, ahora emite expected
-    P0_RESOLVED         el claim P0 del baseline ya no se emite
     UNCHANGED           sin cambio respecto al baseline
     REGRESSED           era CORRECT y el claim actual difiere de expected
     EMITTED_OTHER       emite algo distinto de expected y de baseline
+
+Filas con p0_error tienen eje propio, inequivoco (nunca UNCHANGED_*):
+    P0_CORRECTED        emite el valor expected adjudicado
+    P0_SAFE_ABSTENTION  ya no emite nada en el campo
+    P0_UNRESOLVED       sigue emitiendo exactamente el baseline
+    P0_CHANGED_OTHER    emite algo distinto de baseline y de expected
 
 Uso:
     PYTHONPATH=src python scripts/_eval_dev_oracle.py --out <json>
@@ -122,12 +127,18 @@ def current_facts():
 def classify(row, baseline, current):
     expected = row["expected_claims"]
     classification = row["classification"]
+    if row.get("p0_error"):
+        if expected and current and claimset_eq(current, expected):
+            return "P0_CORRECTED"
+        if not current:
+            return "P0_SAFE_ABSTENTION"
+        if claimset_eq(current, baseline):
+            return "P0_UNRESOLVED"
+        return "P0_CHANGED_OTHER"
     if current and expected and claimset_eq(current, expected):
         return "UNCHANGED_CORRECT" if classification == "CORRECT" else "CORRECTED"
     if claimset_eq(current, baseline):
         return "UNCHANGED_" + classification
-    if row.get("p0_error") and not current:
-        return "P0_RESOLVED"
     if not current:
         return "NOW_ABSENT" if classification == "CORRECT" else "UNCHANGED_" + classification
     if classification == "CORRECT":
@@ -180,7 +191,9 @@ def main():
                         encoding="utf-8")
     print(json.dumps(counts, indent=0))
     bad = [r for r in report_rows
-           if r["status"] in ("REGRESSED", "EMITTED_OTHER")]
+           if r["status"] in ("REGRESSED", "EMITTED_OTHER",
+                              "P0_UNRESOLVED", "P0_CHANGED_OTHER",
+                              "NOW_ABSENT")]
     for r in bad:
         print("REVIEW", r["frame_item_id"], r["field"], r["status"],
               "->", json.dumps(r["current"], ensure_ascii=False))

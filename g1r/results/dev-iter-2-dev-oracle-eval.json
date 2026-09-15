@@ -4,10 +4,11 @@
  "rows": 150,
  "status_counts": {
   "UNCHANGED_CORRECT": 66,
-  "UNCHANGED_NOT_APPLICABLE": 39,
+  "UNCHANGED_NOT_APPLICABLE": 38,
   "UNCHANGED_UNKNOWN": 17,
-  "UNCHANGED_MISSING": 27,
-  "CORRECTED": 1
+  "P0_UNRESOLVED": 8,
+  "P0_CORRECTED": 1,
+  "UNCHANGED_MISSING": 20
  },
  "results": [
   {
@@ -942,7 +943,7 @@
    "current": {
     "event_type": "NEW_LISTING"
    },
-   "status": "UNCHANGED_MISSING"
+   "status": "P0_UNRESOLVED"
   },
   {
    "oracle_claim_ids": [
@@ -1284,7 +1285,7 @@
      "currency": "EUR"
     }
    },
-   "status": "CORRECTED"
+   "status": "P0_CORRECTED"
   },
   {
    "oracle_claim_ids": [
@@ -1816,7 +1817,7 @@
    "current": {
     "event_type": "TAKEOVER_BID"
    },
-   "status": "UNCHANGED_NOT_APPLICABLE"
+   "status": "P0_UNRESOLVED"
   },
   {
    "oracle_claim_ids": [
@@ -1915,7 +1916,7 @@
    "current": {
     "date.ex_date": "2026-04-17"
    },
-   "status": "UNCHANGED_MISSING"
+   "status": "P0_UNRESOLVED"
   },
   {
    "oracle_claim_ids": [
@@ -2014,7 +2015,7 @@
    "current": {
     "event_type": "CAPITAL_INCREASE"
    },
-   "status": "UNCHANGED_MISSING"
+   "status": "P0_UNRESOLVED"
   },
   {
    "oracle_claim_ids": [
@@ -2033,7 +2034,7 @@
    "current": {
     "date.ex_date": "2026-05-25"
    },
-   "status": "UNCHANGED_MISSING"
+   "status": "P0_UNRESOLVED"
   },
   {
    "oracle_claim_ids": [
@@ -2052,7 +2053,7 @@
    "current": {
     "date.record_date": "2026-06-01"
    },
-   "status": "UNCHANGED_MISSING"
+   "status": "P0_UNRESOLVED"
   },
   {
    "oracle_claim_ids": [
@@ -2112,7 +2113,7 @@
    "current": {
     "event_type": "CASH_DIVIDEND"
    },
-   "status": "UNCHANGED_MISSING"
+   "status": "P0_UNRESOLVED"
   },
   {
    "oracle_claim_ids": [
@@ -2205,7 +2206,7 @@
    "current": {
     "event_type": "CASH_DIVIDEND"
    },
-   "status": "UNCHANGED_MISSING"
+   "status": "P0_UNRESOLVED"
   },
   {
    "oracle_claim_ids": [

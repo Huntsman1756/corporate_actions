@@ -32,30 +32,39 @@ parser freeze -> HOLDOUT virgin
 
 ## Ciclo por clase
 
-1. `python scripts/g1r_next.py begin --class <NAME>` — mueve la clase
-   de `queue` a `in_review`.
+1. `python scripts/g1r_next.py begin` — abre siempre `queue[0]` y la
+   mueve a `in_review`. Sin seleccion: el repo decide que toca.
 2. Inspeccionar la evidencia (spans extraidos, anchors, texto). Disenar
    la regla generica; abstencion si el canal no es reconstruible.
 3. Implementar en `src/` + tests junto al comportamiento.
 4. Commit de implementacion (arbol limpio: el runner lo exige).
 5. `python scripts/run_g1r.py --set development --phase dev-iter-N`
    — regenera `<phase>-<parser_commit>-results.json`.
-6. `python scripts/_eval_dev_oracle.py --phase dev-iter-N
-   --out g1r/results/<phase>-dev-oracle-eval.json`.
-7. `python scripts/g1r_next.py gates --phase dev-iter-N`
+6. `python scripts/g1r_next.py gates --phase dev-iter-N`
    — ejecuta pytest + regression oracle (congela
-   `<phase>-g1-oracle-eval.json`) + chequeo HOLDOUT + DEV oracle.
-8. Actualizar `g1r/results/g1r-changes.jsonl` (generic_rule, root cause,
+   `<phase>-g1-oracle-eval.json`) + DEV oracle (regenera
+   `<phase>-dev-oracle-eval.json` ligado al parser actual) + chequeo
+   HOLDOUT (working tree + `git diff freeze_ref..HEAD` + sha256 de raw
+   vs manifest) + targets de la clase activa.
+7. Actualizar `g1r/results/g1r-changes.jsonl` (generic_rule, root cause,
    tests, commits, evals, artefactos) y `g1r/state.json`.
-9. Commit de artefactos + push. El checkpoint queda en `in_review`
+8. Commit de artefactos + push. El checkpoint queda en `in_review`
    hasta firma externa; solo entonces la clase pasa a `resolved`.
 
 ## Stop conditions (bloquean el checkpoint)
 
 - Cualquier FAIL nuevo en el regression oracle fuera de
-  `g1_oracle.known_open_failures`.
-- `REGRESSED` o `EMITTED_OTHER` > 0 en el DEV oracle.
-- `git status` toca `holdout.paths` (raw/manifests G1-R y G1).
+  `g1_oracle.known_open_failures` (los targets de la clase activa ya
+  no son "conocidos": deben pasar, no seguir fallando).
+- `targets.<clase_activa>` no resueltos: cada target DEV debe ser
+  `P0_CORRECTED`/`P0_SAFE_ABSTENTION`/`CORRECTED` y cada target G1REG
+  debe pasar el check del oracle. Una clase no se resuelve por
+  ausencia de errores nuevos sino por targets demostrados.
+- `REGRESSED`, `EMITTED_OTHER` o `NOW_ABSENT` > 0 en el DEV oracle;
+  `P0_UNRESOLVED` en los targets activos; `P0_CHANGED_OTHER` en
+  cualquier fila.
+- HOLDOUT: `git status` o `git diff freeze_ref..HEAD` toca
+  `sealed_git_paths`, o el sha256 de un raw difiere de su manifest.
 - Fallo no preregistrado en `dev-failure-catalog.json`.
 - La regla necesita excepciones por seed/issuer/documento.
 
