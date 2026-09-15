@@ -27,7 +27,7 @@ tag `g1r-protocol` = `f9ee8f8`): una sola aparición P0 en HOLDOUT es
 hard-fail. Este FAIL es permanente; una fase posterior (G1-R2 u otra)
 no lo reescribe.
 
-Fecha de cierre: 2026-09-15. Último commit de adjudicación: ver `HEAD`.
+Fecha de cierre: 2026-09-15. Último commit de adjudicación: `725da2e`.
 
 ---
 
