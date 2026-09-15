@@ -55,14 +55,41 @@ def _last_amount(line: str) -> str | None:
     return matches[-1] if matches else None
 
 
+_ISSUE_PRICE_EVENTS = {"CAPITAL_INCREASE", "RIGHTS_ISSUE"}
+
+
 def _parse_pdf(payload: bytes, document: SourceDocument) -> ParsedDocument:
-    text = normalize_text(extract_text(payload))
+    return _parse_text(normalize_text(extract_text(payload)), document)
+
+
+def _parse_text(text: str, document: SourceDocument) -> ParsedDocument:
     anchors: dict[str, dict] = {}
 
     def register(name: str, line: str, value: str) -> None:
         anchors[name] = {"value": value, "matched": line.strip(), "pattern": "line"}
 
     claims: list[Claim] = []
+
+    # Familia del evento: determina el rol de los importes por accion
+    # (misma convencion que CNMV). "Ampliacion/aumento de capital" y el
+    # lexico de derechos de suscripcion marcan CAPITAL_INCREASE /
+    # RIGHTS_ISSUE; el resto de detecciones no cambia.
+    event_type = (
+        "CASH_DIVIDEND"
+        if re.search(
+            r"reparto de dividendo|distribuci[oó]n de dividendo|Dividendo bruto", text, re.I
+        )
+        else "CAPITAL_INCREASE"
+        if re.search(r"ampliaci[oó]n de capital|aumento de capital", text, re.I)
+        else "RIGHTS_ISSUE"
+        if re.search(r"suscripci[oó]n preferente|derechos de suscripci[oó]n", text, re.I)
+        else "CAPITAL_REDUCTION"
+        if re.search(r"reducci[oó]n de capital", text, re.I)
+        else "UNKNOWN"
+    )
+    # En eventos de emision el lexico de dividendo ("importe bruto...",
+    # "bruto a repartir") describe otro rol y no se promueve.
+    gross_roles_ok = event_type not in _ISSUE_PRICE_EVENTS
     # Las etiquetas llevan numeros de nota entre la etiqueta y la fecha
     # ("Record Date (2) 23/07/2025"); se permite cualquier caracter de la
     # misma linea antes de la fecha.
@@ -117,6 +144,36 @@ def _parse_pdf(payload: bytes, document: SourceDocument) -> ParsedDocument:
             )
         )
 
+    # Precio de suscripcion/emision por accion (ampliaciones de capital
+    # y emisiones con derechos): ancla de rol explicita con prioridad
+    # sobre los importes por accion genericos. El tramo entre el lexema
+    # y el importe no admite digitos: si el precio solo se publica
+    # descompuesto (nominal + prima) sin total por accion, no hay
+    # precio unitario publicado y el parser se abstiene.
+    issue_price = re.search(
+        r"precio de (?:suscripci[oó]n|emisi[oó]n)"
+        r"(?:(?!\d)[^\n]){0,80}?"
+        r"(\d[\d.,]*)\s*\.?-?\s*(?:€|euros)[^0-9\n]{0,15}?por acci[oó]n",
+        text,
+        re.I,
+    )
+    if issue_price:
+        register(
+            "amount.issue_price_per_share", issue_price.group(0), issue_price.group(1)
+        )
+        claims.append(
+            Claim(
+                field_path="amount.issue_price_per_share",
+                value=FinancialAmount.parse_localized(
+                    issue_price.group(1), currency="EUR"
+                ),
+                evidence_locator=(
+                    f"{document.official_document_id}: «{issue_price.group(0).strip()[:200]}»"
+                ),
+                raw_pointer="/anchors/amount.issue_price_per_share/value",
+            )
+        )
+
     line = next(
         (
             candidate
@@ -125,7 +182,7 @@ def _parse_pdf(payload: bytes, document: SourceDocument) -> ParsedDocument:
         ),
         "",
     )
-    if line:
+    if gross_roles_ok and line:
         amount = _last_amount(line)
         if amount:
             register("amount.gross_per_share", line, amount)
@@ -139,7 +196,7 @@ def _parse_pdf(payload: bytes, document: SourceDocument) -> ParsedDocument:
             )
 
     line = _line_with(text, "Dividendo bruto")
-    if line:
+    if gross_roles_ok and line:
         amount = _last_amount(line)
         if amount:
             register("amount.gross_total", line, amount)
@@ -152,16 +209,15 @@ def _parse_pdf(payload: bytes, document: SourceDocument) -> ParsedDocument:
                 )
             )
 
-    # Importe por accion generico (dividendos y devoluciones de
-    # aportaciones): "importe bruto de X euros por accion",
-    # "Importe bruto unitario X", "X euros por accion".
-    if not any(c.field_path == "amount.gross_per_share" for c in claims):
+    # Importe por accion con ancla de dividendo ("importe bruto de X
+    # euros por accion"): solo en familias compatibles con ese rol.
+    if gross_roles_ok and not any(
+        c.field_path == "amount.gross_per_share" for c in claims
+    ):
         per_share = re.search(
             r"importe bruto[^\n]{0,60}?(\d[\d.,]*)\s*\.?-?\s*(?:€|euros)?[^\n]{0,15}?por acci[oó]n",
             text,
             re.I,
-        ) or re.search(
-            r"(\d[\d.,]*)\s*\.?-?\s*(?:€|euros)\s+por acci[oó]n", text, re.I
         )
         if per_share:
             register("amount.gross_per_share", per_share.group(0), per_share.group(1))
@@ -177,7 +233,49 @@ def _parse_pdf(payload: bytes, document: SourceDocument) -> ParsedDocument:
                     raw_pointer="/anchors/amount.gross_per_share/value",
                 )
             )
-    if not any(c.field_path == "amount.gross_per_share" for c in claims):
+    # "X euros por accion" sin ancla de rol: la familia del evento fija
+    # el field_path (convencion CNMV): en CAPITAL_INCREASE/RIGHTS_ISSUE
+    # es el precio de suscripcion/emision; en dividendos y resto, el
+    # importe bruto por accion. "por accion nueva" es por si mismo
+    # lexema de precio de emision. Importes ligados a "valor nominal"
+    # o "prima (de emision)" son rol-incompatibles: se saltan.
+    per_share_fields = {"amount.gross_per_share", "amount.issue_price_per_share"}
+    if not any(c.field_path in per_share_fields for c in claims):
+        for per_share in re.finditer(
+            r"(\d[\d.,]*)\s*\.?-?\s*(?:€|euros)\s+por acci[oó]n(?:\s+nueva)?",
+            text,
+            re.I,
+        ):
+            line_start = text.rfind("\n", 0, per_share.start()) + 1
+            lead = text[line_start:per_share.start()]
+            gap = per_share.group(0)[len(per_share.group(1)):]
+            if re.search(r"(?:nominal|prima)\s+de\b[^0-9\n]{0,20}$", lead, re.I):
+                continue
+            if re.search(r"de\s+(?:valor\s+)?nominal|de\s+prima\b", gap, re.I):
+                continue
+            field = (
+                "amount.issue_price_per_share"
+                if "nueva" in per_share.group(0).lower()
+                or event_type in _ISSUE_PRICE_EVENTS
+                else "amount.gross_per_share"
+            )
+            register(field, per_share.group(0), per_share.group(1))
+            claims.append(
+                Claim(
+                    field_path=field,
+                    value=FinancialAmount.parse_localized(
+                        per_share.group(1), currency="EUR"
+                    ),
+                    evidence_locator=(
+                        f"{document.official_document_id}: «{per_share.group(0).strip()[:200]}»"
+                    ),
+                    raw_pointer=f"/anchors/{field}/value",
+                )
+            )
+            break
+    if gross_roles_ok and not any(
+        c.field_path == "amount.gross_per_share" for c in claims
+    ):
         line = _line_with(text, "bruto unitario") or _line_with(text, "Bruto por acci")
         if line:
             amount = _last_amount(line)
@@ -193,7 +291,9 @@ def _parse_pdf(payload: bytes, document: SourceDocument) -> ParsedDocument:
                         raw_pointer="/anchors/amount.gross_per_share/value",
                     )
                 )
-    if not any(c.field_path == "amount.gross_total" for c in claims):
+    if gross_roles_ok and not any(
+        c.field_path == "amount.gross_total" for c in claims
+    ):
         line = _line_with(text, "bruto a repartir") or _line_with(text, "importe total de")
         if line:
             amount = _last_amount(line)
@@ -277,18 +377,12 @@ def _parse_pdf(payload: bytes, document: SourceDocument) -> ParsedDocument:
             )
         )
 
-    event_type = (
-        "CASH_DIVIDEND"
-        if re.search(
-            r"reparto de dividendo|distribuci[oó]n de dividendo|Dividendo bruto", text, re.I
-        )
-        else "CAPITAL_REDUCTION"
-        if re.search(r"reducci[oó]n de capital", text, re.I)
-        else "UNKNOWN"
-    )
-
     issuer = None
-    match = re.search(r"^\s*([A-Z][A-Z0-9 .,À-ÿ&()\-]{3,80}?),\s*S\.A\.", text, re.M)
+    match = re.search(
+        r"^\s*(?:Emisor[:\s]+)?([A-Z][A-Z0-9 .,À-ÿ&()\-]{3,80}?),\s*S\.A\.",
+        text,
+        re.M,
+    )
     if match:
         issuer = match.group(1).strip()
 
@@ -299,6 +393,9 @@ def _parse_pdf(payload: bytes, document: SourceDocument) -> ParsedDocument:
         or _line_with(text, "distribuci")
         or _line_with(text, "Dividendo bruto")
         or _line_with(text, "reducci")
+        or _line_with(text, "ampliaci")
+        or _line_with(text, "aumento de capital")
+        or _line_with(text, "suscripci")
     )
     if ev:
         evidence = f"{document.official_document_id}: «{ev.strip()[:200]}»"
