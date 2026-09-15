@@ -1,0 +1,97 @@
+{
+ "verdict_version": "CA_ES_G1R_HOLDOUT_VERDICT_V1",
+ "status": "SIGNED",
+ "verdict": "FAIL",
+ "signed_at": "2026-09-15",
+ "signed_by": "human-reviewer",
+ "adjudicates": {
+  "proposal": "g1r/results/holdout-verdict-proposal.json",
+  "proposal_outcome": "REJECTED_AS_PASS: p0_on_reviewed_documents.false_financial_facts=0 refutado por revision documental humana",
+  "review_package_manifest": "g1r/manifests/holdout-adjudication-sha256.json",
+  "review_package_note": "filas PROPOSED conservadas como evidencia; esta adjudicacion las sobrescribe donde difieren (POEX-DOC-39649 amount_or_ratio)"
+ },
+ "parser_freeze": {
+  "tag": "g1r-parser-freeze",
+  "commit": "a6a067440065199b61dc983702ddcef2e2b429e4",
+  "verified": "annotated tag -> a6a0674 (git rev-list); anterior a cualquier inspeccion del holdout"
+ },
+ "runs": {
+  "artifacts": [
+   "g1r/results/holdout-run-1-a6a0674-results.json",
+   "g1r/results/holdout-run-2-a6a0674-results.json"
+  ],
+  "parser_commit": "a6a067440065199b61dc983702ddcef2e2b429e4",
+  "parser_commit_dirty": false,
+  "virginity": "runs commiteados en aa7603f, antes del paquete de adjudicacion 8d71539; seed_verdicts UNADJUDICATED en el artefacto de run"
+ },
+ "binding_cause": "false_financial_facts = 1",
+ "p0_verdict": {
+  "false_financial_facts": 1,
+  "wrong_attribution": 0,
+  "wrong_event_type": 0,
+  "date_misbinding": 0,
+  "false_positive_event": 0,
+  "detail": [
+   {
+    "frame_item_id": "POEX-DOC-39649",
+    "field": "amount_or_ratio",
+    "family": "CAPITAL_INCREASE",
+    "published": "Precio de suscripcion por accion nueva (nominal + prima) 4 EUR POR ACCION NUEVA (1 nominal + 3 prima); Ratio 2 DERECHOS -> 1 ACCION NUEVA",
+    "emitted": {
+     "amount.gross_per_share": {"normalized": "4", "currency": "EUR", "raw_lexeme": "4", "scale": 0}
+    },
+    "expected": {
+     "amount.issue_price_per_share": {"normalized": "4", "currency": "EUR"},
+     "ratio.terms": "2 derechos -> 1 accion nueva"
+    },
+    "p0_error": "FALSE_FINANCIAL_FACT",
+    "failure_class": "AMOUNT_ROLE_MISBINDING",
+    "note": "numero correcto, fact incorrecto por field_path: precedente ADR-017 y erratum oracle iter-1 (IP-2670 0,37 -> issue_price_per_share). canonical-registry separa AMOUNT_ROLE.ISSUE_PRICE_PER_SHARE de GROSS_UNIT_AMOUNT. El slot correcto existe para CNMV (cnmv.py _ISSUE_PRICE_EVENTS) pero la fuente Portfolio no lo aplica.",
+    "human_decision": "REJECT - P0. La fila propuesta del review esperaba amount.gross_per_share=4: expected_claims mal adjudicados por el proposal."
+   }
+  ]
+ },
+ "p0_review_coverage": {
+  "value": 1.0,
+  "provenance": "VERIFIED_HUMAN_REVIEW",
+  "basis": "39/39 facts P0 emitidos revisados contra fuente; los 2 PDF escaneados no emiten facts, luego no reducen el denominador de coverage"
+ },
+ "parser_miss_rate": {
+  "status": "INDETERMINATE_PENDING_VISUAL_REVIEW",
+  "provenance": "DERIVED de holdout-missingness-review.jsonl; denominador incompleto: 12 filas NOT_REVIEWABLE_NO_TEXT_LAYER sin excepcion preregistrada para image-only",
+  "computed_on_reviewable": {"published": 44, "missing": 13, "lhs": 780, "rhs": 1012, "pass_if_complete": null},
+  "condition": "con k facts criticos publicados en los 2 escaneados: (13+k)*60 <= (44+k)*23 pasa solo si k <= 6; k >= 7 -> FAIL",
+  "pending_documents": ["CNMV-OIR-34719", "POEX-DOC-15339"],
+  "binding": false,
+  "note": "no decide el veredicto: el P0 de POEX-DOC-39649 ya determina FAIL"
+ },
+ "invariants": {
+  "field_provenance_rate": {"value": 1.0, "provenance": "GENERATED_BY_PROPOSAL, aceptado en revision: 63/63 facts promovidos con evidence_locator; los 8 claims event_type=UNKNOWN son marcadores de abstencion"},
+  "silent_conflicts": {"value": 0, "provenance": "VERIFIED: results conflicts=1 es el Conflict explicito de los 3 ISIN de POEX-DOC-39649, no un merge silencioso"},
+  "unproven_auto_merges": {"value": 0, "provenance": "VERIFIED: identity UNRESOLVED donde falta binding determinista"},
+  "human_authored_facts": {"value": 0, "provenance": "VERIFIED: la adjudicacion humana solo escribe relaciones"},
+  "second_run_determinism": {"value": 1.0, "provenance": "VERIFIED_COMPARATOR: diff byte a byte run-1 vs run-2; unicas diferencias phase y batch_sha256 (derivado de phase); results identicos"}
+ },
+ "human_sign_table": {
+  "POEX-DOC-39649 amount slot": "REJECT - P0",
+  "POEX-DOC-39649 ISIN conflict": "ACCEPT - conflicto explicito registrado; limitacion P2 source-semantic (cotizables ES0105969002 / derechos ES0605969908 / acciones nuevas temporales ES0105969028, con etiqueta explicita)",
+  "CNMV-IP-2683": "ACCEPT - HUMAN_RELATION_REQUIRED: oferta sobre acciones ordinarias/preferentes de Biotest AG (43/30 EUR) en comunicado de Grifols; name-only sin ISIN; comportamiento conservador ADR-013 correcto",
+  "CNMV-OIR-34719": "PENDING VISUAL",
+  "POEX-DOC-15339": "PENDING VISUAL",
+  "p0_review_coverage_emitted_facts": "compatible con 1.0",
+  "p1_non_degradation": "INDETERMINATE, no PASS",
+  "regression_oracle": "56/56 (dev-iter-5-g1-oracle-eval.json congelado)",
+  "parser_freeze": "valido"
+ },
+ "new_failure_class": {
+  "name": "AMOUNT_ROLE_MISBINDING",
+  "safety": "P0",
+  "discovered_in": "holdout",
+  "seeds": ["POEX-DOC-39649"],
+  "description": "source-specific amount-role attribution: en CAPITAL_INCREASE el precio de suscripcion/emision por accion nueva se emite como amount.gross_per_share en lugar de amount.issue_price_per_share. Sexta frontera semantica no cubierta por las 5 clases DEV."
+ },
+ "holdout_disposition": "SPENT_EVIDENCE: prohibido corregir el parser y re-ejecutar estos 15 seeds (convertiria el holdout en DEV). Remediacion en fase nueva con holdout virgen (G1-R2). Paths sellados y artifacts intactos como evidencia.",
+ "post_holdout_findings": "g1r/results/post-holdout-findings.jsonl",
+ "preregistered_integrity": "docs/gates/g1r-preregistered.json intacto (DRAFT_PENDING_APPROVAL); la aprobacion queda documentada por el tag g1r-protocol (f9ee8f8) y esta adjudicacion",
+ "reading": "G1-R corrigio las 5 clases P0 conocidas (regression oracle 56/56, DEV 0 P0 abiertos) pero el holdout virgen descubrio una sexta frontera semantica: AMOUNT_ROLE_MISBINDING en la fuente Portfolio. Evidencia de generalizacion que DEV/regression no podian dar."
+}

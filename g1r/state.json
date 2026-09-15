@@ -1,6 +1,6 @@
 {
  "state_version": "CA_ES_G1R_STATE_V1",
- "updated_at": "2026-09-14",
+ "updated_at": "2026-09-15",
  "protocol": "docs/gates/g1r-execution-runbook.md",
  "last_approved_checkpoint": {
   "phase": "dev-iter-5",
@@ -24,6 +24,9 @@
   ],
   "in_review": [],
   "queue": [],
+  "discovered_in_holdout": [
+   "AMOUNT_ROLE_MISBINDING"
+  ],
   "backlog_p1_p2": [
    "CENTS_PER_SHARE_LEXEME",
    "STRUCTURED_AMOUNT_LABEL_VARIANT",
@@ -49,7 +52,18 @@
   }
  },
  "holdout": {
-  "status": "SEALED",
+  "status": "ADJUDICATED",
+  "verdict": "FAIL",
+  "verdict_artifact": "g1r/results/holdout-verdict.json",
+  "verdict_signed_at": "2026-09-15",
+  "parser_freeze": "g1r-parser-freeze @ a6a0674",
+  "runs": [
+   "g1r/results/holdout-run-1-a6a0674-results.json",
+   "g1r/results/holdout-run-2-a6a0674-results.json"
+  ],
+  "binding_cause": "false_financial_facts=1 (POEX-DOC-39649, AMOUNT_ROLE_MISBINDING)",
+  "parser_miss_rate": "INDETERMINATE_PENDING_VISUAL_REVIEW (CNMV-OIR-34719, POEX-DOC-15339)",
+  "disposition": "SPENT_EVIDENCE: prohibido re-ejecutar estos 15 seeds tras remediacion; correcciones en fase nueva con holdout virgen",
   "freeze_ref": "9cac4f16e92437648289fe54378901825da2fa62",
   "sealed_git_paths": [
    "g1r/manifests/holdout",
@@ -70,7 +84,7 @@
   ],
   "rule": "sin inspeccion manual ni parseo hasta g1r-parser-freeze; manifests bajo git (diff vs freeze_ref + working tree); raw ignorados verificados por sha256 contra manifest, sin parsear"
  },
- "after_queue_empty": "parser freeze -> HOLDOUT virgin",
+ "after_queue_empty": "COMPLETADO: parser freeze a6a0674 -> HOLDOUT virgen x2 -> adjudicacion humana FAIL -> veredicto emitido",
  "stop_conditions": [
   "cualquier FAIL nuevo en el regression oracle fuera de known_open_failures",
   "REGRESSED o EMITTED_OTHER > 0 en el dev oracle",
@@ -114,6 +128,6 @@
    ]
   }
  },
- "current_phase": "dev-iter-5",
+ "current_phase": "holdout-adjudicated",
  "parser_commit": "d819f7f0c25337d2581fd6d5b8ed3a588599a5ee"
 }

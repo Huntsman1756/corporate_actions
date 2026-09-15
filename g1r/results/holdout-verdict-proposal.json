@@ -1,6 +1,9 @@
 {
  "proposal_version": "CA_ES_G1R_HOLDOUT_VERDICT_PROPOSAL_V1",
- "status": "PROPOSED_PENDING_HUMAN_SIGN",
+ "status": "ADJUDICATED_REJECTED_AS_PASS",
+ "human_verdict": "FAIL",
+ "verdict_artifact": "g1r/results/holdout-verdict.json",
+ "adjudication_note": "el revisor humano rechazo P0=0: POEX-DOC-39649 emite amount.gross_per_share=4 donde la fuente publica precio de suscripcion por accion nueva (issue_price_per_share); nuevo P0 AMOUNT_ROLE_MISBINDING. parser_miss_rate -> INDETERMINATE_PENDING_VISUAL_REVIEW (12 filas sin capa de texto en CNMV-OIR-34719 y POEX-DOC-15339).",
  "parser_freeze": "g1r-parser-freeze @ a6a0674",
  "runs": [
   "holdout-run-1-a6a0674",
