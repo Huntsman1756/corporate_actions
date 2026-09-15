@@ -1,5 +1,5 @@
 {
- "oracle_version": "CA_ES_G1_REGRESSION_ORACLE_V3",
+ "oracle_version": "CA_ES_G1_REGRESSION_ORACLE_V4",
  "frozen_at": "2026-09-14",
  "source": "adjudicacion firmada G1 sealed + re-ejecucion determinista del parser c431830 sobre manifests sellados",
  "claim_semantics": {
@@ -1252,18 +1252,18 @@
    "field": "event_type",
    "required": "REMAIN_CORRECT",
    "expected_claims": {
-    "event_type": "CASH_DIVIDEND"
+    "event_type": "SCRIP_DIVIDEND"
    },
    "oracle_claim_id": "G1REG::ADVERSARIAL::CNMV-OIR-37214::event_type",
    "canonical_concept": "EVENT_TYPE",
    "source_content_sha256": "deb649b9466525d77c25067758782a45024808c029e6929b1d9e564b8525ddc7",
-   "review_status": "SIGNED",
+   "review_status": "ERRATUM",
    "reviewed_at": "2026-09-14",
    "canonical_concepts": [
     {
-     "canonical_concept": "EVENT_TYPE.CASH_DIVIDEND",
+     "canonical_concept": "EVENT_TYPE.SCRIP_DIVIDEND",
      "field_path": "event_type",
-     "value": "CASH_DIVIDEND",
+     "value": "SCRIP_DIVIDEND",
      "external_semantic_mapping_status": "PROVEN"
     }
    ],
@@ -1367,18 +1367,18 @@
    "field": "event_type",
    "required": "REMAIN_CORRECT",
    "expected_claims": {
-    "event_type": "CASH_DIVIDEND"
+    "event_type": "SCRIP_DIVIDEND"
    },
    "oracle_claim_id": "G1REG::ADVERSARIAL::CNMV-OIR-40729::event_type",
    "canonical_concept": "EVENT_TYPE",
    "source_content_sha256": "d24bc61225a85d2e5021b48648a91d3e5e2bd0c30ee50bf4c150fbadbaaac4b7",
-   "review_status": "SIGNED",
+   "review_status": "ERRATUM",
    "reviewed_at": "2026-09-14",
    "canonical_concepts": [
     {
-     "canonical_concept": "EVENT_TYPE.CASH_DIVIDEND",
+     "canonical_concept": "EVENT_TYPE.SCRIP_DIVIDEND",
      "field_path": "event_type",
-     "value": "CASH_DIVIDEND",
+     "value": "SCRIP_DIVIDEND",
      "external_semantic_mapping_status": "PROVEN"
     }
    ],
@@ -1711,6 +1711,26 @@
    },
    "reason": "consecuencia del erratum de amount_or_ratio (mismo lexema, mismo campo).",
    "applied_at": "2026-09-14"
+  },
+  {
+   "frame_item_id": "CNMV-OIR-37214",
+   "set": "adversarial",
+   "field": "event_type",
+   "expected_claims": {
+    "event_type": "SCRIP_DIVIDEND"
+   },
+   "reason": "GT heredado de c431830: el documento declara 'DIVIDENDO FLEXIBLE (SCRIP DIVIDEND)' pagadero 'en efectivo o en acciones a eleccion del accionista'; bajo la frontera EVENT_TYPE_FAMILY_BOUNDARY firmada (dividendo flexible + holder choice) el tipo canonico es SCRIP_DIVIDEND. Detectado por el gate de iter-3 como FAIL nuevo sobre known_correct; mismo mecanismo que el erratum IP-2670.",
+   "applied_at": "2026-09-14"
+  },
+  {
+   "frame_item_id": "CNMV-OIR-40729",
+   "set": "adversarial",
+   "field": "event_type",
+   "expected_claims": {
+    "event_type": "SCRIP_DIVIDEND"
+   },
+   "reason": "GT heredado de c431830: el documento declara 'DIVIDENDO FLEXIBLE (SCRIP DIVIDEND)' pagadero 'en efectivo o en acciones a eleccion del accionista'; bajo la frontera EVENT_TYPE_FAMILY_BOUNDARY firmada (dividendo flexible + holder choice) el tipo canonico es SCRIP_DIVIDEND. Detectado por el gate de iter-3 como FAIL nuevo sobre known_correct; mismo mecanismo que el erratum IP-2670.",
+   "applied_at": "2026-09-14"
   }
  ],
  "counts": {
@@ -1718,6 +1738,6 @@
   "p0_incorrect": 7
  },
  "note": "49 = 37 HOLDOUT + 12 ADVERSARIAL campos criticos correctos; 7 campos poblados incorrectos conocidos.",
- "provenance_note": "ORACLE_CLAIM con provenance (ADR-017): oracle_claim_id, canonical_concepts atomicos por fact, source_content_sha256, source_to_canonical_status separado de external_semantic_mapping_status. Los expected/forbidden/allowed no cambian respecto a V2.1.",
- "oracle_sha256": "cc9cc5bebc13b80d80082f78b310a81920013d54b628e5712fb8a0dabac05019"
+ "provenance_note": "ORACLE_CLAIM con provenance (ADR-017): oracle_claim_id, canonical_concepts atomicos por fact, source_content_sha256, source_to_canonical_status separado de external_semantic_mapping_status. Los expected/forbidden/allowed no cambian respecto a V2.1. V4: errata iter-3 — 37214/40729 event_type CASH_DIVIDEND -> SCRIP_DIVIDEND (GT heredado; frontera firmada lo contradice).",
+ "oracle_sha256": "e745b81497cfcdad2a45cb92c91aff13fb37250984f9146c3e5ffefe5fa8b087"
 }

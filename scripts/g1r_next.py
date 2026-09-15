@@ -191,7 +191,11 @@ def _fails_in_eval(path):
 
 # Paths que determinan la salida de una corrida: si cambian entre
 # parser_commit y HEAD, el results artifact ya no describe HEAD.
-_RUN_INPUTS = ["src", "g1r/manifests", "g1r/corpus",
+# El regression oracle NO es input del run: lo consume el evaluador,
+# que gates reejecuta fresco en cada llamada.
+_RUN_INPUTS = ["src", "g1/manifests/sampling-frame.json",
+               "g1r/manifests/dev", "g1r/manifests/dev-holdout.json",
+               "g1r/manifests/g1r-corpus.json", "g1r/corpus",
                "g0/corpus/reference", "scripts/run_g1r.py",
                "scripts/fetch_cnmv.py"]
 
