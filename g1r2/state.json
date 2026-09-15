@@ -1,0 +1,15 @@
+{
+ "state_version": "CA_ES_G1R2_STATE_V1",
+ "updated_at": "2026-09-15",
+ "protocol": "docs/gates/g1r2-preregistered.json",
+ "protocol_tag": "g1r2-protocol",
+ "phase": "HOLDOUT_SEALED",
+ "snapshot": "g1r2/manifests/snapshot-portfolio-2026-09-15.json",
+ "precondition": {
+  "min_stratum_cas": 8,
+  "holdout_target_cas": 8,
+  "distinct_unseen_ca_groups": 8,
+  "met": true
+ },
+ "next": "sealed holdout -> desarrollo AMOUNT_ROLE_MISBINDING"
+}

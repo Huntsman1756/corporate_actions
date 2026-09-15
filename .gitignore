@@ -73,3 +73,5 @@ g1r/adjudication/_dev_facts.json
 !g1r/adjudication/_holdout_facts.json
 !g1r/manifests/holdout-adjudication-sha256.json
 !g1r/results/holdout-verdict.json
+g1r2/corpus/raw/*
+!g1r2/corpus/raw/.gitkeep
