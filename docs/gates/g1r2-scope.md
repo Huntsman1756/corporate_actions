@@ -1,6 +1,6 @@
 # G1-R2 — AMOUNT_ROLE_MISBINDING: corrección y generalización (Portfolio)
 
-Status: **DRAFT — PENDING APPROVAL, NOT YET TAGGED** (2026-09-15).
+Status: **DRAFT v2 — PENDING APPROVAL, NOT YET TAGGED** (2026-09-15).
 El tag `g1r2-protocol` solo se crea tras aprobación humana del diff
 final. Parent: G1-R cerrado en FAIL —
 `docs/gates/g1r-closure-report.md` (`725da2e`). Parser congelado de
@@ -37,17 +37,121 @@ ISIN_ROLE_DISAMBIGUATION (3 ISIN etiquetados)       -> P2 medido
 SCANNED_PDF_NO_TEXT_LAYER                          -> gate propio, fuera
 ```
 
+## Target stratum — población explícita (no búsqueda oportunista)
+
+```
+G1R2_TARGET_STRATUM_V1
+
+source = PORTFOLIO_PRODUCT_DOCUMENTS
+
+eligible iff metadata oficial pre-documento:
+  subtype/type indica CAPITAL_INCREASE
+  OR title satisface regex preregistrada:
+    ampliación/aumento de capital
+    suscripción preferente
+    derechos de suscripción
+
+NO (señales de selección prohibidas):
+  contenido PDF
+  importe
+  parser output
+  resultado esperado
+```
+
+El claim de G1-R2 es deliberadamente limitado: **generalización dentro
+del estrato enriquecido de operaciones de capital de Portfolio** — no
+estimación de prevalencia sobre todo Portfolio.
+
+Precedente: la eligibility `INCL_TITLE_KEYWORDS` de G1 ya usaba
+metadata oficial (title) antes de leer documentos.
+
+## CA-group partitioning — la unidad de selección es la CA, no el doc
+
+La cadena NEXTLOG lo demuestra: cinco `frame_item_id` de lifecycle
+pueden ser la misma operación. Si uno cae en DEV y otro en HOLDOUT, el
+holdout deja de ser independiente aunque los IDs difieran.
+
+```
+ca_group_id =
+    función determinista únicamente de metadata estructurada congelada
+
+partition(ca_group_id), nunca partition(document_id)
+
+todos los documentos de una CA-group:
+    mismo lado (aquí: HOLDOUT), nunca ambos
+```
+
+El mismo agrupamiento aplica contra evidencia gastada: cualquier CA
+demostrablemente equivalente a `POEX-DOC-39649` queda excluida del
+generalization set. Ante ambigüedad, **no se fusionan grupos**
+(duplicado documentado > contaminación).
+
+## Restricción descubierta (verificada sobre el universo congelado)
+
+```
+frame G1 (1419): 934 MAIN / 446 BMEG / 39 PORTFOLIO
+PORTFOLIO consumido: 10 G1 + 10 G1-R = 20 -> quedan 19
+snapshot Portfolio congelado (630 doc rows): ~5 docs
+  ampliación-titled = ~2 CAs distintas (NEXTLOG = spent 39649; ORION)
+densidad observada de target_opportunity: ~1 por 19 docs adjudicados
+```
+
+Por eso se rechaza el frame puro: un holdout aleatorio de ese universo
+tendría ~1 oportunidad esperada y se gastaría en INCONCLUSIVE.
+
+## Corpus G1-R2 — aprobado
+
+```
+NEW PORTFOLIO SNAPSHOT (versionado, acumulable)
+        ↓
+metadata-only eligibility (G1R2_TARGET_STRATUM_V1)
+        ↓
+exclude 190 IDs vistos (150 G1 + 40 G1-R)
++ exclude proven spent CA groups (NEXTLOG ≡ 39649, etc.)
+        ↓
+group by CA — frozen metadata only
+        ↓
+PRECONDITION: eligible distinct unseen CA-groups >= 8
+   si no: WAITING_FOR_CORPUS — no split, no holdout consumption
+        ↓
+hash selection:  CA_ES_G1R2_SAMPLE_V1 sobre ca_group_id
+        ↓
+HOLDOUT ONLY — los nuevos target CAs no se gastan en DEV
+```
+
+`MIN_STRATUM_CAS = 8`, `HOLDOUT_TARGET_CAS = 8`. No garantiza 3
+oportunidades — el anti-PASS-vacío real sigue siendo `>= 3` — pero por
+debajo el gate sería demasiado pequeño antes incluso de mirar
+contenido.
+
+Sin nuevos sentinels MAIN/BME: innecesarios (tres capas de regression
+pagadas) y gastarían evidencia virgen de otras fuentes reservable para
+futuros gates. G1-R2 es deliberadamente Portfolio-specific.
+
+## Development evidence (sin evidencia virgen nueva)
+
+```
+POEX-DOC-39649     -> SPENT_EVIDENCE / regression target:
+                      required:  amount.issue_price_per_share = 4 EUR
+                      forbidden: amount.gross_per_share = 4 EUR
+tests sintéticos   -> regla genérica de la clase
+G1 regression      -> 56/56
+G1-R DEV (25)      -> sin regresiones sobre claims firmados
+G1-R spent holdout -> REGRESSION ONLY (15 docs)
+```
+
 ## Anti-PASS-vacío (hard, preregistrado)
 
 ```
 target_opportunity =
-  documento cuya fuente publica, para un CAPITAL_INCREASE o
+  CA-group cuyo documento publica, para CAPITAL_INCREASE o
   RIGHTS_ISSUE, precio de suscripción/emisión por acción
 
-minimum_target_opportunities = 3   (sobre CAs distintas, ver dedup)
+minimum_target_opportunities = 3   (sobre CA-groups distintas)
 
 si opportunities < 3  ->  verdict = INCONCLUSIVE
-                           (el holdout se gasta igualmente; ver abajo)
+                           holdout = SPENT_EVIDENCE igualmente
+                           (el umbral no se mueve)
 
 por oportunidad:
   PASS: amount.issue_price_per_share == valor publicado
@@ -56,78 +160,6 @@ por oportunidad:
         del precio publicado
 
   -> SAFE_ABSTENTION no existe para el target principal
-```
-
-## Corpus — restricción descubierta y decisión pendiente
-
-Hechos verificados sobre el universo congelado (2026-09-14):
-
-```
-frame G1 (1419 items): 934 MAIN_MARKET / 446 BME_GROWTH_MTF / 39 PORTFOLIO
-PORTFOLIO consumido:   10 G1 (8 dev + 2 holdout) + 10 G1-R = 20
-PORTFOLIO virgen restante en frame: 19
-
-snapshot Portfolio congelado (g1/corpus/raw/frame/, 630 doc rows):
-  ampliación/suscripción-titled docs ≈ 5
-  CAs distintas de ampliación: ~2
-    - NEXTLOG (ES0105969002): 39660/61/62, 40163, 40189
-      -> MISMA CA que el spent POEX-DOC-39649 (lifecycle docs)
-    - ORION (ES0105829008):  39939 (fase resultado)
-```
-
-Consecuencia: el diseño original de 24 PORTFOLIO no cabe en el frame
-(19), y un holdout Portfolio aleatorio tiene densidad de oportunidad
-esperada ~1 — el guard `min 3` lo convertiría casi seguro en
-INCONCLUSIVE y gastaría el estrato.
-
-### Opción recomendada — snapshot nuevo + estrato enriquecido por metadatos
-
-```
-1. nuevo snapshot de fuentes (G1-R2 frame, retrieved_at nuevo)
-   — frame drift aceptado y preregistrado: la pregunta es nueva;
-     el frame G1 estaba congelado para la pregunta de G1-R
-2. target stratum PORTFOLIO = docs cuya metadata OFICIAL
-   (type/subtype/title de la fuente, p. ej. subtype
-   "Ampliación de capital") indica CAPITAL_INCREASE/RIGHTS_ISSUE
-   — selección por metadata publicada, sin leer contenido;
-     precedente: eligibility INCL_TITLE_KEYWORDS de G1
-3. exclusión: los 190 IDs vistos (150 G1 + 40 G1-R)
-   Y dedup contra CAs ya vistas por metadata estructurada
-   (mismo ISIN + familia de evento + ventana temporal;
-    p. ej. la cadena NEXTLOG 39660/61/62/40163/40189 colapsa con 39649)
-   — mismo permitted_evidence que pre_split_dedup de G1-R;
-     ante la duda, ambos permanecen (duplicado documentado)
-4. sentinels: N MAIN_MARKET + N BME_GROWTH_MTF del frame congelado
-   (quedan ~924 / ~436 sin ver)
-5. sample_score = SHA256("CA_ES_G1R2_SAMPLE_V1" + stratum + id)
-   split_score = SHA256("CA_ES_G1R2_SPLIT_V1" + id)
-   split determinista DENTRO de cada estrato
-6. precondition del sorteo: si el estrato target elegible tiene
-   < MIN_STRATUM_CAS CAs distintas -> no se sortea; el gate espera
-   un snapshot posterior (acumulación), nunca se quema un holdout débil
-```
-
-### Alternativa — frame congelado puro
-
-```
-holdout = 19 PORTFOLIO restantes (+ sentinels)
-desarrollo sobre G1-R DEV existente (sigue siendo DEV)
-riesgo aceptado: opportunities esperadas ~1 -> INCONCLUSIVE probable
-y estrato Portfolio agotado para siempre
-```
-
-**DECISION_REQUIRED: opción recomendada vs alternativa.**
-
-## Regression evidence (tres capas, todo ya pagado)
-
-```
-G1 regression oracle        -> 56/56 obligatorio (artefacto congelado)
-G1-R DEV (25)               -> sin regresiones sobre claims firmados
-G1-R spent holdout (15)     -> REGRESSION ONLY, nunca generalization:
-   POEX-DOC-39649 target explícito:
-     required: amount.issue_price_per_share = 4 EUR
-     forbidden: amount.gross_per_share = 4 EUR
-   (enmienda de oracle con aprobación humana, como iter-1/3)
 ```
 
 ## Gates del HOLDOUT virgen G1-R2
@@ -142,14 +174,14 @@ PASS requiere simultáneamente:
   p0_review_coverage            = 1.0
   second_run_determinism        = 1.0
   G1 regression                 = 56/56
-  G1-R regression               = clean
+  G1-R regression               = clean (incl. target 39649)
   field_provenance_rate         = 1.0
   silent_conflicts              = 0
   unproven_auto_merges          = 0
   human_authored_facts          = 0
 
-INCONCLUSIVE si opportunities < 3 (holdout gastado; siguiente sorteo
-excluye también estos IDs)
+INCONCLUSIVE si opportunities < 3
+FAIL si cualquier P0 o invariante se rompe
 
 ISIN_ROLE_DISAMBIGUATION: medido P2, no bloquea
 SCANNED_PDF_NO_TEXT_LAYER: fuera de G1-R2 (gate propio)
@@ -159,7 +191,7 @@ SCANNED_PDF_NO_TEXT_LAYER: fuera de G1-R2 (gate propio)
 
 ```
 docs/gates/g1r2-scope.md              (este documento)
-docs/gates/g1r2-preregistered.json    (tras aprobación)
+docs/gates/g1r2-preregistered.json
 g1r2/state.json | g1r2/manifests/ | g1r2/results/
 scripts/build_g1r2_corpus.py
 scripts/run_g1r2.py
@@ -169,18 +201,31 @@ scripts/g1r2_next.py
 `g1r_next.py`, `run_g1r.py` y `build_g1r_corpus.py` permanecen
 intactos para auditabilidad histórica.
 
+`AGENTS.md` transición:
+
+```
+G1-R == CLOSED ; G1-R2 == ACTIVE
+"continúa corporate_actions" -> leer g1r2/state.json
+  -> siguiente transición -> STOP solo en firma externa / gate fail
+```
+
+## Cambios de código — solo reglas genéricas
+
+Prohibido condicionar por `frame_item_id`, issuer, URL, hash o
+documento concreto. La etiqueta de la fuente es fenómeno documental,
+no identidad. Cada entrada de `g1r2/results/g1r2-changes.jsonl` exige
+`generic_rule`, `trigger_failure_class`, `root_cause`, `tests_added`,
+`commit`.
+
 ## Secuencia
 
 ```
-aprobación de este scope -> spec -> g1r2-preregistered.json
-  -> tag g1r2-protocol
-snapshot/frame G1-R2 + exclusion-set (190 + CAs vistas)
-selección DEV/HOLDOUT dentro de estrato + sellado
-baseline DEV con parser a6a0674
-desarrollo AMOUNT_ROLE_MISBINDING (regla genérica de la clase;
-  prohibido condicionar por seed/issuer/URL/hash;
-  la etiqueta de la fuente es fenómeno documental, no identidad)
-legacy regression tras cada iteración
+aprobación humana de este scope + preregistered -> tag g1r2-protocol
+snapshot G1-R2 (versionado) + exclusion-set + CA-grouping
+PRECONDITION >= 8 distinct unseen CA-groups
+sellado HOLDOUT (8 CA-groups; adquisición auto para sha256 permitida)
+desarrollo AMOUNT_ROLE_MISBINDING sobre evidence existente
+legacy regression tras cada iteración (G1 56/56 + G1-R DEV + spent)
 g1r2-parser-freeze
 HOLDOUT virgen x2 (determinism)
 adjudicación humana (PROPOSED hasta firma)

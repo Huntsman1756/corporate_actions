@@ -1,0 +1,137 @@
+{
+  "preregistration_version": "CA_ES_G1R2_PREREG_V1",
+  "status": "DRAFT_PENDING_APPROVAL",
+  "drafted_at": "2026-09-15",
+  "note": "El tag g1r2-protocol solo se crea tras aprobacion humana del diff final.",
+  "parent_g1r": "G1-R FAIL — docs/gates/g1r-closure-report.md (725da2e)",
+  "parser_reference_freeze": "a6a067440065199b61dc983702ddcef2e2b429e4 / g1r-parser-freeze",
+  "question": "Corrige el parser AMOUNT_ROLE_MISBINDING en la fuente Portfolio y generaliza a documentos nuevos sin reintroducir ningun P0 conocido?",
+  "target_failure_class": {
+    "name": "AMOUNT_ROLE_MISBINDING",
+    "safety": "P0",
+    "definition": "en CAPITAL_INCREASE / RIGHTS_ISSUE, el precio de suscripcion/emision por accion publicado por la fuente se emite como amount.gross_per_share en lugar de amount.issue_price_per_share",
+    "evidence": "POEX-DOC-39649 (G1-R spent holdout, adjudicado FALSE_FINANCIAL_FACT)",
+    "canonical_basis": "canonical-registry AMOUNT_ROLE.ISSUE_PRICE_PER_SHARE separado de GROSS_UNIT_AMOUNT; ADR-017"
+  },
+  "related_not_in_target": {
+    "P1": ["ratio.terms 2:1 publicado no emitido (39649)", "event_type CAPITAL_INCREASE abstenido (39649)"],
+    "P2": ["ISIN_ROLE_DISAMBIGUATION"],
+    "excluded": ["SCANNED_PDF_NO_TEXT_LAYER (gate propio)"]
+  },
+  "target_stratum": {
+    "name": "G1R2_TARGET_STRATUM_V1",
+    "source": "PORTFOLIO_PRODUCT_DOCUMENTS",
+    "eligibility": {
+      "rule": "metadata oficial pre-documento: subtype/type indica CAPITAL_INCREASE OR title satisface regex preregistrada",
+      "title_regex": ["ampliaci(o|ó)n de capital", "aumento de capital", "suscripci(o|ó)n preferente", "derechos de suscripci(o|ó)n"],
+      "forbidden_signals": ["contenido PDF", "importe", "parser output", "resultado esperado"],
+      "precedent": "G1 eligibility INCL_TITLE_KEYWORDS (metadata oficial antes de leer documentos)"
+    },
+    "claim_limit": "generalizacion dentro del estrato enriquecido de operaciones de capital de Portfolio; NO estimacion de prevalencia sobre todo Portfolio"
+  },
+  "corpus": {
+    "snapshot": "NEW_PORTFOLIO_SNAPSHOT versionado y acumulable (frame drift aceptado: pregunta nueva)",
+    "exclusions": {
+      "seen_ids": "150 G1 + 40 G1-R = 190",
+      "spent_ca_groups": "CAs demostrablemente equivalentes a evidencia gastada (p. ej. cadena NEXTLOG = POEX-DOC-39649) excluidas del generalization set via metadata estructurada"
+    },
+    "ca_grouping": {
+      "ca_group_id": "funcion determinista unicamente de metadata estructurada congelada",
+      "partition_unit": "ca_group_id, nunca document_id",
+      "rule": "todos los documentos de una CA-group al mismo lado; nunca DEV+HOLDOUT",
+      "ambiguity": "ante la duda no se fusionan grupos (duplicado documentado > contaminacion)"
+    },
+    "selection": {
+      "sample_score": "SHA256(CA_ES_G1R2_SAMPLE_V1 + ca_group_id)",
+      "holdout_only": true,
+      "no_new_dev": "los nuevos target CAs no se gastan en DEV; desarrollo sobre evidencia existente"
+    },
+    "precondition": {
+      "min_stratum_cas": 8,
+      "holdout_target_cas": 8,
+      "below_minimum": "WAITING_FOR_CORPUS: NO split, NO holdout consumption; snapshots intermedios versionables y acumulables"
+    }
+  },
+  "development_evidence": {
+    "spent_target_case": "POEX-DOC-39649 -> regression target: required amount.issue_price_per_share=4 EUR; forbidden amount.gross_per_share=4",
+    "synthetic_tests": "regla generica de la clase",
+    "g1_regression_oracle": "g1r/manifests/g1-regression-oracle.json (56/56 obligatorio)",
+    "g1r_dev": "25 docs, sin regresiones sobre claims firmados",
+    "g1r_spent_holdout": "15 docs, REGRESSION ONLY, nunca generalization"
+  },
+  "anti_pass_vacio": {
+    "target_opportunity": "CA-group cuyo documento publica, para CAPITAL_INCREASE o RIGHTS_ISSUE, precio de suscripcion/emision por accion",
+    "minimum_target_opportunities": 3,
+    "counting_unit": "distinct CA-groups",
+    "below_minimum": "verdict = INCONCLUSIVE; holdout = SPENT_EVIDENCE igualmente; el umbral no se mueve",
+    "per_opportunity": {
+      "pass": "amount.issue_price_per_share == valor publicado Y el mismo lexema NO aparece como amount.gross_per_share",
+      "fail": "slot incorrecto | valor incorrecto | abstencion/missing del precio publicado",
+      "safe_abstention": "NO EXISTE para el target principal"
+    }
+  },
+  "verdict": {
+    "PASS_requires_on_virgin_holdout": {
+      "amount_role_misbinding": 0,
+      "inherited_p0_classes": 0,
+      "target_opportunities": ">=3",
+      "target_opportunity_recall": 1.0,
+      "p0_review_coverage": 1.0,
+      "second_run_determinism": 1.0,
+      "g1_regression": "56/56",
+      "g1r_regression": "clean (incl. target 39649)",
+      "field_provenance_rate": 1.0,
+      "silent_conflicts": 0,
+      "unproven_auto_merges": 0,
+      "human_authored_facts": 0
+    },
+    "INCONCLUSIVE": "target_opportunities < 3",
+    "FAIL": "cualquier P0 > 0 o invariante roto",
+    "measured_not_binding": {
+      "isin_role_disambiguation": "P2, sin gate",
+      "scanned_pdf_no_text_layer": "fuera de G1-R2"
+    }
+  },
+  "definitions": {
+    "second_run_determinism": "misma definicion congelada que G1-R (mismo commit/worktree, parser_commit identico, mismos raw bytes; ignorar solo executed_at/run_id)",
+    "p0_review_coverage": "reviewed_p0_relevant_emitted_facts / all_p0_relevant_emitted_facts = 1.0",
+    "spent_evidence": "docs ya adjudicados: solo regression, nunca generalization"
+  },
+  "human_intervention": {
+    "human_relation_adjudication": "ALLOWED",
+    "human_fact_entry": "FORBIDDEN",
+    "evaluation_oracle_annotations": "ALLOWED (nunca facts del producto)"
+  },
+  "code_change_policy": {
+    "generic_rule_only": true,
+    "forbidden_conditions": ["frame_item_id", "ca_group_id", "issuer", "url", "document_hash", "document_specific"],
+    "note": "la etiqueta de la fuente es fenomeno documental, no identidad",
+    "changes_log": "g1r2/results/g1r2-changes.jsonl (generic_rule, trigger_failure_class, root_cause, tests_added, commit)"
+  },
+  "out_of_scope": [
+    "OCR / PDFs image-only (SCANNED_PDF_NO_TEXT_LAYER): gate propio",
+    "resolucion automatica de roles de ISIN: medido P2",
+    "discovery recall, expansion de producto, fuentes nuevas, ISO",
+    "reescribir los veredictos G1 / G1-R (permanentes)"
+  ],
+  "execution": [
+    "aprobacion humana -> tag g1r2-protocol",
+    "snapshot G1-R2 (versionado) + exclusion-set + CA-grouping",
+    "PRECONDITION >= 8 distinct unseen CA-groups (si no: WAITING_FOR_CORPUS)",
+    "sellado HOLDOUT (8 CA-groups; auto-acquisition for sha256 permitida)",
+    "desarrollo AMOUNT_ROLE_MISBINDING sobre evidencia existente",
+    "legacy regression tras cada iteracion",
+    "g1r2-parser-freeze",
+    "HOLDOUT virgen x2",
+    "adjudicacion humana (PROPOSED hasta firma)",
+    "veredicto PASS / FAIL / INCONCLUSIVE"
+  ],
+  "frozen_universe_constraint_evidence": {
+    "frame_portfolio_total": 39,
+    "frame_portfolio_consumed": 20,
+    "frame_portfolio_remaining": 19,
+    "snapshot_630_docs_ampliacion_titled": 5,
+    "distinct_ampliacion_cas_in_snapshot": 2,
+    "note": "NEXTLOG chain (39660/61/62, 40163, 40189) = misma CA que spent 39649; ORION 39939 unica CA nueva visible en snapshot congelado"
+  }
+}
