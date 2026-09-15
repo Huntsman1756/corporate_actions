@@ -3,11 +3,11 @@
  "updated_at": "2026-09-14",
  "protocol": "docs/gates/g1r-execution-runbook.md",
  "last_approved_checkpoint": {
-  "phase": "dev-iter-4",
-  "commit": "20b9c6708b97fc157984fca0d66e3a8551c1593e",
-  "parser_commit": "bd4cfb327be97f830116b76eeef6813c07f08631",
+  "phase": "dev-iter-5",
+  "commit": "8763d9ba030ed3ee2d6a6eca219ade8fa35cd9b5",
+  "parser_commit": "d819f7f0c25337d2581fd6d5b8ed3a588599a5ee",
   "status": "APPROVED",
-  "note": "DATE_MISBINDING signed; G1 oracle 56/56; artifacts dev-iter-4-*"
+  "note": "FALSE_POSITIVE_EVENT signed; 5/5 clases P0 resueltas; G1 oracle 56/56; DEV 0 P0 abiertos"
  },
  "semantic_freeze": {
   "commit": "cad072f4c25a5d9cc201cb6d5c3a729ad7bdfee0",
@@ -19,11 +19,10 @@
    "FALSE_FINANCIAL_SEMANTIC_ANCHOR",
    "DECIMAL_SPLIT_PDF",
    "EVENT_TYPE_FAMILY_BOUNDARY",
-   "DATE_MISBINDING"
-  ],
-  "in_review": [
+   "DATE_MISBINDING",
    "FALSE_POSITIVE_EVENT"
   ],
+  "in_review": [],
   "queue": [],
   "backlog_p1_p2": [
    "CENTS_PER_SHARE_LEXEME",
