@@ -113,13 +113,7 @@
   {
    "id": "CNMV-OIR-36141",
    "field": "record_date",
-   "ok": false,
-   "missing": [
-    "date.record_date"
-   ],
-   "emitted": {
-    "date.record_date": "2025-08-11"
-   }
+   "ok": true
   },
   {
    "id": "CNMV-OIR-36141",
@@ -139,13 +133,7 @@
   {
    "id": "CNMV-OIR-41467",
    "field": "record_date",
-   "ok": false,
-   "missing": [
-    "date.record_date"
-   ],
-   "emitted": {
-    "date.record_date": "2026-07-03"
-   }
+   "ok": true
   },
   {
    "id": "CNMV-OIR-41467",
