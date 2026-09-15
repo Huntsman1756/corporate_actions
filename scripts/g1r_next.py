@@ -18,6 +18,7 @@ import argparse
 import hashlib
 import json
 import os
+import re
 import subprocess
 import sys
 from pathlib import Path
@@ -50,9 +51,31 @@ def catalog_entry(name):
     return None
 
 
+class GateError(RuntimeError):
+    """Fallo de infraestructura: el gate no puede decidir -> STOP."""
+
+
 def _git(*args):
-    return subprocess.run(["git"] + list(args), cwd=REPO,
-                          capture_output=True, text=True).stdout
+    proc = subprocess.run(["git"] + list(args), cwd=REPO,
+                          capture_output=True, text=True)
+    if proc.returncode != 0:
+        raise GateError(f"git {' '.join(args)} rc={proc.returncode}: "
+                        f"{proc.stderr.strip()}")
+    return proc.stdout
+
+
+def _head():
+    return _git("rev-parse", "HEAD").strip()
+
+
+def _run(cmd, env, allowed=(0,)):
+    """Ejecuta un evaluador fail-closed: rc fuera de allowed -> GateError."""
+    proc = subprocess.run(cmd, cwd=REPO, env=env,
+                          capture_output=True, text=True)
+    if proc.returncode not in allowed:
+        raise GateError(f"{' '.join(cmd)} rc={proc.returncode}: "
+                        f"{(proc.stderr or proc.stdout).strip()[:400]}")
+    return proc
 
 
 def print_class(state, name):
@@ -150,6 +173,52 @@ def _fails_in_eval(path):
     return {f"{r['id']} :: {r['field']}": r for r in rows if not r["ok"]}
 
 
+# Paths que determinan la salida de una corrida: si cambian entre
+# parser_commit y HEAD, el results artifact ya no describe HEAD.
+_RUN_INPUTS = ["src", "g1r/manifests", "g1r/corpus",
+               "g0/corpus/reference", "scripts/run_g1r.py",
+               "scripts/fetch_cnmv.py"]
+
+
+def results_artifact_problems(phase, head):
+    """El results artifact debe estar ligado a HEAD: parser_commit del
+    artefacto con src/corpus/manifests identicos a HEAD (diff vacio),
+    run no dirty y sha256 valido."""
+    problems = []
+    matches = sorted(RESULTS.glob(f"{phase}-*-results.json"))
+    if not matches:
+        return [f"results artifact ausente: {phase}-<commit>-results.json "
+                f"(run_g1r --phase {phase})"]
+    if len(matches) > 1:
+        return [f"results artifact ambiguo: {[m.name for m in matches]}"]
+    results = matches[0]
+    sha_file = results.with_suffix(".sha256")
+    body = json.loads(results.read_text(encoding="utf-8"))
+    parser_commit = body.get("parser_commit")
+    if body.get("phase") != phase:
+        problems.append(f"phase={body.get('phase')} != {phase}")
+    if body.get("parser_commit_dirty"):
+        problems.append("parser_commit_dirty=true")
+    if not parser_commit:
+        problems.append("parser_commit ausente")
+    else:
+        drift = _git("diff", "--name-only",
+                     f"{parser_commit}..{head}", "--", *_RUN_INPUTS)
+        if drift.strip():
+            problems.append(
+                f"run inputs cambiados desde parser_commit "
+                f"{parser_commit[:7]}: {drift.strip()}")
+    batch_sha = body.get("batch_sha256")
+    if not sha_file.exists():
+        problems.append(f"sha256 ausente: {sha_file.name}")
+    elif batch_sha:
+        m = re.match(r"([0-9a-f]{64})\s+(\S+)",
+                     sha_file.read_text().strip())
+        if not m or m.group(1) != batch_sha or m.group(2) != results.name:
+            problems.append(f"sha256 invalido: {sha_file.name}")
+    return problems
+
+
 def cmd_gates(state, phase):
     env = dict(os.environ)
     env["PYTHONPATH"] = "src"
@@ -160,44 +229,51 @@ def cmd_gates(state, phase):
     dev_targets = set(targets.get("dev", []))
     g1_targets = set(targets.get("g1reg", []))
 
-    problems = holdout_problems(state)
-    verdict.append(("HOLDOUT intacto (tree + freeze_ref + raw sha)",
-                    not problems, "; ".join(problems)))
+    try:
+        head = _head()
+        verdict.append(("results artifact ligado a HEAD",
+                        not (p := results_artifact_problems(phase, head)),
+                        "; ".join(p)))
 
-    test = subprocess.run(
-        [sys.executable, "-m", "pytest", "-x", "-q"],
-        cwd=REPO, env=env, capture_output=True, text=True)
-    verdict.append(("pytest", test.returncode == 0,
-                    test.stdout.strip().splitlines()[-1]
-                    if test.stdout.strip() else ""))
+        problems = holdout_problems(state)
+        verdict.append(("HOLDOUT intacto (tree + freeze_ref + raw sha)",
+                        not problems, "; ".join(problems)))
 
-    g1_json = RESULTS / f"{phase}-g1-oracle-eval.json"
-    g1 = subprocess.run(
-        [sys.executable, "scripts/_eval_g1_regression_oracle.py",
-         "--json", str(g1_json)],
-        cwd=REPO, env=env, capture_output=True, text=True)
-    print(g1.stdout)
-    known = set(state["g1_oracle"]["known_open_failures"]) - g1_targets
-    if g1_json.exists():
+        test = _run([sys.executable, "-m", "pytest", "-x", "-q"], env,
+                    allowed=(0, 1))
+        verdict.append(("pytest", test.returncode == 0,
+                        test.stdout.strip().splitlines()[-1]
+                        if test.stdout.strip() else ""))
+
+        # freshness: artefacto viejo no puede satisfacer el gate
+        g1_json = RESULTS / f"{phase}-g1-oracle-eval.json"
+        g1_json.unlink(missing_ok=True)
+        g1 = _run([sys.executable, "scripts/_eval_g1_regression_oracle.py",
+                   "--json", str(g1_json)], env, allowed=(0, 1))
+        print(g1.stdout)
+        if not g1_json.exists():
+            raise GateError("evaluador G1 no produjo artefacto")
+        known = set(state["g1_oracle"]["known_open_failures"]) - g1_targets
         fails = _fails_in_eval(g1_json)
         new_fails = sorted(set(fails) - known)
-        unresolved_targets = sorted(g1_targets & set(fails))
-        missing_targets = sorted(g1_targets - set(fails)
-                                 - {_row_id(r) for r in _all_rows(g1_json)})
+        all_ids = {_row_id(r) for r in _all_rows(g1_json)}
+        unresolved = sorted(g1_targets & set(fails))
+        missing = sorted(g1_targets - all_ids)
         verdict.append(("G1 oracle: sin FAIL nuevo", not new_fails,
                         "; ".join(new_fails)))
         if g1_targets:
-            ok_targets = not unresolved_targets and not missing_targets
-            verdict.append((f"G1 targets {active} resueltos",
-                            ok_targets,
-                            "; ".join(unresolved_targets + missing_targets)))
+            ok_targets = not unresolved and not missing
+            verdict.append((f"G1 targets {active} resueltos", ok_targets,
+                            "; ".join(unresolved
+                                      + [f"{t} (target missing)"
+                                         for t in missing])))
 
-    dev_eval = RESULTS / f"{phase}-dev-oracle-eval.json"
-    subprocess.run(
-        [sys.executable, "scripts/_eval_dev_oracle.py",
-         "--phase", phase, "--out", str(dev_eval)],
-        cwd=REPO, env=env, capture_output=True, text=True)
-    if dev_eval.exists():
+        dev_eval = RESULTS / f"{phase}-dev-oracle-eval.json"
+        dev_eval.unlink(missing_ok=True)
+        _run([sys.executable, "scripts/_eval_dev_oracle.py",
+              "--phase", phase, "--out", str(dev_eval)], env)
+        if not dev_eval.exists():
+            raise GateError("evaluador DEV no produjo artefacto")
         report = json.loads(dev_eval.read_text(encoding="utf-8"))
         counts = report["status_counts"]
         clean = (counts.get("REGRESSED", 0) == 0
@@ -208,8 +284,12 @@ def cmd_gates(state, phase):
         rows = {f"{r['frame_item_id']} :: {r['field']}": r
                 for r in report["results"]}
         if dev_targets:
-            bad = [f"{t} -> {rows[t]['status']}" for t in sorted(dev_targets)
-                   if t not in rows or rows[t]["status"] not in TARGET_OK]
+            bad = []
+            for t in sorted(dev_targets):
+                if t not in rows:
+                    bad.append(f"{t} (target missing)")
+                elif rows[t]["status"] not in TARGET_OK:
+                    bad.append(f"{t} -> {rows[t]['status']}")
             verdict.append((f"DEV targets {active} resueltos",
                             not bad, "; ".join(bad)))
         other_p0 = [f"{k} -> {r['status']}" for k, r in rows.items()
@@ -217,9 +297,8 @@ def cmd_gates(state, phase):
                     or (r["status"] == "P0_UNRESOLVED" and k in dev_targets)]
         verdict.append(("DEV: sin P0 fuera de eje", not other_p0,
                         "; ".join(other_p0)))
-    else:
-        verdict.append((f"DEV oracle eval ({dev_eval.name})", False,
-                        "evaluador no produjo artefacto"))
+    except GateError as error:
+        verdict.append(("INFRASTRUCTURE", False, str(error)))
 
     print("\n== GATES ==")
     stop = False

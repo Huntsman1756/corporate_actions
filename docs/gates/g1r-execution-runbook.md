@@ -68,6 +68,22 @@ parser freeze -> HOLDOUT virgin
 - Fallo no preregistrado en `dev-failure-catalog.json`.
 - La regla necesita excepciones por seed/issuer/documento.
 
+## Fail-closed del driver
+
+- Los evaluadores borran su artefacto previo antes de ejecutarse y el
+  gate exige artefacto nuevo; un JSON viejo nunca satisface el gate.
+- Todo subprocess/git con rc inesperado es `STOP` (nunca "sin
+  diferencias" por fallo). G1 eval admite rc 0/1 (1 = FAILs del
+  oracle, que los targets deciden); DEV eval exige rc 0.
+- El results artifact debe estar ligado a HEAD: unico
+  `<phase>-<commit>-results.json`, `parser_commit_dirty=false`,
+  sha256 valido, y `git diff parser_commit..HEAD` vacio sobre los
+  inputs de la corrida (`src/`, `g1r/manifests`, `g1r/corpus`,
+  `g0/corpus/reference`, `run_g1r.py`, `fetch_cnmv.py`). Cualquier
+  cambio en esos paths invalida el artefacto: hay que re-correr.
+- Un target ausente del reporte es `STOP: target missing`, no un
+  `KeyError` ni un PASS.
+
 ## Artefactos por iteracion (congelados, con valores reales)
 
 ```text
