@@ -24,6 +24,10 @@ import sys
 from pathlib import Path
 
 REPO = Path(__file__).resolve().parents[1]
+sys.path.insert(0, str(REPO / "src"))
+
+from ca_es.canonical import sha256_hex  # noqa: E402
+
 STATE = REPO / "g1r" / "state.json"
 CATALOG = REPO / "g1r" / "results" / "dev-failure-catalog.json"
 RESULTS = REPO / "g1r" / "results"
@@ -167,6 +171,18 @@ def holdout_problems(state):
     return problems
 
 
+def _dev_target_problems(rows, dev_targets):
+    """Targets DEV no resueltos: ausente del reporte (target missing)
+    o status fuera del conjunto aceptado."""
+    bad = []
+    for t in sorted(dev_targets):
+        if t not in rows:
+            bad.append(f"{t} (target missing)")
+        elif rows[t]["status"] not in TARGET_OK:
+            bad.append(f"{t} -> {rows[t]['status']}")
+    return bad
+
+
 def _fails_in_eval(path):
     report = json.loads(path.read_text(encoding="utf-8"))
     rows = report.get("correct", []) + report.get("incorrect", [])
@@ -208,13 +224,20 @@ def results_artifact_problems(phase, head):
             problems.append(
                 f"run inputs cambiados desde parser_commit "
                 f"{parser_commit[:7]}: {drift.strip()}")
-    batch_sha = body.get("batch_sha256")
+    stored_sha = body.get("batch_sha256")
+    hashable = dict(body)
+    hashable.pop("batch_sha256", None)
+    actual_sha = sha256_hex(hashable)
+    if not stored_sha or actual_sha != stored_sha:
+        problems.append(
+            f"batch_sha256 no coincide con el contenido: "
+            f"{results.name}")
     if not sha_file.exists():
         problems.append(f"sha256 ausente: {sha_file.name}")
-    elif batch_sha:
+    else:
         m = re.match(r"([0-9a-f]{64})\s+(\S+)",
                      sha_file.read_text().strip())
-        if not m or m.group(1) != batch_sha or m.group(2) != results.name:
+        if not m or m.group(1) != actual_sha or m.group(2) != results.name:
             problems.append(f"sha256 invalido: {sha_file.name}")
     return problems
 
@@ -284,12 +307,7 @@ def cmd_gates(state, phase):
         rows = {f"{r['frame_item_id']} :: {r['field']}": r
                 for r in report["results"]}
         if dev_targets:
-            bad = []
-            for t in sorted(dev_targets):
-                if t not in rows:
-                    bad.append(f"{t} (target missing)")
-                elif rows[t]["status"] not in TARGET_OK:
-                    bad.append(f"{t} -> {rows[t]['status']}")
+            bad = _dev_target_problems(rows, dev_targets)
             verdict.append((f"DEV targets {active} resueltos",
                             not bad, "; ".join(bad)))
         other_p0 = [f"{k} -> {r['status']}" for k, r in rows.items()
