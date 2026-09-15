@@ -13,6 +13,8 @@ resuelve el pipeline.
 """
 from __future__ import annotations
 
+import re
+
 from ...canonical import strict_json_loads
 from ...numeric import FinancialAmount
 from ...source_policy import SourcePolicy
@@ -112,6 +114,12 @@ _TEXT_FIELDS = {
     "companyTradingSystem": "source.company_trading_system",
     "companyKey": "source.company_key",
 }
+
+
+_FOLLOW_ON_CAPITAL = re.compile(
+    r"amp\.?\s*capital|ampliaci[oó]n de capital|aumento de capital",
+    re.I,
+)
 
 
 def _yyyymmdd(value: str) -> str | None:
@@ -228,6 +236,13 @@ def parse(
 
     if category == "CapitalIncreases" and metadata.get("rightsIndicator") == "S":
         event_type = "RIGHTS_ISSUE"
+    elif (category == "NewListings"
+          and str(metadata.get("admissionType", "")).lower() == "integration"
+          and _FOLLOW_ON_CAPITAL.search(str(metadata.get("observ") or ""))):
+        # Admision de acciones fungibles de una ampliacion previa:
+        # es la fase ADMISSION del aumento de capital, no una
+        # incorporacion inicial al mercado.
+        event_type = "CAPITAL_INCREASE"
     else:
         event_type = _EVENT_TYPE.get(category, "UNKNOWN")
 

@@ -109,6 +109,11 @@ def _parse_text(text: str, document: SourceDocument) -> ParsedDocument:
         r"(?:distribuci[oó]n del dividendo(?: ordinario bruto)?|distribuci[oó]n de dividendos?|reparto de (?:un )?dividendo|repartir un dividendo|pago de (?:un )?dividendo|dividendo complementario|dividendo extraordinario|dividendo a cuenta)",
         flags=re.I,
     )
+    scrip = grab(
+        "event_scrip",
+        r"(?:dividendo flexible|scrip dividend|flexible dividend)",
+        flags=re.I,
+    )
     redemption = grab(
         "event_redemption",
         r"(?:amortizaci[oó]n anticipada|reembolso anticipado|amortizaci[oó]n total anticipada)",
@@ -137,14 +142,20 @@ def _parse_text(text: str, document: SourceDocument) -> ParsedDocument:
     capital_reduction = grab(
         "event_capital_reduction", r"reducci[oó]n de capital", flags=re.I
     )
-    if dividend_cents or dividend_eur or dividend_generic or dividend_effectivo or dividend_context:
-        event_type = "CASH_DIVIDEND"
-    elif redemption:
-        event_type = "EARLY_REDEMPTION"
-    elif takeover:
-        event_type = "TAKEOVER_BID"
+    # Familia economica explicita > mecanismo/fase. Un scrip se
+    # instrumenta via "aumento de capital liberado" pero el evento
+    # canonico es SCRIP_DIVIDEND; una fusion/OPA/amortizacion que
+    # menciona "dividendo" incidentalmente conserva su familia.
+    if scrip:
+        event_type = "SCRIP_DIVIDEND"
     elif merger:
         event_type = "MERGER_OR_EXCHANGE"
+    elif takeover:
+        event_type = "TAKEOVER_BID"
+    elif redemption:
+        event_type = "EARLY_REDEMPTION"
+    elif dividend_cents or dividend_eur or dividend_generic or dividend_effectivo or dividend_context:
+        event_type = "CASH_DIVIDEND"
     elif capital or capital_generic:
         event_type = "CAPITAL_INCREASE"
     elif capital_reduction:

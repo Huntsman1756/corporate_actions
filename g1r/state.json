@@ -19,9 +19,10 @@
    "FALSE_FINANCIAL_SEMANTIC_ANCHOR",
    "DECIMAL_SPLIT_PDF"
   ],
-  "in_review": [],
+  "in_review": [
+   "EVENT_TYPE_FAMILY_BOUNDARY"
+  ],
   "queue": [
-   "EVENT_TYPE_FAMILY_BOUNDARY",
    "DATE_MISBINDING",
    "FALSE_POSITIVE_EVENT"
   ],
