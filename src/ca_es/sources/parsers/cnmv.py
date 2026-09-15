@@ -78,68 +78,121 @@ def _parse_text(text: str, document: SourceDocument) -> ParsedDocument:
     claims: list[Claim] = []
 
     # --- Clasificacion de evento ------------------------------------
+    # Marco juridico-procedural: un lexema de familia dentro de una
+    # construccion de dispensa/exencion/obligacion legal o del nombre
+    # de un regimen legal no es evidencia de evento sobre el titulo
+    # ("solicitud de dispensa de la obligacion de formular OPA",
+    # "el regimen de las ofertas publicas de adquisicion"). Si todas
+    # las ocurrencias del ancla estan enmarcadas, el ancla no cuenta.
+    _PROCEDURAL_FRAME = re.compile(
+        r"dispensa|exenci[oó]n|eximente|eximir"
+        r"|obligaci[oó]n de formular"
+        r"|solicitud de (?:autorizaci[oó]n|dispensa|exenci[oó]n)"
+        r"|r[eé]gimen de (?:las|los)",
+        re.I,
+    )
+
+    # En texto extraido de PDF el salto de linea es artefacto de layout,
+    # no limite de clausula: solo la puntuacion real lo es.
+    _CLAUSE_END = ".;:!?"
+
+    def _clause_of(start: int, end: int) -> str:
+        lo = max(
+            (text.rfind(c, 0, start) for c in _CLAUSE_END), default=-1
+        ) + 1
+        hi_candidates = [
+            text.find(c, end) for c in _CLAUSE_END if text.find(c, end) >= 0
+        ]
+        hi = min(hi_candidates) if hi_candidates else len(text)
+        return text[lo:hi]
+
+    def grab_event(name: str, pattern: str, *, group: int = 1, flags: int = 0) -> str | None:
+        """Primer ancla de familia fuera de marco procedural.
+
+        El marco solo descarta la ocurrencia si comparte clausula con
+        el ancla: un lexema procedural de la frase anterior no suprime
+        una evidencia real posterior.
+        """
+        for match in re.finditer(pattern, text, flags):
+            if _PROCEDURAL_FRAME.search(
+                _clause_of(match.start(), match.end())
+            ):
+                continue
+            try:
+                value = match.group(group)
+            except IndexError:
+                value = match.group(0)
+            anchors[name] = {
+                "value": value,
+                "matched": match.group(0),
+                "offset": match.start(),
+                "pattern": pattern,
+            }
+            return value
+        return None
+
     # Deteccion generica por familia: cada ancla conserva el fragmento
     # que la justifica. La precedencia es determinista (lista ordenada).
-    capital = grab(
+    capital = grab_event(
         "event_capital",
         r"aumento de capital[^.]{0,140}exclusi[oó]n del derecho de suscripci[oó]n preferente",
         flags=re.I | re.S,
     )
-    capital_generic = grab(
+    capital_generic = grab_event(
         "event_capital_generic", r"aumento de capital", flags=re.I
     )
-    dividend_eur = grab(
+    dividend_eur = grab_event(
         "dividend_eur", rf"dividendo (?:ordinario |bruto )*de {_AMOUNT} euros", flags=re.I
     )
-    dividend_generic = grab(
+    dividend_generic = grab_event(
         "dividend_generic",
         rf"dividendo\b[^.]{{0,60}}?de {_AMOUNT} euros(?:\s*(brutos|netos))?",
         flags=re.I | re.S,
     )
-    dividend_cents = grab(
+    dividend_cents = grab_event(
         "dividend_cents",
         rf"cantidad bruta de {_AMOUNT}\s*c[eé]ntimos de euro",
         flags=re.I,
     )
-    dividend_effectivo = grab(
+    dividend_effectivo = grab_event(
         "event_dividend", r"dividendo\s+(?:complementario\s+)?en efectivo", flags=re.I
     )
-    dividend_context = grab(
+    dividend_context = grab_event(
         "event_dividend_context",
         r"(?:distribuci[oó]n del dividendo(?: ordinario bruto)?|distribuci[oó]n de dividendos?|reparto de (?:un )?dividendo|repartir un dividendo|pago de (?:un )?dividendo|dividendo complementario|dividendo extraordinario|dividendo a cuenta)",
         flags=re.I,
     )
-    scrip = grab(
+    scrip = grab_event(
         "event_scrip",
         r"(?:dividendo flexible|scrip dividend|flexible dividend)",
         flags=re.I,
     )
-    redemption = grab(
+    redemption = grab_event(
         "event_redemption",
         r"(?:amortizaci[oó]n anticipada|reembolso anticipado|amortizaci[oó]n total anticipada)",
         flags=re.I,
     )
-    merger = grab(
+    merger = grab_event(
         "event_merger",
         r"\bfusi[oó]n (?:por absorci[oó]n\b|societaria\b|de\b)",
         flags=re.I,
     )
-    takeover = grab(
+    takeover = grab_event(
         "event_takeover",
         r"(?:oferta p[úu]blica de (?:adquisici[oó]n|compra)|\bOPA\b)",
         flags=re.I,
     )
-    listing = grab(
+    listing = grab_event(
         "event_listing",
         r"(?:admisi[oó]n a negociaci[oó]n|incorporaci[oó]n al (?:mercado|sistema)|salida a bolsa)",
         flags=re.I,
     )
-    delisting = grab(
+    delisting = grab_event(
         "event_delisting",
         r"exclusi[oó]n de (?:negociaci[oó]n|cotizaci[oó]n)",
         flags=re.I,
     )
-    capital_reduction = grab(
+    capital_reduction = grab_event(
         "event_capital_reduction", r"reducci[oó]n de capital", flags=re.I
     )
     # Familia economica explicita > mecanismo/fase. Un scrip se

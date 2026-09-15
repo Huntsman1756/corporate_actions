@@ -21,10 +21,10 @@
    "EVENT_TYPE_FAMILY_BOUNDARY",
    "DATE_MISBINDING"
   ],
-  "in_review": [],
-  "queue": [
+  "in_review": [
    "FALSE_POSITIVE_EVENT"
   ],
+  "queue": [],
   "backlog_p1_p2": [
    "CENTS_PER_SHARE_LEXEME",
    "STRUCTURED_AMOUNT_LABEL_VARIANT",
