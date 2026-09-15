@@ -1,0 +1,143 @@
+{
+ "BMEG-Delistings-ES0105077004-2026-04-01": {
+  "affected_instrument.isin": "ES0105077004",
+  "amount.nominal": {
+   "__financial__": true,
+   "currency": null,
+   "normalized": "2133576.0",
+   "raw_lexeme": "2133576.0",
+   "scale": 1
+  },
+  "amount.turnover": {
+   "__financial__": true,
+   "currency": null,
+   "normalized": "3043901.76",
+   "raw_lexeme": "3043901.76",
+   "scale": 2
+  },
+  "date.admission_date": "2026-04-01",
+  "event_type": "DELISTING",
+  "instrument.isin": "ES0105077004",
+  "shares.num_shares": 14223840,
+  "shares.trading_unit": 1,
+  "source.market_code": "28906",
+  "source.num_seq": 1,
+  "source.official_category": "Delistings",
+  "source.relevant_fact_code": "065"
+ },
+ "BMEG-Dividends-ES0131703003-2025-09-18": {
+  "affected_instrument.isin": "ES0131703003",
+  "amount.gross_per_share": {
+   "__financial__": true,
+   "currency": "EUR",
+   "normalized": "0.1275767",
+   "raw_lexeme": "0.1275767",
+   "scale": 7
+  },
+  "amount.net_per_share": {
+   "__financial__": true,
+   "currency": "EUR",
+   "normalized": "0.10333713",
+   "raw_lexeme": "0.10333713",
+   "scale": 8
+  },
+  "date.ex_date": "2025-09-18",
+  "date.payment_date": "2025-09-22",
+  "dividend.concept": "A CUENTA",
+  "dividend.type": "ORDINARIO",
+  "dividend.year": "2025",
+  "event_type": "CASH_DIVIDEND",
+  "instrument.currency": "EUR",
+  "instrument.isin": "ES0131703003",
+  "shares.trading_unit": 1,
+  "source.concept_code": "A",
+  "source.official_category": "Dividends",
+  "source.type_code": "O"
+ },
+ "CNMV-IP-2683": {
+  "event_type": "TAKEOVER_BID"
+ },
+ "CNMV-OIR-33177": {},
+ "CNMV-OIR-34106": {},
+ "CNMV-OIR-34625": {
+  "date.announcement_date": "2025-05-08",
+  "event_type": "TAKEOVER_BID"
+ },
+ "CNMV-OIR-34719": {},
+ "CNMV-OIR-35131": {},
+ "CNMV-OIR-41312": {
+  "date.announcement_date": "2026-06-09",
+  "date.ex_date": "2026-06-16",
+  "date.payment_date": "2026-06-18",
+  "date.record_date": "2026-06-17"
+ },
+ "CNMV-OIR-41650": {
+  "date.announcement_date": "2026-06-30",
+  "date.ex_date": "2026-07-07",
+  "date.payment_date": "2026-07-09",
+  "date.record_date": "2026-07-08"
+ },
+ "POEX-DOC-15339": {},
+ "POEX-DOC-39649": {
+  "amount.issue_price_per_share": {
+   "__financial__": true,
+   "currency": "EUR",
+   "normalized": "4",
+   "raw_lexeme": "4",
+   "scale": 0
+  },
+  "event_type": "CAPITAL_INCREASE",
+  "instrument.isin": "ES0605969908"
+ },
+ "POEX-DOC-4162": {
+  "amount.gross_per_share": {
+   "__financial__": true,
+   "currency": "EUR",
+   "normalized": "1.69898061",
+   "raw_lexeme": "1,69898061",
+   "scale": 8
+  },
+  "amount.gross_total": {
+   "__financial__": true,
+   "currency": "EUR",
+   "normalized": "850000.00",
+   "raw_lexeme": "850.000,00",
+   "scale": 2
+  },
+  "date.ex_date": "2025-04-25",
+  "date.payment_date": "2025-04-25",
+  "date.record_date": "2025-04-24",
+  "event_type": "CASH_DIVIDEND",
+  "infrastructure_role.PAYMENT_CHANNEL": "EUROCLEAR_FRANCE"
+ },
+ "POEX-DOC-4318": {
+  "amount.gross_per_share": {
+   "__financial__": true,
+   "currency": "EUR",
+   "normalized": "0.04",
+   "raw_lexeme": "0,04",
+   "scale": 2
+  },
+  "date.ex_date": "2025-05-07",
+  "date.last_trading_date": "2025-05-06",
+  "date.payment_date": "2025-05-07",
+  "date.record_date": "2025-05-06",
+  "event_type": "CAPITAL_REDUCTION",
+  "infrastructure_role.PAYMENT_CHANNEL": "EUROCLEAR_FRANCE"
+ },
+ "POEX-DOC-4319": {
+  "amount.gross_per_share": {
+   "__financial__": true,
+   "currency": "EUR",
+   "normalized": "0.04",
+   "raw_lexeme": "0,04",
+   "scale": 2
+  },
+  "date.ex_date": "2025-05-07",
+  "date.last_trading_date": "2025-05-06",
+  "date.payment_date": "2025-05-07",
+  "date.record_date": "2025-05-06",
+  "event_type": "CAPITAL_REDUCTION",
+  "infrastructure_role.PAYMENT_CHANNEL": "EUROCLEAR_FRANCE"
+ }
+}

@@ -75,3 +75,9 @@ g1r/adjudication/_dev_facts.json
 !g1r/results/holdout-verdict.json
 g1r2/corpus/raw/*
 !g1r2/corpus/raw/.gitkeep
+g1r2/results/*.json
+!g1r2/results/.gitkeep
+!g1r2/results/iter1-g1-oracle-eval.json
+!g1r2/results/iter1-dev-oracle-eval.json
+!g1r2/results/iter1-spent-holdout-results.json
+!g1r2/results/iter1-spent-holdout-facts.json

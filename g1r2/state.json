@@ -3,7 +3,7 @@
  "updated_at": "2026-09-15",
  "protocol": "docs/gates/g1r2-preregistered.json",
  "protocol_tag": "g1r2-protocol",
- "phase": "HOLDOUT_SEALED",
+ "phase": "DEVELOPMENT_ITER1_CLEAN",
  "snapshot": "g1r2/manifests/snapshot-portfolio-2026-09-15.json",
  "precondition": {
   "min_stratum_cas": 8,
@@ -11,5 +11,25 @@
   "distinct_unseen_ca_groups": 8,
   "met": true
  },
- "next": "sealed holdout -> desarrollo AMOUNT_ROLE_MISBINDING"
+ "holdout": {
+  "manifest": "g1r2/manifests/holdout.json",
+  "manifests_dir": "g1r2/manifests/holdout/",
+  "ca_groups": 8,
+  "documents": 11,
+  "status": "SEALED"
+ },
+ "development": {
+  "binding_target": "AMOUNT_ROLE_MISBINDING",
+  "iter1": {
+   "commit": "03584d8",
+   "change": "portfolio.py: issue_price anchors + CAPITAL_INCREASE/RIGHTS_ISSUE family routing + role blockers; Emisor issuer prefix",
+   "regression": {
+    "pytest": "169+8 PASS",
+    "g1_oracle": "56/56 OK (g1r2/results/iter1-g1-oracle-eval.json)",
+    "dev_oracle": "0 REGRESSED / 0 EMITTED_OTHER (g1r2/results/iter1-dev-oracle-eval.json)",
+    "spent_holdout": "14/14 seeds byte-identical; POEX-DOC-39649 -> issue_price_per_share=4 EUR, gross removed, event_type CAPITAL_INCREASE (g1r2/results/iter1-spent-holdout-facts.json)"
+   }
+  }
+ },
+ "next": "g1r2-parser-freeze tag -> HOLDOUT virgen x2 -> adjudicacion humana"
 }
