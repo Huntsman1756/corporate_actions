@@ -178,6 +178,16 @@ _ROLE_PREDICATES: dict[str, re.Pattern] = {
 # DERIVED_BY_DEFINITION con el anio de la fecha de pago.
 _CANDIDATE_DATE = re.compile(rf"{_NUMERIC}|{_SPANISH}|\d{{1,2}}\s+de\s+\w+")
 
+# Sintaxis campo:valor tras la etiqueta ("Record date: 12 de agosto",
+# "fecha ex date el 11"): la fecha inmediatamente posterior separada
+# solo por dos puntos/articulo es el valor del campo.
+_LABEL_VALUE = re.compile(
+    r"^[\s:：\-–—]*(?:el|del|de|a partir del|el d[ií]a|ser[aá]"
+    r"|ser[íi]a|son|sea)?\s*$",
+    re.I,
+)
+
+
 # Limite de clausula: coma/punto/conjuncion coordinadora. Una fecha que
 # precede a la etiqueta al otro lado de uno de estos limites cierra la
 # clausula anterior; solo la liga la aposicion pura ("D, la fecha de
@@ -310,6 +320,8 @@ def bind_role_dates(text: str) -> dict[str, dict]:
             else:
                 span = text[lend:dstart]
             score = _BIND_WINDOW - dist
+            if dend > lstart and _LABEL_VALUE.match(span):
+                score += 2 * _BIND_WINDOW
             if predicate and predicate.search(span):
                 score += 2 * _BIND_WINDOW
             # Corroboracion: el span contiene otro lexema del mismo rol
