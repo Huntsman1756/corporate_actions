@@ -54,3 +54,7 @@ g1r/adjudication/_dev_facts.json
 !g1r/results/dev-iter-3-fea0f3e-results.sha256
 !g1r/results/dev-iter-3-dev-oracle-eval.json
 !g1r/results/dev-iter-3-g1-oracle-eval.json
+!g1r/results/dev-iter-4-bd4cfb3-results.json
+!g1r/results/dev-iter-4-bd4cfb3-results.sha256
+!g1r/results/dev-iter-4-dev-oracle-eval.json
+!g1r/results/dev-iter-4-g1-oracle-eval.json
