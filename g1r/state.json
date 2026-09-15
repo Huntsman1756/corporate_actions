@@ -3,11 +3,11 @@
  "updated_at": "2026-09-14",
  "protocol": "docs/gates/g1r-execution-runbook.md",
  "last_approved_checkpoint": {
-  "phase": "dev-iter-3",
-  "commit": "35fb7dd18f84f10f2eb7fbe4ea61135e8f74c183",
-  "parser_commit": "fea0f3ebce860e094565033d2b66f86259d058a4",
+  "phase": "dev-iter-4",
+  "commit": "20b9c6708b97fc157984fca0d66e3a8551c1593e",
+  "parser_commit": "bd4cfb327be97f830116b76eeef6813c07f08631",
   "status": "APPROVED",
-  "note": "EVENT_TYPE_FAMILY_BOUNDARY signed; oracle V4 errata aceptada; artifacts dev-iter-3-*"
+  "note": "DATE_MISBINDING signed; G1 oracle 56/56; artifacts dev-iter-4-*"
  },
  "semantic_freeze": {
   "commit": "cad072f4c25a5d9cc201cb6d5c3a729ad7bdfee0",
@@ -18,11 +18,10 @@
   "resolved": [
    "FALSE_FINANCIAL_SEMANTIC_ANCHOR",
    "DECIMAL_SPLIT_PDF",
-   "EVENT_TYPE_FAMILY_BOUNDARY"
-  ],
-  "in_review": [
+   "EVENT_TYPE_FAMILY_BOUNDARY",
    "DATE_MISBINDING"
   ],
+  "in_review": [],
   "queue": [
    "FALSE_POSITIVE_EVENT"
   ],
@@ -40,10 +39,7 @@
  },
  "g1_oracle": {
   "oracle": "g1r/manifests/g1-regression-oracle.json",
-  "known_open_failures": [
-   "CNMV-OIR-36680 :: event_type",
-   "CNMV-OIR-40729 :: ex_date"
-  ],
+  "known_open_failures": [],
   "note": "todo FAIL fuera de known_open_failures detiene la iteracion; un FAIL resuelto se retira de la lista al aprobar el checkpoint"
  },
  "dev_oracle": {
@@ -120,6 +116,5 @@
   }
  },
  "current_phase": "dev-iter-4",
- "parser_commit": "bd4cfb327be97f830116b76eeef6813c07f08631",
- "known_open_failures": []
+ "parser_commit": "bd4cfb327be97f830116b76eeef6813c07f08631"
 }

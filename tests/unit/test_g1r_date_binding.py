@@ -95,3 +95,13 @@ def test_article_apposition_names_the_date() -> None:
     # "el ex - date" es aposicion que nombra la fecha, no uso descriptivo.
     text = "siendo el día 16 de abril de 2026 el ex - date previsto."
     assert best_role_date(text, "EX_DATE")["iso"] == "2026-04-16"
+
+
+def test_no_year_lexeme_bound_but_not_iso() -> None:
+    # "30 de abril" liga como candidato; el anio se deriva del payment
+    # date en el wiring del parser (DERIVED_BY_DEFINITION).
+    text = "la acción cotizaría ex -dividendo el 30 de abril próximo."
+    bound = best_role_date(text, "EX_DATE")
+    assert bound["value"].startswith("30 de")
+    assert bound["explicit"] is False
+    assert bound["iso"] is None

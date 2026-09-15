@@ -491,6 +491,28 @@ def _parse_text(text: str, document: SourceDocument) -> ParsedDocument:
                 raw_pointer="/anchors/payment_date/value",
             )
         )
+    # Fallback generico del pago ANTES de fijar default_year: las fechas
+    # sin anio derivan el anio de la fecha de pago; si el pago solo se
+    # descubre por el canal etiquetado, debe alimentar la derivacion.
+    if not payment_iso:
+        found = find_labeled_date(text, "PAYMENT_DATE")
+        if found:
+            anchors["payment_date"] = {
+                "value": found["value"],
+                "matched": found["matched"],
+                "offset": found["offset"],
+                "pattern": "labeled",
+            }
+            claims.append(
+                Claim(
+                    field_path="date.payment_date",
+                    value=found["iso"],
+                    date_kind="PAYMENT_DATE",
+                    evidence_locator=cite("payment_date"),
+                    raw_pointer="/anchors/payment_date/value",
+                )
+            )
+            payment_iso = found["iso"]
     default_year = payment_iso[:4] if payment_iso else (
         document.publication_date or "1970"[:4]
     )
@@ -567,28 +589,8 @@ def _parse_text(text: str, document: SourceDocument) -> ParsedDocument:
             "RECORD_DATE",
         )
 
-    # Fallback generico: fechas etiquetadas (Ex-Date / record date /
-    # payment date / fecha de pago / fecha valor / "se concreta en el
-    # dia") en formatos DD/MM/YYYY o "D de mes de YYYY".
-    if not payment_iso:
-        found = find_labeled_date(text, "PAYMENT_DATE")
-        if found:
-            anchors["payment_date"] = {
-                "value": found["value"],
-                "matched": found["matched"],
-                "offset": found["offset"],
-                "pattern": "labeled",
-            }
-            claims.append(
-                Claim(
-                    field_path="date.payment_date",
-                    value=found["iso"],
-                    date_kind="PAYMENT_DATE",
-                    evidence_locator=cite("payment_date"),
-                    raw_pointer="/anchors/payment_date/value",
-                )
-            )
-            payment_iso = found["iso"]
+    # Fallback generico: fechas etiquetadas (Ex-Date / record date) en
+    # formatos DD/MM/YYYY o "D de mes de YYYY".
     seen_fields = {c.field_path for c in claims}
     for date_kind, field_path in (
         ("EX_DATE", "date.ex_date"),
