@@ -1,0 +1,122 @@
+{
+ "eval_version": "CA_ES_G2_GATES_EVAL_V1",
+ "protocol": "docs/gates/g2-preregistered.json @ g2-protocol",
+ "artifacts": {
+  "run1": "g2/results/run-1-8f9c3e7-canon.json",
+  "run2": "g2/results/run-2-8f9c3e7-canon.json",
+  "control_e": "g2/results/control-e-8f9c3e7-canon.json"
+ },
+ "gates": {
+  "canonical_identity_unproven_merges": {
+   "measured": 0,
+   "required": 0,
+   "met": true,
+   "detail": []
+  },
+  "revision_history_loss": {
+   "measured": 0,
+   "required": 0,
+   "met": true,
+   "detail": []
+  },
+  "fact_provenance_rate": {
+   "measured": 1.0,
+   "required": 1.0,
+   "met": true,
+   "detail": []
+  },
+  "deterministic_export": {
+   "measured": 1.0,
+   "required": 1.0,
+   "met": true,
+   "detail": null
+  },
+  "silent_conflicts": {
+   "measured": 0,
+   "required": 0,
+   "met": true,
+   "detail": []
+  },
+  "human_authored_business_facts": {
+   "measured": 0,
+   "required": 0,
+   "met": true,
+   "detail": {
+    "adjudications_relations_only": true,
+    "facts": []
+   }
+  },
+  "financial_precision_loss": {
+   "measured": 0,
+   "required": 0,
+   "met": true,
+   "detail": []
+  },
+  "unsupported_capability_emissions": {
+   "measured": 0,
+   "required": 0,
+   "met": true,
+   "detail": []
+  }
+ },
+ "cases": {
+  "A": {
+   "pass": true,
+   "detail": {
+    "one_event": true,
+    "event_type": true,
+    "deterministic_link": true,
+    "announcement_conflict": true,
+    "single_revision": true
+   }
+  },
+  "B": {
+   "pass": true,
+   "detail": {
+    "one_event": true,
+    "event_type": true,
+    "two_revisions": true,
+    "supersedes": true,
+    "gen0_amount_0.22": true,
+    "gen1_no_amount": true,
+    "gen0_dates": true,
+    "gen1_dates": true
+   }
+  },
+  "C": {
+   "pass": true,
+   "detail": {
+    "event_type": true,
+    "isin": true,
+    "ex_date": true,
+    "payment_date": true,
+    "gross": true,
+    "net": true
+   }
+  },
+  "D": {
+   "pass": true,
+   "detail": {
+    "event_type": true,
+    "isin": true,
+    "amounts": true
+   }
+  },
+  "E": {
+   "pass": true,
+   "detail": {
+    "distinct_without_adjudication": true,
+    "no_relation_in_control": true,
+    "manual_merge_contrast": true
+   }
+  },
+  "AUX": {
+   "pass": true,
+   "detail": {
+    "poex_event_present": true,
+    "no_issue_price_anywhere": true
+   }
+  }
+ },
+ "verdict": "PENDING_HUMAN_ADJUDICATION"
+}

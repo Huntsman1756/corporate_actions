@@ -29,7 +29,7 @@ from pathlib import Path
 REPO_ROOT = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(REPO_ROOT / "src"))
 
-from ca_es.export import canon_bytes, logical_sha256, operational_canon  # noqa: E402
+from ca_es.export import canon_bytes, canon_payload, logical_sha256, operational_canon  # noqa: E402
 from ca_es.pipeline import run_pipeline  # noqa: E402
 from ca_es.reference.esma_firds import load_firds_listings  # noqa: E402
 
@@ -97,7 +97,7 @@ def execute(phase: str, adjudications: str | None, run_label: str) -> dict:
         executed_at=EXECUTED_AT,
     )
     canon = operational_canon(run["body"], manifest["corpus_id"])
-    payload_bytes = canon_bytes(canon)
+    payload_bytes = canon_bytes(canon_payload(canon))
     sha = logical_sha256(canon)
 
     commit = subprocess.run(

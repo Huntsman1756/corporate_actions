@@ -124,11 +124,17 @@ def operational_canon(body: dict, corpus_id: str) -> dict:
     }
 
 
-def canon_bytes(canon: dict) -> bytes:
+def canon_bytes(payload: dict) -> bytes:
     """Bytes canonicos del payload logico (byte-estables entre runs)."""
-    return canonical_bytes(canon)
+    return canonical_bytes(payload)
 
 
 def logical_sha256(canon: dict) -> str:
-    """sha256 del payload logico canonico."""
+    """sha256 del canon logico (sin el propio campo logical_sha256)."""
     return sha256_bytes(canonical_bytes(canon))
+
+
+def canon_payload(canon: dict) -> dict:
+    """Export final: canon logico + su logical_sha256, como
+    ``result_sha`` sobre ``body`` en el pipeline."""
+    return {**canon, "logical_sha256": logical_sha256(canon)}

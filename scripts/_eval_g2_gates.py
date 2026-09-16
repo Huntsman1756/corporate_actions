@@ -526,7 +526,7 @@ def main() -> int:
                 "measured": g["measured"],
                 "required": g["required"],
                 "met": g["measured"] == g["required"],
-                "detail": g["detail"],
+                "detail": g.get("detail"),
             }
             for name, g in gates.items()
         },
