@@ -1,0 +1,234 @@
+{
+ "preregistration_version": "CA_ES_G3_PREREG_V1",
+ "status": "DRAFT_PENDING_APPROVAL",
+ "drafted_at": "2026-09-16",
+ "note": "El tag g3-protocol solo se crea tras aprobacion humana del diff final.",
+ "parent": "G2 PASS — g2/results/verdict.json (31c95c8); scope aprobado docs/gates/g3-scope.md (da5839c)",
+ "question": "Puede un usuario de operaciones consumir el canon G2 y entender un corporate action, su estado vigente, su historial y su evidencia sin volver a inspeccionar manualmente los documentos fuente?",
+ "nature": "gate de producto/superficie de consumo, NO de parsing ni de canonicalizacion. El motor (canon) ya esta probado en G2.",
+ "frozen_surface": {
+  "base_commit": "31c95c8",
+  "frozen_paths": [
+   "src/ca_es/sources/parsers/**",
+   "docs/sources/source-policy.json",
+   "docs/sources/*/semantic-contract.json",
+   "src/ca_es/identity.py",
+   "src/ca_es/revisions.py",
+   "src/ca_es/provenance.py",
+   "src/ca_es/export.py",
+   "src/ca_es/pipeline.py",
+   "src/ca_es/canonical.py",
+   "src/ca_es/namespaces.py"
+  ],
+  "allowed_paths": [
+   "src/ca_es/surface.py (nuevo modulo de queries/vistas)",
+   "src/ca_es/cli.py (solo adapter fino: nuevos subcomandos; event/isin existentes NO cambian)",
+   "scripts/run_g3*.py y evaluador G3",
+   "tests/**",
+   "g3/**"
+  ],
+  "rule": "cualquier bug del motor o de extraccion descubierto durante G3 se registra en backlog y NO se corrige dentro del gate",
+  "verification": "git diff <freeze_ref>..HEAD -- frozen_paths debe ser vacio al evaluar"
+ },
+ "input_contract": {
+  "name": "CA_ES_G3_CANON_INPUT_V1",
+  "definition": "la superficie G3 consume un artefacto CA_ES_OPERATIONAL_CANON_V1 ya generado (fichero --canon <file>); NUNCA re-ejecuta run_pipeline por comando",
+  "pinned_input": {
+   "artifact": "g2/results/run-1-f401633-canon.json",
+   "logical_sha256": "722c5f2c3a958ed91344b29a93477bbdffd1e55843300dd58c807db1bb7122e1",
+   "copied_to": "g3/input/canon.json (sellado: sha256 del fichero verificado antes de evaluar; mismatch -> STOP)"
+  },
+  "cli_compat": "los subcomandos existentes run/gates/metrics/event/isin conservan su comportamiento; G3 solo anade subcomandos nuevos"
+ },
+ "architecture_contract": {
+  "layering": [
+   "CA_ES_OPERATIONAL_CANON_V1 (entrada)",
+   "src/ca_es/surface.py: queries + materializacion de estado (CURRENT_STATE_V1, timeline, busqueda, navegacion de evidencia)",
+   "src/ca_es/cli.py: thin adapter (parseo de args + render); sin semantica de negocio"
+  ],
+  "prohibited": "semantica G3 dentro de cli.py; rerun del pipeline; mutacion del canon de entrada"
+ },
+ "current_state_contract": {
+  "name": "CURRENT_STATE_V1",
+  "definition": "para cada field_path: seleccionar la revision de mayor generation que contiene ese field. Si esa revision contiene 1 valor economico -> CURRENT; >1 valores divergentes -> CONFLICTING, sin elegir ganador. La ausencia del field en una revision posterior NO significa borrado: se conserva el ultimo valor publicado anterior, salvo semantica explicita de cancelacion/withdrawal (no existe en V1)",
+  "event_scope_facts": "los facts con revision_id=EVENT_SCOPE (binding/enrichment) son revision-independent: siempre CURRENT",
+  "example_mfe": "gross_per_share=0.22 (rev0, ultimo publicado) + ex/record/payment=20/21/22-07-2026 (rev1)"
+ },
+ "search_contract": {
+  "filters": {
+   "--isin": "exact match contra affected_instrument.isin e instrument.isin facts",
+   "--type": "exact match contra event_type",
+   "--issuer": "NFKD + casefold contains sobre issuer.issuer_name"
+  },
+  "combination": "AND entre filtros",
+  "ordering": "resultado ordenado por canonical_event_id",
+  "prohibited": "busqueda fuzzy, scoring, o cualquier heuristica no determinista"
+ },
+ "evidence_contract": {
+  "navigation": [
+   "assertion_id -> field/value/status",
+   "evidence_locator (cita humana)",
+   "source_document -> source_id + official_document_id",
+   "acquisition/source URL cuando exista",
+   "raw_pointer (trazabilidad mecanica)"
+  ],
+  "rule": "evidence NO abre automaticamente el raw; navega la cadena de provenance. El gate pregunta si el operador puede trabajar SIN inspeccionar el raw"
+ },
+ "output_contract": {
+  "format": "JSON binding en G3; CSV fuera del gate (aplanar revisions/conflicts/valores financieros anida una segunda semantica de presentacion innecesaria para probar el producto; post-G3 sera un adapter sencillo)",
+  "determinism": "misma entrada canonica + mismo comando => bytes identicos de salida"
+ },
+ "cli_commands": [
+  "ca-es events   --canon <file> [--isin ...] [--issuer ...] [--type ...]",
+  "ca-es show     --canon <file> <canonical_event_id>",
+  "ca-es timeline --canon <file> <canonical_event_id>",
+  "ca-es conflicts --canon <file> <canonical_event_id>",
+  "ca-es evidence --canon <file> <assertion_id>",
+  "ca-es export   --canon <file> <canonical_event_id> --format json"
+ ],
+ "product_cases": {
+  "input_canon": "CA_ES_G3_CANON_INPUT_V1 (logical_sha256 722c5f2c...)",
+  "cases": [
+   {
+    "case_id": "G3-A",
+    "name": "MFE revision lifecycle — estado vigente vs historico",
+    "canonical_event_id": "59303c3c-8be7-578f-bc59-8e5e43a1fdf3",
+    "expectations": [
+     "show: CURRENT_STATE_V1 -> amount.gross_per_share=0.22 EUR (origen rev0), date.ex_date=2026-07-20, date.record_date=2026-07-21, date.payment_date=2026-07-22 (origen rev1); cada field muestra su revision de origen",
+     "timeline: 2 revisions ordenadas gen0->gen1; gen1 supersedes gen0; diff muestra fechas 27/28/29 sustituidas por 20/21/22; gross_per_share marcado como vigente desde rev0 (no borrado)",
+     "conflicts: ninguno para este evento",
+     "evidence: facts navegables hasta source_document CNMV-OIR-*"
+    ]
+   },
+   {
+    "case_id": "G3-B",
+    "name": "Almirall — conflicto visible sin ganador",
+    "canonical_event_id": "035e32ca-ba61-5105-8756-e0234e5335fc",
+    "expectations": [
+     "show: event_type CAPITAL_INCREASE; 2 source_documents",
+     "conflicts: date.announcement_date CONFLICTING con ambos valores 2023-06-12 y 2023-06-13 y ambas fuentes visibles; NINGUN ganador elegido",
+     "current_state: date.announcement_date = CONFLICTING (no valor unico)"
+    ]
+   },
+   {
+    "case_id": "G3-C",
+    "name": "BME Growth dividend — evento operacional limpio",
+    "canonical_event_id": "6881d24a-ef46-5053-80ce-1743a1792f8b",
+    "expectations": [
+     "events --isin ES0105448007 -> exactamente este evento",
+     "show: CASH_DIVIDEND; gross_per_share=0.08690661 EUR; net_per_share=0.07039435 EUR; ex_date=2026-07-08; payment_date=2026-07-10",
+     "export --format json: payload del evento identico al subarbol del canon (fidelidad)"
+    ]
+   },
+   {
+    "case_id": "G3-D",
+    "name": "Portfolio 39649 — honestidad UNSUPPORTED",
+    "canonical_event_id": "e885fff1-0a3b-57d7-a2fa-f51a6e613f10",
+    "expectations": [
+     "show: CAPITAL_INCREASE; amount.issue_price_per_share declarado UNSUPPORTED (capacidad QUARANTINED_UNSUPPORTED de source-policy.json); NUNCA 0, NUNCA null interpretado como ausencia, NUNCA inferido",
+     "conflicts: instrument.isin CONFLICTING con ES0105969002 / ES0105969028 / ES0605969908 visibles"
+    ]
+   },
+   {
+    "case_id": "G3-E",
+    "name": "SAN — merge manual y busqueda",
+    "canonical_event_id": "6443e2be-b70d-50c7-88d1-4a62f43789e9",
+    "expectations": [
+     "show: 1 evento, 2 source_documents (CNMV + ISSUER_IR); identidad via MANUAL_ADJUDICATION visible en provenance",
+     "gross_per_share=0.125 EUR con ambas fuentes",
+     "known_quirk: instrument.isin='ESTIMACIONES' se muestra tal cual (dato del canon; quirk de extraccion registrado, superficie congelada)"
+    ]
+   },
+   {
+    "case_id": "G3-F",
+    "name": "BME Growth capital increase — amounts estructurados (opcional)",
+    "canonical_event_id": "3c9270d8-76b3-5953-942c-b1f42c1cc56a",
+    "expectations": [
+     "show: CAPITAL_INCREASE; disbursement_per_share=0.15, price=0.15, rights_price=0.0, effective_total=0.0, liberated_percentage=0.0, nominal_total=83333.3 EUR"
+    ]
+   }
+  ]
+ },
+ "gates": {
+  "current_state_correctness": {
+   "required": 1.0,
+   "definition": "CURRENT_STATE_V1 produce exactamente el oracle preregistrado por caso (fields, valores, revision de origen)"
+  },
+  "revision_timeline_correctness": {
+   "required": 1.0,
+   "definition": "generations completas y ordenadas; supersedes correcto; diff de fields entre revisions correcto (anadidos/sustituidos/retenidos)"
+  },
+  "conflict_visibility": {
+   "required": 1.0,
+   "definition": "ningun conflicto del canon desaparece en la superficie ni recibe ganador implicito; todos los values + fuentes mostrados"
+  },
+  "provenance_navigability": {
+   "required": 1.0,
+   "definition": "cada fact mostrado resuelve la cadena completa: assertion_id -> field/value/status -> evidence_locator -> source_document (source_id + official_document_id) -> raw_pointer"
+  },
+  "unsupported_capability_honesty": {
+   "required": 1.0,
+   "definition": "capacidades QUARANTINED_UNSUPPORTED de source-policy.json se muestran UNSUPPORTED; nunca null/ausente a secas ni valor inferido"
+  },
+  "canonical_export_fidelity": {
+   "required": 1.0,
+   "definition": "la superficie no altera valores, precision ni provenance del canon: export/show reproducen exactamente los subarboles canon (normalized/raw_lexeme/scale intactos)"
+  },
+  "deterministic_presentation": {
+   "required": 1.0,
+   "definition": "misma entrada canonica + mismo comando => bytes identicos de salida (x2 ejecuciones por comando)"
+  }
+ },
+ "human_operational_test": {
+  "size": "4-5 corporate actions preregistrados (casos G3-A..G3-F)",
+  "questions": [
+   "MFE: ¿cuanto se paga y cuando? ¿que cambio? -> 0.22 EUR; fechas vigentes 20/21/22-07-2026; timeline explica sustitucion de 27/28/29",
+   "Almirall: ¿hay algun dato en conflicto? -> announcement_date conflictivo; ambos valores y fuentes mostrados",
+   "BME Growth dividend: ¿que se paga y cuando? -> gross/net + ex/payment exactos del canon",
+   "Portfolio 39649: ¿cual es el precio de suscripcion? -> UNSUPPORTED/QUARANTINED; nunca 0, nunca null-as-ausencia, nunca inferido",
+   "opcional BME Growth capital increase: amounts estructurados"
+  ],
+  "rule": "las respuestas se obtienen SOLO desde la superficie G3, sin abrir los raws"
+ },
+ "verdict": {
+  "PASS_requires": {
+   "all_case_expectations_met": true,
+   "current_state_correctness": 1.0,
+   "revision_timeline_correctness": 1.0,
+   "conflict_visibility": 1.0,
+   "provenance_navigability": 1.0,
+   "unsupported_capability_honesty": 1.0,
+   "canonical_export_fidelity": 1.0,
+   "deterministic_presentation": 1.0,
+   "human_operational_test": "todas las preguntas respondibles desde la superficie"
+  },
+  "INCONCLUSIVE": "canon de entrada ausente o logical_sha256 divergente (STOP; NOT_RUN != PASS)",
+  "FAIL": "cualquier gate < 1.0 o cualquier expectativa de caso no satisfecha",
+  "explicitly_not_measured": [
+   "recall de extraccion",
+   "nuevas fuentes",
+   "CSV (fuera del gate)",
+   "levantar cuarentena Portfolio"
+  ]
+ },
+ "known_canon_quirks": [
+  "evento SAN: instrument.isin='ESTIMACIONES' (quirk de extraccion CNMV; se muestra tal cual; backlog, no fix en G3)",
+  "eventos CNMV Almirall/MFE/SAN sin affected_instrument.isin real: affected_instrument.isin=null se muestra como ausencia honesta de dato (no UNSUPPORTED; la capacidad isin-extraction no esta cuarentenada)"
+ ],
+ "out_of_scope": [
+  "nuevas fuentes de ingesta",
+  "OCR / image-only",
+  "ISO 15022/20022",
+  "levantar cuarentena Portfolio",
+  "web UI amplia",
+  "deprecar/renombrar subcomandos existentes"
+ ],
+ "execution": [
+  "aprobacion humana -> tag g3-protocol",
+  "copiar canon G2 a g3/input/canon.json + verificar sha256 del fichero y logical_sha256 (mismatch -> STOP)",
+  "implementar src/ca_es/surface.py + adapter cli.py + evaluador + tests G3 (superficie permitida)",
+  "ejecutar los 6 comandos x2 sobre el canon fijado; evaluar casos G3-A..G3-F + 7 gates",
+  "artefacto g3/results/gates-eval.json",
+  "adjudicacion humana (incl. test operacional) -> veredicto PASS / FAIL / INCONCLUSIVE"
+ ]
+}
