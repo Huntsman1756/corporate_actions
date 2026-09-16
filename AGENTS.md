@@ -59,6 +59,12 @@ python -m ca_es.cli swift-facts --fin <fichero.fin>
 python -m ca_es.cli swift-project --fin <fichero.fin> [--now <iso>]
 python -m ca_es.cli swift-bind --fin <fichero.fin> --canon g3/input/canon.json
 #   (o --facts <doc CA_ES_SWIFT_MT_FACTS_V1>)
+
+# P4.2 MT566 -> CA_ES_SWIFT_CASH_CANDIDATE_V1 (MT566-only)
+python -m ca_es.cli swift-cash-candidate --fin <fichero.fin> \
+    --canon g3/input/canon.json [--now <iso>]
+#   (o --facts); whitelist 19B: PSTA->UNKNOWN / NETO->NET /
+#   GRSS->GROSS; solo PROJECTABLE emite movement CA_ES_CASH_MOVEMENTS_V2
 ```
 
 No hay linter/formatter configurado; el estilo es PEP 8 + stdlib.

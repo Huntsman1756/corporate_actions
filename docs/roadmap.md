@@ -104,6 +104,15 @@ P4  SWIFT / ISO adapters
           INSUFFICIENT_IDENTITY; AGREES/DIFFERS/
           CANON_MISSING/SWIFT_MISSING/CANON_CONFLICTING;
           canon nunca mutado, cero fuzzy matching)
+    P4.2 MT566 -> cash movement candidate               DONE
+         (docs/p4/p42-scope.md; ca-es
+          swift-cash-candidate ->
+          CA_ES_SWIFT_CASH_CANDIDATE_V1; whitelist
+          cerrada 19B PSTA/NETO/GRSS ->
+          UNKNOWN/NET/GROSS, nunca inferida;
+          PROJECTABLE/INDETERMINATE/UNSUPPORTED;
+          solo PROJECTABLE emite movement V2;
+          MT566-only)
     Prowide MT564/565/566/567/568
     Prowide seev.031 / seev.* (ISO 20022)
     adapter ca-es -> Prowide, no parser SWIFT propio

@@ -543,6 +543,25 @@ def cmd_swift_bind(args: argparse.Namespace) -> int:
     return _emit(doc)
 
 
+def cmd_swift_cash_candidate(args: argparse.Namespace) -> int:
+    from .swift_cash import cash_candidate
+
+    facts_doc, code = _facts_doc(args)
+    if facts_doc is None:
+        return code
+    try:
+        canon = json.loads(Path(args.canon).read_text(encoding="utf-8"))
+    except OSError as exc:
+        print(json.dumps({"status": "INVALID_INPUT", "detail": str(exc)}))
+        return 2
+    try:
+        doc = cash_candidate(facts_doc, canon, now=args.now)
+    except ValueError as exc:
+        print(json.dumps({"status": "INVALID_FACTS", "detail": str(exc)}))
+        return 2
+    return _emit(doc)
+
+
 def build_parser() -> argparse.ArgumentParser:
     parser = argparse.ArgumentParser(prog="ca-es", description=__doc__)
     parser.add_argument("--repo-root", default=None)
@@ -688,6 +707,13 @@ def build_parser() -> argparse.ArgumentParser:
     bind.add_argument("--canon", required=True)
     bind.add_argument("--now", default=None)
     bind.set_defaults(func=cmd_swift_bind)
+
+    candidate = sub.add_parser("swift-cash-candidate")
+    candidate.add_argument("--fin", default=None)
+    candidate.add_argument("--facts", default=None)
+    candidate.add_argument("--canon", required=True)
+    candidate.add_argument("--now", default=None)
+    candidate.set_defaults(func=cmd_swift_cash_candidate)
 
     return parser
 
