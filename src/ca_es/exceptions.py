@@ -12,9 +12,11 @@ Frontera (docs/p3/p35-scope.md):
 Invariantes duras:
 
 - MATCH nunca crea caso.
-- case_key es estable y NO depende del workflow: se deriva de
-  (canonical_event_id, factual_status, sujeto). Reejecutar el motor
-  con el mismo resultado no duplica casos.
+- case_key es estable y NO depende ni del workflow ni del
+  factual_status: se deriva de (canonical_event_id, sujeto). Una
+  excepcion que evoluciona (MISSING_CASH -> AMOUNT_MISMATCH) es el
+  mismo caso con FACT_UPDATED, no dos casos. Reejecutar el motor con
+  el mismo resultado no duplica casos.
 - factual_status y workflow_status son taxonomias separadas.
   RESOLVED/DISMISSED nunca modifican factual_status ni reason_codes.
 - Una excepcion RESOLVED/DISMISSED que reaparece al reprocesar se
@@ -125,12 +127,13 @@ def _money_norm(value) -> Decimal | None:
 
 
 def _case_key(item: dict, canonical_event_id: str) -> str:
-    """Clave estable: evento + estado factual + sujeto.
+    """Clave estable: evento + sujeto. NUNCA incluye factual_status.
 
     El sujeto es el movimiento concreto para UNEXPECTED_CASH (el caso
     va sobre ESE cash); para el resto es la expectativa
     (account+currency), de modo que sustituir un movement_id por otro
-    no reabre un caso distinto.
+    o evolucionar MISSING_CASH -> AMOUNT_MISMATCH no fragmenta la
+    historia del caso.
     """
     account = item.get("account_id") or "-"
     if item.get("status") == "UNEXPECTED_CASH":
@@ -142,9 +145,7 @@ def _case_key(item: dict, canonical_event_id: str) -> str:
             expected = item.get("expected_gross_cash") or {}
             currency = expected.get("currency")
         subject = f"expected:{account}:{currency or item.get('isin') or '-'}"
-    return "|".join(
-        [canonical_event_id or "-", item.get("status") or "-", subject]
-    )
+    return "|".join([canonical_event_id or "-", subject])
 
 
 def classify_cases(recon_doc: dict) -> list[dict]:
@@ -191,8 +192,16 @@ def classify_cases(recon_doc: dict) -> list[dict]:
                 "priority": priority,
             }
         )
-    observed.sort(key=lambda c: c["case_key"])
-    return observed
+    # misma clave dos veces en una ejecucion (p.ej. dos items
+    # DUPLICATE_ENTITLEMENT_KEY sobre expected:A:EUR): un solo caso
+    seen = set()
+    deduped = []
+    for c in sorted(observed, key=lambda c: c["case_key"]):
+        if c["case_key"] in seen:
+            continue
+        seen.add(c["case_key"])
+        deduped.append(c)
+    return deduped
 
 
 def _snapshot_changed(case: dict, obs: dict) -> bool:

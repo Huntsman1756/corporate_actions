@@ -208,19 +208,70 @@ def test_movement_replacement_same_case():
     assert second["cases"][0]["movement_ids"] == ["MB"]
 
 
-def test_status_change_is_new_case_old_disappears():
+def test_status_evolution_same_case():
     # UNKNOWN basis -> movimiento corregido a GROSS con importe malo:
-    # el caso INDETERMINATE desaparece, nace AMOUNT_MISMATCH
+    # el caso evoluciona INDETERMINATE -> AMOUNT_MISMATCH con el mismo
+    # case_key (factual_status no forma parte de la identidad)
     first = _doc(_ent(), movements=[_mov(amount="90.00",
                                          basis="UNKNOWN")], now=T0)
     second = _doc(_ent(), movements=[_mov(amount="90.00")],
                   now=T1, previous=first["cases"])
-    assert len(second["cases"]) == 2
-    by_status = {c["factual_status"]: c for c in second["cases"]}
-    assert by_status["INDETERMINATE"]["observed"] is False
-    assert by_status["AMOUNT_MISMATCH"]["observed"] is True
-    assert [h["type"] for h in by_status["AMOUNT_MISMATCH"]
-            ["history"]] == ["CREATED"]
+    assert len(second["cases"]) == 1
+    case = second["cases"][0]
+    assert case["case_key"] == first["cases"][0]["case_key"]
+    assert case["factual_status"] == "AMOUNT_MISMATCH"
+    assert [h["type"] for h in case["history"]] == [
+        "CREATED", "FACT_UPDATED"
+    ]
+
+
+def test_regression_missing_to_mismatch_same_case():
+    first = _doc(_ent(), now=T0)  # MISSING_CASH
+    second = _doc(_ent(), movements=[_mov(amount="90.00")],
+                  now=T1, previous=first["cases"])
+    assert len(second["cases"]) == 1
+    case = second["cases"][0]
+    assert case["case_key"] == first["cases"][0]["case_key"]
+    assert case["factual_status"] == "AMOUNT_MISMATCH"
+    assert [h["type"] for h in case["history"]] == [
+        "CREATED", "FACT_UPDATED"
+    ]
+
+
+def test_regression_resolved_missing_reappears_as_mismatch():
+    first = _doc(_ent(), now=T0)  # MISSING_CASH
+    apply_transition(
+        first["cases"][0], "RESOLVED", actor="ops", at=T0,
+        resolution_code="CORRECTED",
+    )
+    second = _doc(_ent(), movements=[_mov(amount="90.00")],
+                  now=T1, previous=first["cases"])
+    assert len(second["cases"]) == 1
+    case = second["cases"][0]
+    assert case["case_key"] == first["cases"][0]["case_key"]
+    assert case["factual_status"] == "AMOUNT_MISMATCH"
+    assert case["workflow_status"] == "OPEN"
+    assert [h["type"] for h in case["history"]] == [
+        "CREATED", "TRANSITION", "FACT_UPDATED", "REOPENED"
+    ]
+
+
+def test_regression_disappeared_then_reappears_same_case():
+    first = _doc(_ent(), now=T0)                       # MISSING_CASH
+    second = _doc(_ent(), movements=[_mov()], now=T1,  # MATCH
+                  previous=first["cases"])
+    case = second["cases"][0]
+    assert case["observed"] is False
+    third = _doc(_ent(), movements=[_mov(amount="90.00")], now=T2,
+                 previous=second["cases"])
+    assert len(third["cases"]) == 1
+    case = third["cases"][0]
+    assert case["case_key"] == first["cases"][0]["case_key"]
+    assert case["observed"] is True
+    assert case["factual_status"] == "AMOUNT_MISMATCH"
+    assert [h["type"] for h in case["history"]] == [
+        "CREATED", "NOT_OBSERVED", "FACT_UPDATED", "REOBSERVED"
+    ]
 
 
 # ------------------------------------------------------ audit/workflow
@@ -310,6 +361,18 @@ def test_summary_counts():
     assert s["by_factual"]["MISSING_CASH"] == 1
     assert s["by_factual"]["AMOUNT_MISMATCH"] == 1
     assert doc["schema"] == CASES_SCHEMA
+
+
+def test_duplicate_entitlement_key_single_case():
+    # dos entitlements con la misma clave -> dos items INDETERMINATE
+    # sobre expected:A001:EUR -> un solo caso
+    doc = _doc(
+        _ent(account="A001"),
+        _ent(account="A001", isin="ES02"),
+    )
+    assert len(doc["cases"]) == 1
+    case = doc["cases"][0]
+    assert case["reason_codes"] == ["DUPLICATE_ENTITLEMENT_KEY"]
 
 
 def test_classify_does_not_mutate_recon():
