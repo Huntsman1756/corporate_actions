@@ -320,10 +320,17 @@ def cmd_entitlement(args: argparse.Namespace) -> int:
     )
 
 
-def cmd_reconcile(args: argparse.Namespace) -> int:
+def _recon_doc(args: argparse.Namespace):
+    """recon doc desde --recon, o calculado (--entitlements+--cash o
+    --canon+--event+--positions+--cash). Devuelve (doc, exit_code)."""
     from .entitlement_engine import compute_entitlements, load_positions
     from .reconciliation import load_movements, reconcile
 
+    if getattr(args, "recon", None):
+        return (
+            json.loads(Path(args.recon).read_text(encoding="utf-8")),
+            0,
+        )
     if args.entitlements:
         entitlement_doc = json.loads(
             Path(args.entitlements).read_text(encoding="utf-8")
@@ -338,32 +345,128 @@ def cmd_reconcile(args: argparse.Namespace) -> int:
                     {"status": "INVALID_POSITIONS", "detail": str(exc)}
                 )
             )
-            return 2
+            return None, 2
         entitlement_doc = compute_entitlements(
             surface, args.event, positions
         )
         if entitlement_doc is None:
             print(json.dumps({"status": "NOT_FOUND"}, sort_keys=True))
-            return 1
+            return None, 1
     else:
         print(
             json.dumps(
                 {
                     "status": "MISSING_INPUT",
-                    "detail": "--entitlements o --canon+--event+--positions",
+                    "detail": (
+                        "--recon, --entitlements+--cash o "
+                        "--canon+--event+--positions+--cash"
+                    ),
                 },
                 sort_keys=True,
             )
         )
-        return 2
+        return None, 2
+    if not args.cash:
+        print(
+            json.dumps(
+                {"status": "MISSING_INPUT", "detail": "--cash requerido"},
+                sort_keys=True,
+            )
+        )
+        return None, 2
     try:
         movements = load_movements(Path(args.cash))
     except (ValueError, OSError) as exc:
         print(
             json.dumps({"status": "INVALID_MOVEMENTS", "detail": str(exc)})
         )
+        return None, 2
+    return reconcile(entitlement_doc, movements), 0
+
+
+def cmd_reconcile(args: argparse.Namespace) -> int:
+    doc, code = _recon_doc(args)
+    if doc is None:
+        return code
+    return _emit(doc)
+
+
+def cmd_exceptions(args: argparse.Namespace) -> int:
+    from .exceptions import build_cases_doc, load_cases
+
+    recon_doc, code = _recon_doc(args)
+    if recon_doc is None:
+        return code
+    previous = None
+    if args.cases:
+        try:
+            previous = load_cases(Path(args.cases))["cases"]
+        except (ValueError, OSError, KeyError) as exc:
+            print(
+                json.dumps(
+                    {"status": "INVALID_CASES", "detail": str(exc)}
+                )
+            )
+            return 2
+    return _emit(build_cases_doc(recon_doc, previous, now=args.now))
+
+
+def cmd_case_transition(args: argparse.Namespace) -> int:
+    from .exceptions import apply_transition, load_cases, queue
+
+    try:
+        doc = load_cases(Path(args.cases))
+    except (ValueError, OSError) as exc:
+        print(
+            json.dumps({"status": "INVALID_CASES", "detail": str(exc)})
+        )
         return 2
-    return _emit(reconcile(entitlement_doc, movements))
+    case = next(
+        (c for c in doc["cases"] if c["case_key"] == args.case_key),
+        None,
+    )
+    if case is None:
+        print(
+            json.dumps(
+                {"status": "CASE_NOT_FOUND", "case_key": args.case_key},
+                sort_keys=True,
+            )
+        )
+        return 1
+    try:
+        apply_transition(
+            case,
+            args.to,
+            actor=args.actor,
+            at=args.now,
+            note=args.note or "",
+            resolution_code=args.resolution_code,
+            assigned_to=args.assign_to,
+        )
+    except ValueError as exc:
+        print(
+            json.dumps({"status": "INVALID_TRANSITION", "detail": str(exc)})
+        )
+        return 2
+    doc["generated_at"] = args.now
+    doc["queue"] = queue(doc["cases"])
+    by_workflow: dict = {}
+    for c in doc["cases"]:
+        by_workflow[c["workflow_status"]] = (
+            by_workflow.get(c["workflow_status"], 0) + 1
+        )
+    doc["summary"]["by_workflow"] = by_workflow
+    doc["summary"]["observed"] = sum(
+        1 for c in doc["cases"] if c.get("observed")
+    )
+    if args.out:
+        Path(args.out).write_text(
+            json.dumps(doc, indent=1, ensure_ascii=False, default=str)
+            + "\n",
+            encoding="utf-8",
+        )
+        return 0
+    return _emit(doc)
 
 
 def build_parser() -> argparse.ArgumentParser:
@@ -463,6 +566,33 @@ def build_parser() -> argparse.ArgumentParser:
     reconcile.add_argument("--entitlements", default=None)
     reconcile.add_argument("--cash", required=True)
     reconcile.set_defaults(func=cmd_reconcile)
+
+    exceptions = sub.add_parser("exceptions")
+    exceptions.add_argument("--recon", default=None,
+                            help="doc CA_ES_CASH_RECON_V1 ya calculado")
+    exceptions.add_argument("--canon", default=None)
+    exceptions.add_argument("--policy", default=None)
+    exceptions.add_argument("--event", default=None)
+    exceptions.add_argument("--positions", default=None)
+    exceptions.add_argument("--entitlements", default=None)
+    exceptions.add_argument("--cash", default=None)
+    exceptions.add_argument("--cases", default=None,
+                            help="doc CA_ES_EXCEPTION_CASES_V1 previo")
+    exceptions.add_argument("--now", required=True,
+                            help="timestamp ISO de esta ejecucion")
+    exceptions.set_defaults(func=cmd_exceptions)
+
+    transition = sub.add_parser("case-transition")
+    transition.add_argument("--cases", required=True)
+    transition.add_argument("--case-key", required=True)
+    transition.add_argument("--to", required=True)
+    transition.add_argument("--actor", required=True)
+    transition.add_argument("--note", default=None)
+    transition.add_argument("--resolution-code", default=None)
+    transition.add_argument("--assign-to", default=None)
+    transition.add_argument("--now", required=True)
+    transition.add_argument("--out", default=None)
+    transition.set_defaults(func=cmd_case_transition)
 
     return parser
 

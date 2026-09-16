@@ -37,6 +37,14 @@ python -m ca_es.cli entitlement --canon g3/input/canon.json \
 python -m ca_es.cli reconcile --canon g3/input/canon.json \
     --event <canonical_event_id> --positions p1/smoke/positions.json \
     --cash p1/smoke/cash-movements.json
+
+# P3.5 casos de excepción (CA_ES_EXCEPTION_CASES_V1; consume el recon
+# sin reinterpretarlo; --cases mergea con el store previo)
+python -m ca_es.cli exceptions --recon recon.json --now <iso> \
+    [--cases prev-cases.json]
+python -m ca_es.cli case-transition --cases cases.json \
+    --case-key <key> --to IN_REVIEW --actor <quien> --now <iso> \
+    [--resolution-code CORRECTED] [--note "..."] [--out cases.json]
 ```
 
 No hay linter/formatter configurado; el estilo es PEP 8 + stdlib.
