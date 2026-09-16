@@ -87,3 +87,6 @@ g1r2/results/*.json
 !g1r2/results/holdout-run-2-17fca52-results.sha256
 !g1r2/results/holdout-verdict.json
 !g1r2/results/post-holdout-findings.jsonl
+!g1r2/results/quarantine-g1-oracle-eval.json
+!g1r2/results/quarantine-dev-oracle-eval.json
+!g1r2/results/quarantine-spent-holdout-facts.json

@@ -40,7 +40,16 @@
       "terms_reviewed_at": "2026-09-13",
       "terms_source": "https://www.portfolioexchange.com/",
       "ingestion_status": "ACTIVE",
-      "notes": "No se depende de redistribucion de BME."
+      "notes": "No se depende de redistribucion de BME.",
+      "capabilities": {
+        "capital_increase_issue_price": {
+          "status": "QUARANTINED_UNSUPPORTED",
+          "since": "2026-09-16",
+          "evidence": "g1r2/results/holdout-verdict.json (G1-R2 FAIL: ISSUE_PRICE_COMPONENT_CONFUSION + ISSUE_PRICE_LEXEME_VARIANT)",
+          "enforcement": "src/ca_es/sources/parsers/portfolio.py _ISSUE_PRICE_QUARANTINED",
+          "lift_requires": "fase nueva con holdout virgen"
+        }
+      }
     },
     "ISSUER_IR": {
       "role": ["ISSUER_DISCLOSURE"],

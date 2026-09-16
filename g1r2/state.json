@@ -64,5 +64,21 @@
  ],
  "post_holdout_findings": "g1r2/results/post-holdout-findings.jsonl",
  "reading": "G1-R2 elimino el error original gross_per_share -> issue_price_per_share (0 observado), pero el holdout demuestra que la semantica del precio de emision todavia no generaliza con seguridad",
- "next": "fase nueva: remediar ISSUE_PRICE_COMPONENT_CONFUSION + ISSUE_PRICE_LEXEME_VARIANT con holdout virgen; deuda P2 ISIN_ROLE_DISAMBIGUATION (POEX-DOC-38393) sigue abierta, no binding"
+ "post_verdict": {
+  "quarantine": {
+   "capability": "PORTFOLIO_CAPITAL_INCREASE_PRICE",
+   "status": "QUARANTINED_UNSUPPORTED",
+   "enforcement": "src/ca_es/sources/parsers/portfolio.py _ISSUE_PRICE_QUARANTINED",
+   "applied_at": "bc2c74e",
+   "evidence": {
+    "pytest": "170 PASS",
+    "g1_oracle": "56/56 OK (g1r2/results/quarantine-g1-oracle-eval.json)",
+    "dev_oracle": "identico a iter1: 0 REGRESSED / 0 EMITTED_OTHER / 0 NOW_ABSENT (g1r2/results/quarantine-dev-oracle-eval.json)",
+    "spent_holdout": "unica diff vs iter1 = POEX-DOC-39649 abstiene issue_price_per_share; 14/15 byte-identical (g1r2/results/quarantine-spent-holdout-facts.json)"
+   },
+   "note": "quarantine de capacidad known-unsafe, no fix contra el holdout gastado; el veredicto G1-R2 sigue siendo FAIL"
+  },
+  "support_matrix": "docs/sources/support-matrix.md"
+ },
+ "next": "G2 Operational Canon (docs/gates/g2-scope.md, DRAFT): nucleo CNMV+BME; deuda P2 ISIN_ROLE_DISAMBIGUATION (POEX-DOC-38393) sigue abierta, no binding"
 }
