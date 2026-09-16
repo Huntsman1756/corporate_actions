@@ -96,6 +96,14 @@ P4  SWIFT / ISO adapters
           verification-metadata sha256; ca-es swift-facts
           -> CA_ES_SWIFT_MT_FACTS_V1; sin proyección a
           canon; MT565 OUT)
+    P4.1 SWIFT semantic projection + event bind         DONE
+         (docs/p4/p41-scope.md; ca-es swift-project /
+          swift-bind -> CA_ES_SWIFT_CA_MESSAGE_V1 +
+          CA_ES_SWIFT_EVENT_BINDING_V1; DVCA->
+          CASH_DIVIDEND; BOUND/AMBIGUOUS/NO_MATCH/
+          INSUFFICIENT_IDENTITY; AGREES/DIFFERS/
+          CANON_MISSING/SWIFT_MISSING/CANON_CONFLICTING;
+          canon nunca mutado, cero fuzzy matching)
     Prowide MT564/565/566/567/568
     Prowide seev.031 / seev.* (ISO 20022)
     adapter ca-es -> Prowide, no parser SWIFT propio

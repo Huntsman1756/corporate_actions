@@ -487,6 +487,62 @@ def cmd_swift_facts(args: argparse.Namespace) -> int:
     return code
 
 
+def _facts_doc(args: argparse.Namespace):
+    """CA_ES_SWIFT_MT_FACTS_V1 desde --facts o via adapter (--fin).
+    Devuelve (doc, exit_code)."""
+    from .swift_mt import AdapterUnavailable, parse_mt
+
+    if getattr(args, "facts", None):
+        return json.loads(Path(args.facts).read_text(encoding="utf-8")), 0
+    try:
+        fin = Path(args.fin).read_bytes().decode("utf-8")
+    except OSError as exc:
+        print(json.dumps({"status": "INVALID_INPUT", "detail": str(exc)}))
+        return None, 2
+    try:
+        doc, _ = parse_mt(fin)
+    except AdapterUnavailable as exc:
+        print(json.dumps({"status": "ADAPTER_UNAVAILABLE",
+                          "detail": str(exc)}))
+        return None, 2
+    return doc, 0
+
+
+def cmd_swift_project(args: argparse.Namespace) -> int:
+    from .swift_ca import project_ca_message
+
+    facts_doc, code = _facts_doc(args)
+    if facts_doc is None:
+        return code
+    try:
+        doc = project_ca_message(facts_doc, now=args.now)
+    except ValueError as exc:
+        print(json.dumps({"status": "INVALID_FACTS", "detail": str(exc)}))
+        return 2
+    return _emit(doc)
+
+
+def cmd_swift_bind(args: argparse.Namespace) -> int:
+    from .swift_ca import bind_event, project_ca_message
+
+    facts_doc, code = _facts_doc(args)
+    if facts_doc is None:
+        return code
+    try:
+        msg = project_ca_message(facts_doc, now=args.now)
+    except ValueError as exc:
+        print(json.dumps({"status": "INVALID_FACTS", "detail": str(exc)}))
+        return 2
+    try:
+        canon = json.loads(Path(args.canon).read_text(encoding="utf-8"))
+    except OSError as exc:
+        print(json.dumps({"status": "INVALID_INPUT", "detail": str(exc)}))
+        return 2
+    doc = bind_event(msg, canon, now=args.now)
+    doc["ca_message"] = msg
+    return _emit(doc)
+
+
 def build_parser() -> argparse.ArgumentParser:
     parser = argparse.ArgumentParser(prog="ca-es", description=__doc__)
     parser.add_argument("--repo-root", default=None)
@@ -618,6 +674,20 @@ def build_parser() -> argparse.ArgumentParser:
                                   "(MT564/MT566); viaja al adapter JVM "
                                   "solo por stdin")
     swift_facts.set_defaults(func=cmd_swift_facts)
+
+    project = sub.add_parser("swift-project")
+    project.add_argument("--fin", default=None)
+    project.add_argument("--facts", default=None,
+                         help="doc CA_ES_SWIFT_MT_FACTS_V1 ya calculado")
+    project.add_argument("--now", default=None)
+    project.set_defaults(func=cmd_swift_project)
+
+    bind = sub.add_parser("swift-bind")
+    bind.add_argument("--fin", default=None)
+    bind.add_argument("--facts", default=None)
+    bind.add_argument("--canon", required=True)
+    bind.add_argument("--now", default=None)
+    bind.set_defaults(func=cmd_swift_bind)
 
     return parser
 

@@ -54,6 +54,11 @@ cd adapters/iso-adapter-jvm && ./gradlew build fatJar
 python -m ca_es.cli swift-facts --fin <fichero.fin>
 # exit codes: 0 OK / 2 PARSE_ERROR / 3 UNSUPPORTED_MESSAGE_TYPE /
 # 4 ADAPTER_ERROR; CA_ES_SWIFT_ADAPTER_JAR sobreescribe la ruta del jar
+
+# P4.1 proyección semántica + binding a canon (read-only, canon intacto)
+python -m ca_es.cli swift-project --fin <fichero.fin> [--now <iso>]
+python -m ca_es.cli swift-bind --fin <fichero.fin> --canon g3/input/canon.json
+#   (o --facts <doc CA_ES_SWIFT_MT_FACTS_V1>)
 ```
 
 No hay linter/formatter configurado; el estilo es PEP 8 + stdlib.
