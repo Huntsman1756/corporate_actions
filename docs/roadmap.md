@@ -89,6 +89,11 @@ P3  Reconciliation / Exceptions
           queue determinista; docs/p3/p35-scope.md)
 
 P4  SWIFT / ISO adapters
+    P4.0 MT564/MT566 read-only ingest                  SCOPE FROZEN
+         (docs/p4/p40-scope.md: subprocess JVM +
+          Gradle Wrapper + pw-swift-core SRU2025-10.3.19
+          + verification metadata; CA_ES_SWIFT_MT_FACTS_V1;
+          sin proyección a canon; MT565 OUT)
     Prowide MT564/565/566/567/568
     Prowide seev.031 / seev.* (ISO 20022)
     adapter ca-es -> Prowide, no parser SWIFT propio
