@@ -49,13 +49,17 @@ MOVEMENTS_SCHEMA_V1 = "CA_ES_CASH_MOVEMENTS_V1"
 MOVEMENTS_SCHEMA = "CA_ES_CASH_MOVEMENTS_V2"
 MOVEMENTS_SCHEMAS = {MOVEMENTS_SCHEMA_V1, MOVEMENTS_SCHEMA}
 
-# P3.1: base del importe observado. El canon solo produce expected
-# GROSS (gross_cash); por tanto:
+# P3.1 (ADR-018): base del importe observado. El canon solo produce
+# expected GROSS (gross_cash); por tanto:
 #   GROSS   -> reconciliable
 #   NET     -> INDETERMINATE / NET_EXPECTED_NOT_AVAILABLE
 #   UNKNOWN -> INDETERMINATE / UNKNOWN_AMOUNT_BASIS
 # Un documento V1 (sin amount_basis) se acepta y cada movimiento se
-# trata como UNKNOWN: nunca se asume bruto.
+# trata como UNKNOWN: nunca se asume bruto. Esto es compatibilidad
+# de INGESTION, no de resultado: un V1 que antes producia MATCH ahora
+# produce INDETERMINATE/UNKNOWN_AMOUNT_BASIS. Es una correccion del
+# contrato, no una regresion; no "restaurar" tratando ausencia como
+# GROSS.
 AMOUNT_BASES = {"GROSS", "NET", "UNKNOWN"}
 
 MATCH = "MATCH"

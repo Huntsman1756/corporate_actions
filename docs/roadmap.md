@@ -77,8 +77,14 @@ P3  Reconciliation / Exceptions
           GROSS reconcilia contra gross_cash, NET ->
           INDETERMINATE/NET_EXPECTED_NOT_AVAILABLE,
           UNKNOWN -> INDETERMINATE/UNKNOWN_AMOUNT_BASIS;
-          sin withholding ni net-to-gross)
-    exceptions / workflow, CSV in/out
+          sin withholding ni net-to-gross.
+          ADR-018: compat V1 = solo ingestión, NO
+          resultado — un MATCH V1 anterior pasa a
+          INDETERMINATE; es corrección, no regresión)
+    P3.5 exceptions / workflow                            SCOPE FROZEN
+         (docs/p3/p35-scope.md: Case + case_key estable;
+          factual_status ≠ workflow_status; audit trail;
+          queue determinista; sin SLA/dashboards)
 
 P4  SWIFT / ISO adapters
     Prowide MT564/565/566/567/568
