@@ -1,11 +1,13 @@
-"""Tests de la regla generica G1-R2 AMOUNT_ROLE_MISBINDING (Portfolio).
+"""Tests de la cuarentena G1-R2 sobre issue_price_per_share (Portfolio).
 
-En documentos de instruccion operativa de ampliacion de capital, el
-"precio de suscripcion/emision por accion" es amount.issue_price_per_share,
-no amount.gross_per_share. El rol lo fija el lexema explicito o la
-familia del evento; importes ligados a valor nominal o prima de emision
-son rol-incompatibles y no se promueven. Casos sinteticos que reproducen
-el fenomeno documental, no un seed concreto.
+Veredicto humano del holdout G1-R2 (FAIL, g1r2/results/holdout-verdict.json):
+la semantica del precio de emision de Portfolio no generaliza con
+seguridad (ISSUE_PRICE_COMPONENT_CONFUSION + ISSUE_PRICE_LEXEME_VARIANT).
+Cuarentena fail-closed: el parser no emite amount.issue_price_per_share
+en la familia CAPITAL_INCREASE/RIGHTS_ISSUE ni por el lexema
+"por accion nueva"; la deteccion del evento y el routing de dividendos
+no cambian. Casos sinteticos que reproducen el fenomeno documental,
+no un seed concreto.
 """
 from __future__ import annotations
 
@@ -27,10 +29,10 @@ def _claim(parsed, field_path):
     return [c for c in parsed.claims if c.field_path == field_path]
 
 
-def test_instruccion_ampliacion_precio_suscripcion_es_issue_price():
-    """"Precio de suscripcion por accion nueva (nominal + prima) 4 EUR"
-    es issue_price_per_share, no gross_per_share, y la descomposicion
-    nominal/prima no se promueve."""
+def test_cuarentena_ancla_explicita_abstiene():
+    """"Precio de suscripcion por accion nueva (nominal + prima) 4 EUR":
+    bajo cuarentena no se emite issue_price_per_share aunque el ancla
+    sea explicita; evento e issuer siguen detectandose."""
     parsed = portfolio._parse_text(
         "AMPLIACION DE CAPITAL CON DERECHOS DE SUSCRIPCIÓN PREFERENTE\n"
         "Emisor TESTCO, S.A.\n"
@@ -41,22 +43,35 @@ def test_instruccion_ampliacion_precio_suscripcion_es_issue_price():
         _doc(),
     )
     assert parsed.event_type == "CAPITAL_INCREASE"
-    issue = _claim(parsed, "amount.issue_price_per_share")
-    assert issue and str(issue[0].value.normalized) == "4"
+    assert not _claim(parsed, "amount.issue_price_per_share")
     assert not _claim(parsed, "amount.gross_per_share")
     assert parsed.issuer_name == "TESTCO"
 
 
-def test_precio_suscripcion_sin_descomposicion():
-    """La ancla explicita no exige la coletilla nominal/prima."""
+def test_cuarentena_precio_suscripcion_simple_abstiene():
+    """"Precio de suscripción: 2,50€ por acción": la cuarentena no
+    exige ancla inequivoca demostrada — abstencion."""
     parsed = portfolio._parse_text(
         "Aumento de capital de la sociedad.\n"
         "Precio de suscripción: 2,50€ por acción.\n",
         _doc(),
     )
     assert parsed.event_type == "CAPITAL_INCREASE"
-    issue = _claim(parsed, "amount.issue_price_per_share")
-    assert issue and str(issue[0].value.normalized) == "2.50"
+    assert not _claim(parsed, "amount.issue_price_per_share")
+    assert not _claim(parsed, "amount.gross_per_share")
+
+
+def test_cuarentena_prima_no_es_issue_price():
+    """El caso POEX-DOC-3507: prima de emision por accion nunca puede
+    poblar issue_price_per_share; el documento se abstiene."""
+    parsed = portfolio._parse_text(
+        "Ampliación de capital social.\n"
+        "Las acciones se emiten con una prima de emisión de 0,58€ "
+        "por acción. El tipo de emisión es de 1,58€ por acción.\n",
+        _doc(),
+    )
+    assert not _claim(parsed, "amount.issue_price_per_share")
+    assert not _claim(parsed, "amount.gross_per_share")
 
 
 def test_precio_descompuesto_sin_total_abstiene():
@@ -72,30 +87,28 @@ def test_precio_descompuesto_sin_total_abstiene():
     assert not _claim(parsed, "amount.gross_per_share")
 
 
-def test_por_accion_nueva_sin_lexema_precio_es_issue_price():
-    """"X euros por accion nueva" es por si mismo lexema de emision:
-    se rutea a issue_price aunque no exista la etiqueta 'precio de
-    suscripcion' ni la familia este clara."""
+def test_cuarentena_por_accion_nueva_abstiene():
+    """"X euros por accion nueva" es lexema de emision: bajo cuarentena
+    se abstiene aunque no exista la etiqueta 'precio de suscripcion'
+    ni la familia este clara."""
     parsed = portfolio._parse_text(
         "Instrucción operativa de la operación.\n"
         "Cada solicitante desembolsará 1,25€ por acción nueva.\n",
         _doc(),
     )
-    issue = _claim(parsed, "amount.issue_price_per_share")
-    assert issue and str(issue[0].value.normalized) == "1.25"
+    assert not _claim(parsed, "amount.issue_price_per_share")
     assert not _claim(parsed, "amount.gross_per_share")
 
 
-def test_generico_por_accion_en_ampliacion_es_issue_price():
+def test_cuarentena_generico_por_accion_en_ampliacion_abstiene():
     """En una ampliacion, un "X euros por accion" sin ancla propia se
-    rutea por familia a issue_price_per_share."""
+    abstiene: la familia no puede promoverlo a issue_price."""
     parsed = portfolio._parse_text(
         "Ampliación de capital con suscripción preferente.\n"
         "El desembolso será de 3,20€ por acción.\n",
         _doc(),
     )
-    issue = _claim(parsed, "amount.issue_price_per_share")
-    assert issue and str(issue[0].value.normalized) == "3.20"
+    assert not _claim(parsed, "amount.issue_price_per_share")
     assert not _claim(parsed, "amount.gross_per_share")
 
 
@@ -114,7 +127,7 @@ def test_valor_nominal_ligado_bloquea_en_ampliacion():
 
 def test_dividendo_sigue_emitiendo_gross_per_share():
     """Regresion: un dividendo con ancla propia sigue emitiendo
-    gross_per_share."""
+    gross_per_share — la cuarentena solo cubre el precio de emision."""
     parsed = portfolio._parse_text(
         "La sociedad acuerda el reparto de dividendo.\n"
         "Importe bruto de 0,75€ por acción.\n"

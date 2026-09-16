@@ -57,6 +57,16 @@ def _last_amount(line: str) -> str | None:
 
 _ISSUE_PRICE_EVENTS = {"CAPITAL_INCREASE", "RIGHTS_ISSUE"}
 
+# Cuarentena fail-closed (veredicto humano G1-R2 FAIL, holdout
+# g1r2/results/holdout-verdict.json): POEX-DOC-3507 promovio la prima
+# de emision como issue_price_per_share (ISSUE_PRICE_COMPONENT_CONFUSION,
+# recurrencia de FALSE_FINANCIAL_SEMANTIC_ANCHOR) y el lexema exigido no
+# reconocio "valor de emision ... por accion" (ISSUE_PRICE_LEXEME_VARIANT).
+# Portfolio no emite amount.issue_price_per_share hasta una fase nueva
+# con holdout virgen. La deteccion del evento y el resto de facts no
+# cambian.
+_ISSUE_PRICE_QUARANTINED = True
+
 
 def _parse_pdf(payload: bytes, document: SourceDocument) -> ParsedDocument:
     return _parse_text(normalize_text(extract_text(payload)), document)
@@ -150,12 +160,16 @@ def _parse_text(text: str, document: SourceDocument) -> ParsedDocument:
     # y el importe no admite digitos: si el precio solo se publica
     # descompuesto (nominal + prima) sin total por accion, no hay
     # precio unitario publicado y el parser se abstiene.
-    issue_price = re.search(
-        r"precio de (?:suscripci[oó]n|emisi[oó]n)"
-        r"(?:(?!\d)[^\n]){0,80}?"
-        r"(\d[\d.,]*)\s*\.?-?\s*(?:€|euros)[^0-9\n]{0,15}?por acci[oó]n",
-        text,
-        re.I,
+    issue_price = (
+        None
+        if _ISSUE_PRICE_QUARANTINED
+        else re.search(
+            r"precio de (?:suscripci[oó]n|emisi[oó]n)"
+            r"(?:(?!\d)[^\n]){0,80}?"
+            r"(\d[\d.,]*)\s*\.?-?\s*(?:€|euros)[^0-9\n]{0,15}?por acci[oó]n",
+            text,
+            re.I,
+        )
     )
     if issue_price:
         register(
@@ -259,6 +273,8 @@ def _parse_text(text: str, document: SourceDocument) -> ParsedDocument:
                 or event_type in _ISSUE_PRICE_EVENTS
                 else "amount.gross_per_share"
             )
+            if field == "amount.issue_price_per_share" and _ISSUE_PRICE_QUARANTINED:
+                continue
             register(field, per_share.group(0), per_share.group(1))
             claims.append(
                 Claim(
