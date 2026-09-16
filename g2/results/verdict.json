@@ -1,0 +1,68 @@
+{
+ "verdict_version": "CA_ES_G2_VERDICT_V1",
+ "status": "SIGNED",
+ "verdict": "PASS",
+ "signed_at": "2026-09-16",
+ "signed_by": "human-reviewer",
+ "protocol": {
+  "file": "docs/gates/g2-preregistered.json",
+  "tag": "g2-protocol",
+  "commit": "8774c04c7fb411adc28aed5be1416e56ef43d612",
+  "verified": "tag -> 8774c04 (HOLD mecanico resuelto: SHA-256 completos + raw_pointer contra raw_record/fixture + orden total del export)"
+ },
+ "execution": {
+  "commit": "e4343b66336d129ad54dbbcb2e5a34c87410687d",
+  "remote_verified": "origin/main = e4343b6 en GitHub; adjudicacion contrastada contra remoto, no contra resumen del agente",
+  "surface_diff": "g2-protocol..e4343b6 = solo superficie permitida (export, runner, evaluador, tests, manifests, results); parsers y source-policy.json intactos"
+ },
+ "qualification_corpus": {
+  "manifest": "g2/manifests/qualification-corpus.json",
+  "documents": "10/10 sealed",
+  "seals": "SHA-256 completos verificados contra manifests origen",
+  "builder": "fail-closed ante NOT_IN_MANIFEST, divergencia preregistro/manifest, raw ausente o RAW_SHA_MISMATCH; ante error no escribe el manifest"
+ },
+ "runs": {
+  "artifacts": [
+   "g2/results/run-1-f401633-canon.json",
+   "g2/results/run-2-f401633-canon.json",
+   "g2/results/control-e-f401633-canon.json"
+  ],
+  "deterministic_export": {
+   "run1_vs_run2": "bytes identicos: mismo tamano y mismo git blob sha 77974f8e5b993c9d27c7ebcfd514cf9d4ab19d56",
+   "logical_sha256_main": "722c5f2c3a958ed91344b29a93477bbdffd1e55843300dd58c807db1bb7122e1",
+   "logical_sha256_control_e": "efd0adf5317fa3d4532ca50c39adf291a94213a9f8dd6967ac530a4fe0153c56"
+  },
+  "control_e": "sin adjudications: SAN CNMV + IR permanecen 2 canonical_event_id distintos sin relacion; con adjudications: merge via MANUAL_ADJUDICATION"
+ },
+ "gates": {
+  "canonical_identity_unproven_merges": {"measured": 0, "required": 0, "sign": "PASS"},
+  "revision_history_loss": {"measured": 0, "required": 0, "sign": "PASS"},
+  "fact_provenance_rate": {"measured": 1.0, "required": 1.0, "sign": "PASS"},
+  "deterministic_export": {"measured": 1.0, "required": 1.0, "sign": "PASS"},
+  "silent_conflicts": {"measured": 0, "required": 0, "sign": "PASS"},
+  "human_authored_business_facts": {"measured": 0, "required": 0, "sign": "PASS"},
+  "financial_precision_loss": {"measured": 0, "required": 0, "sign": "PASS"},
+  "unsupported_capability_emissions": {"measured": 0, "required": 0, "sign": "PASS"}
+ },
+ "cases": {
+  "A": "PASS - merge determinista Almirall con evidencia, conflicto announcement_date explicito, 1 revision",
+  "B": "PASS - cadena de revisiones MFE gen0->gen1 con supersedes; 0.22 solo en rev0; historia preservada",
+  "C": "PASS - BME Growth dividend: ISIN, ex 2026-07-08, payment 2026-07-10, gross 0.08690661, net 0.07039435",
+  "D": "PASS - BME Growth capital increase: CAPITAL_INCREASE + 6 importes exactos del oracle",
+  "E": "PASS - negative control SAN: separados sin adjudicacion, merge via MANUAL_ADJUDICATION con ella",
+  "AUX": "PASS - POEX-DOC-39649 sin issue_price_per_share (cuarentena); BORME auxiliar sin findings"
+ },
+ "evaluator_review": "el evaluador no asigna met=true ceremonialmente: reconstruye la justificacion de merges, comprueba conservacion de revisiones, resuelve mecanicamente los raw_pointer contra raw_record/fixture, compara bytes reales, busca divergencias no registradas, revisa el limite de la adjudicacion humana, detecta floats y obtiene las capacidades prohibidas desde source-policy.json",
+ "binding_gates": "8/8 PASS",
+ "parser_surface_freeze": "PRESERVED",
+ "scope_of_verdict": "CA_ES_OPERATIONAL_CANON_V1 probado end-to-end sobre el qualification corpus preregistrado para las capacidades declaradas soportadas, con CNMV + BME Growth como nucleo binding. NO demuestra soporte de todos los corporate actions espanoles ni parser recall/generalization (expresamente fuera de G2).",
+ "unchanged_verdicts": {
+  "G1": "FAIL (historico)",
+  "G1-R": "FAIL (historico)",
+  "G1-R2": "FAIL (historico); holdout SPENT_EVIDENCE",
+  "portfolio_capital_increase_issue_price": "QUARANTINED_UNSUPPORTED"
+ },
+ "gates_eval_artifact": "g2/results/gates-eval.json",
+ "state": "g2/state.json",
+ "next": "siguiente fase decidible desde producto, no desde parsing"
+}

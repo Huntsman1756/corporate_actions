@@ -1,5 +1,5 @@
 {
- "phase": "G2_EXECUTED_PENDING_ADJUDICATION",
+ "phase": "G2_ADJUDICATED_PASS",
  "protocol": {
   "tag": "g2-protocol",
   "commit": "8774c04",
@@ -21,6 +21,12 @@
   "logical_sha256_control_e": "efd0adf5317fa3d4532ca50c39adf291a94213a9f8dd6967ac530a4fe0153c56"
  },
  "gates_eval": "g2/results/gates-eval.json",
- "verdict": "PENDING_HUMAN_ADJUDICATION",
- "note": "El evaluador no declara PASS. Siguiente paso: adjudicacion humana final."
+ "verdict": "PASS",
+ "verdict_artifact": "g2/results/verdict.json",
+ "verdict_basis": "adjudicacion humana contrastada contra origin/main = e4343b6; 8/8 gates PASS; casos A-E+AUX PASS; blob run1==run2",
+ "unchanged": {
+  "G1": "FAIL", "G1-R": "FAIL", "G1-R2": "FAIL",
+  "portfolio_capital_increase_issue_price": "QUARANTINED_UNSUPPORTED"
+ },
+ "next": "siguiente fase decidible desde producto, no desde parsing"
 }
