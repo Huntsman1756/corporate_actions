@@ -562,6 +562,32 @@ def cmd_swift_cash_candidate(args: argparse.Namespace) -> int:
     return _emit(doc)
 
 
+def _load_json(path: str, label: str):
+    try:
+        return json.loads(Path(path).read_text(encoding="utf-8")), 0
+    except (OSError, json.JSONDecodeError) as exc:
+        print(json.dumps({"status": "INVALID_INPUT",
+                          "detail": f"{label}: {exc}"}))
+        return None, 2
+
+
+def cmd_deadlines(args: argparse.Namespace) -> int:
+    from .deadlines import compute_deadlines
+
+    canon, code = _load_json(args.canon, "canon")
+    if canon is None:
+        return code
+    rules, code = _load_json(args.rules, "rules")
+    if rules is None:
+        return code
+    calendars, code = _load_json(args.calendars, "calendars")
+    if calendars is None:
+        return code
+    doc = compute_deadlines(
+        canon, rules, calendars, event_id=args.event, now=args.now)
+    return _emit(doc)
+
+
 def build_parser() -> argparse.ArgumentParser:
     parser = argparse.ArgumentParser(prog="ca-es", description=__doc__)
     parser.add_argument("--repo-root", default=None)
@@ -714,6 +740,14 @@ def build_parser() -> argparse.ArgumentParser:
     candidate.add_argument("--canon", required=True)
     candidate.add_argument("--now", default=None)
     candidate.set_defaults(func=cmd_swift_cash_candidate)
+
+    dl = sub.add_parser("deadlines")
+    dl.add_argument("--canon", required=True)
+    dl.add_argument("--rules", required=True)
+    dl.add_argument("--calendars", required=True)
+    dl.add_argument("--event", default=None)
+    dl.add_argument("--now", default=None)
+    dl.set_defaults(func=cmd_deadlines)
 
     return parser
 

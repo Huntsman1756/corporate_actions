@@ -65,6 +65,11 @@ python -m ca_es.cli swift-cash-candidate --fin <fichero.fin> \
     --canon g3/input/canon.json [--now <iso>]
 #   (o --facts); whitelist 19B: PSTA->UNKNOWN / NETO->NET /
 #   GRSS->GROSS; solo PROJECTABLE emite movement CA_ES_CASH_MOVEMENTS_V2
+
+# P5.0 deadlines operativos (calendario explicito, nunca por defecto)
+python -m ca_es.cli deadlines --canon <canon.json> \
+    --rules <CA_ES_DEADLINE_RULES_V1.json> \
+    --calendars <CA_ES_CALENDARS_V1.json> [--event <id>] [--now <iso>]
 ```
 
 No hay linter/formatter configurado; el estilo es PEP 8 + stdlib.

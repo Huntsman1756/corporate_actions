@@ -118,8 +118,15 @@ P4  SWIFT / ISO adapters
     adapter ca-es -> Prowide, no parser SWIFT propio
 
 P5  Elections / deadlines
-    business-day awareness via pandas_market_calendars
-    ACTION_REQUIRED status por días restantes
+    P5.0 Operational deadlines                          DONE
+         (docs/p5/p50-scope.md; ca-es deadlines ->
+          CA_ES_OPERATIONAL_DEADLINE_V1; SOURCE/DERIVED/
+          INDETERMINATE; calendar_id explicito via
+          CA_ES_CALENDARS_V1, nunca Mon-Fri por defecto;
+          reglas preregistradas CA_ES_DEADLINE_RULES_V1;
+          canon intacto)
+    ACTION_REQUIRED status por días restantes (consume
+    deadlines P5.0, no reinterpreta fechas del canon)
 
 P6  Positions / impact
 
