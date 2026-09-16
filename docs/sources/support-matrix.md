@@ -24,6 +24,9 @@ G1      FAIL      — histórico
 G1-R    FAIL      — histórico (AMOUNT_ROLE_MISBINDING, POEX-DOC-39649)
 G1-R2   FAIL      — histórico (ISSUE_PRICE_COMPONENT_CONFUSION +
                     ISSUE_PRICE_LEXEME_VARIANT; holdout SPENT_EVIDENCE)
+G2      PASS      — Operational Canon (g2/results/verdict.json;
+                    8/8 gates, casos A–E+AUX, export byte-determinista;
+                    scope: capacidades soportadas, núcleo CNMV+BME Growth)
 
 PORTFOLIO_CAPITAL_INCREASE_PRICE = QUARANTINED / UNSUPPORTED
 ```
@@ -34,8 +37,9 @@ virgen.
 
 ## Siguiente fase
 
-`G2 — Operational Canon` (`docs/gates/g2-scope.md`, DRAFT): demostrar
-el pipeline canónico de principio a fin sobre las capacidades seguras
-(CNMV + BME Growth como núcleo): source document → event candidate →
-affected instrument → canonical CA → revisions/conflicts → fechas e
-importes operacionales → provenance → export determinista.
+G2 — Operational Canon: **PASS** (`g2/results/verdict.json`,
+`g2/state.json`). `CA_ES_OPERATIONAL_CANON_V1` probado end-to-end sobre
+el qualification corpus preregistrado para las capacidades soportadas.
+El veredicto no afirma recall de parsers ni soporte universal de CAs
+españoles — ambos fuera del scope de G2. La siguiente fase se decide
+desde producto, no desde parsing.
