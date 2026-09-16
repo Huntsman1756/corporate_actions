@@ -265,11 +265,18 @@ def cmd_brief(args: argparse.Namespace) -> int:
     from .surface import render_brief
 
     surface = _surface(args)
-    brief = surface.brief(
-        args.as_of,
-        window_days=args.window,
-        previous=_load_previous(args),
-    )
+    if args.queue:
+        queue, code = _load_json(args.queue, "queue")
+        if queue is None:
+            return code
+        brief = surface.brief_v2(
+            args.as_of, queue, previous=_load_previous(args))
+    else:
+        brief = surface.brief(
+            args.as_of,
+            window_days=args.window,
+            previous=_load_previous(args),
+        )
     if args.format == "text":
         print(render_brief(brief), end="")
         return 0
@@ -293,11 +300,17 @@ def cmd_desk(args: argparse.Namespace) -> int:
         return 2
     surface = _surface(args)
     previous = _load_previous(args)
-    brief = surface.brief(
-        args.as_of,
-        window_days=args.window,
-        previous=previous,
-    )
+    if args.queue:
+        queue, code = _load_json(args.queue, "queue")
+        if queue is None:
+            return code
+        brief = surface.brief_v2(args.as_of, queue, previous=previous)
+    else:
+        brief = surface.brief(
+            args.as_of,
+            window_days=args.window,
+            previous=previous,
+        )
     OpsDesk(
         build_desk_model(brief),
         surface,
@@ -588,6 +601,25 @@ def cmd_deadlines(args: argparse.Namespace) -> int:
     return _emit(doc)
 
 
+def cmd_action_queue(args: argparse.Namespace) -> int:
+    from .action_queue import build_action_queue
+
+    deadlines, code = _load_json(args.deadlines, "deadlines")
+    if deadlines is None:
+        return code
+    try:
+        doc = build_action_queue(
+            deadlines, args.as_of,
+            window_days=args.window_days,
+            due_soon_days=args.due_soon_days,
+            now=args.now)
+    except ValueError as exc:
+        print(json.dumps({"status": "INVALID_INPUT",
+                          "detail": str(exc)}))
+        return 2
+    return _emit(doc)
+
+
 def build_parser() -> argparse.ArgumentParser:
     parser = argparse.ArgumentParser(prog="ca-es", description=__doc__)
     parser.add_argument("--repo-root", default=None)
@@ -663,6 +695,8 @@ def build_parser() -> argparse.ArgumentParser:
     brief.add_argument("--as-of", required=True)
     brief.add_argument("--previous-canon", default=None)
     brief.add_argument("--window", type=int, default=7)
+    brief.add_argument("--queue", default=None,
+                       help="doc CA_ES_ACTION_QUEUE_V1 -> brief V2")
     brief.add_argument("--format", choices=["json", "text"], default="text")
     brief.set_defaults(func=cmd_brief)
 
@@ -670,6 +704,8 @@ def build_parser() -> argparse.ArgumentParser:
     desk.add_argument("--as-of", required=True)
     desk.add_argument("--previous-canon", default=None)
     desk.add_argument("--window", type=int, default=7)
+    desk.add_argument("--queue", default=None,
+                      help="doc CA_ES_ACTION_QUEUE_V1 -> brief V2")
     desk.set_defaults(func=cmd_desk)
 
     entitlement = sub.add_parser("entitlement", parents=[surface_common])
@@ -748,6 +784,15 @@ def build_parser() -> argparse.ArgumentParser:
     dl.add_argument("--event", default=None)
     dl.add_argument("--now", default=None)
     dl.set_defaults(func=cmd_deadlines)
+
+    aq = sub.add_parser("action-queue")
+    aq.add_argument("--deadlines", required=True,
+                    help="doc CA_ES_OPERATIONAL_DEADLINE_V1")
+    aq.add_argument("--as-of", required=True)
+    aq.add_argument("--window-days", type=int, required=True)
+    aq.add_argument("--due-soon-days", type=int, required=True)
+    aq.add_argument("--now", default=None)
+    aq.set_defaults(func=cmd_action_queue)
 
     return parser
 

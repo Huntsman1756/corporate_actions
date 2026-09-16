@@ -125,8 +125,14 @@ P5  Elections / deadlines
           CA_ES_CALENDARS_V1, nunca Mon-Fri por defecto;
           reglas preregistradas CA_ES_DEADLINE_RULES_V1;
           canon intacto)
-    ACTION_REQUIRED status por días restantes (consume
-    deadlines P5.0, no reinterpreta fechas del canon)
+    P5.1 Action Queue + Morning Brief V2                DONE
+         (docs/p5/p51-scope.md; ca-es action-queue ->
+          CA_ES_ACTION_QUEUE_V1; OVERDUE/DUE_TODAY/
+          DUE_SOON/UPCOMING con umbrales explicitos;
+          INDETERMINATE aparte; brief --queue ->
+          CA_ES_MORNING_BRIEF_V2 donde action_required
+          consume deadlines, no date.* por proximidad;
+          V1 intacto)
 
 P6  Positions / impact
 

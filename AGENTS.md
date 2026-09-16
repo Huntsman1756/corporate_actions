@@ -70,6 +70,14 @@ python -m ca_es.cli swift-cash-candidate --fin <fichero.fin> \
 python -m ca_es.cli deadlines --canon <canon.json> \
     --rules <CA_ES_DEADLINE_RULES_V1.json> \
     --calendars <CA_ES_CALENDARS_V1.json> [--event <id>] [--now <iso>]
+
+# P5.1 action queue (umbrales obligatorios) + brief V2
+python -m ca_es.cli action-queue --deadlines <deadlines.json> \
+    --as-of <fecha> --window-days N --due-soon-days N [--now <iso>]
+python -m ca_es.cli brief --canon <canon.json> --as-of <fecha> \
+    --queue <CA_ES_ACTION_QUEUE_V1.json>   # -> CA_ES_MORNING_BRIEF_V2
+python -m ca_es.cli desk --canon <canon.json> --as-of <fecha> \
+    --queue <CA_ES_ACTION_QUEUE_V1.json>
 ```
 
 No hay linter/formatter configurado; el estilo es PEP 8 + stdlib.

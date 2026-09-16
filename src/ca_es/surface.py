@@ -765,6 +765,48 @@ class Surface:
             out["new_since_previous"] = delta_items
         return out
 
+    def brief_v2(
+        self,
+        as_of: str,
+        action_queue: dict,
+        previous: "Surface | None" = None,
+    ) -> dict:
+        """Morning brief V2 (P5.1): action_required := action queue.
+
+        V1 queda intacto (brief()). Aqui `action_required` son items
+        de CA_ES_ACTION_QUEUE_V1 — deadlines SOURCE/DERIVED ya
+        ajustados, no "todo date.* proximo". INDETERMINATE viaja en
+        `indeterminate_deadlines`. recent_changes/conflicts/
+        unsupported/new_since_previous se reutilizan de V1 sin
+        cambios. Cada item se enriquece con issuer_name/event_type
+        para el desk; la cola original no se muta.
+        """
+        brief = self.brief(
+            as_of,
+            window_days=action_queue["window_days"],
+            previous=previous,
+        )
+        info = {
+            e["canonical_event_id"]: (
+                e["issuer"].get("issuer_name"),
+                e["event_type"],
+            )
+            for e in self.canon["events"]
+        }
+        items = []
+        for item in action_queue.get("items", []):
+            issuer, etype = info.get(
+                item["canonical_event_id"], (None, None))
+            items.append({**item, "issuer_name": issuer,
+                          "event_type": etype})
+        indeterminate = action_queue.get("indeterminate", [])
+        brief["brief_version"] = "CA_ES_MORNING_BRIEF_V2"
+        brief["action_required"] = items
+        brief["indeterminate_deadlines"] = indeterminate
+        brief["summary"]["action_required"] = len(items)
+        brief["summary"]["indeterminate_deadlines"] = len(indeterminate)
+        return brief
+
 
 def render_brief(brief: dict) -> str:
     """Render de terminal deterministico del morning brief."""
@@ -781,18 +823,47 @@ def render_brief(brief: dict) -> str:
     if not brief["action_required"]:
         lines.append("  (none)")
     for item in brief["action_required"]:
-        lines.append(
-            "  {date} ({days}d) {issuer} {etype} {field} "
-            "[{eid}]".format(
-                date=item["date"],
-                days=item["days_until"],
-                issuer=item["issuer_name"] or "-",
-                etype=item["event_type"],
-                field=item["field_path"],
-                eid=item["canonical_event_id"][:8],
+        if "action_status" in item:
+            # V2: item de CA_ES_ACTION_QUEUE_V1 (deadline ajustado)
+            lines.append(
+                "  {status} {date} ({days}d) {issuer} {etype} "
+                "{dtype} [{eid}]".format(
+                    status=item["action_status"],
+                    date=item["deadline_date"],
+                    days=item["days_until"],
+                    issuer=item["issuer_name"] or "-",
+                    etype=item["event_type"],
+                    dtype=item["deadline_type"],
+                    eid=item["canonical_event_id"][:8],
+                )
             )
-        )
-        lines.append(f"      evidence: {item['evidence_locator']}")
+        else:
+            lines.append(
+                "  {date} ({days}d) {issuer} {etype} {field} "
+                "[{eid}]".format(
+                    date=item["date"],
+                    days=item["days_until"],
+                    issuer=item["issuer_name"] or "-",
+                    etype=item["event_type"],
+                    field=item["field_path"],
+                    eid=item["canonical_event_id"][:8],
+                )
+            )
+            lines.append(f"      evidence: {item['evidence_locator']}")
+    indeterminate = brief.get("indeterminate_deadlines")
+    if indeterminate is not None:
+        lines.append("")
+        lines.append("INDETERMINATE DEADLINES")
+        if not indeterminate:
+            lines.append("  (none)")
+        for item in indeterminate:
+            lines.append(
+                "  {dtype} {reasons} [{eid}]".format(
+                    dtype=item["deadline_type"],
+                    reasons=",".join(item.get("reasons") or []),
+                    eid=item["canonical_event_id"][:8],
+                )
+            )
     lines.append("")
     lines.append("RECENT CHANGES")
     if not brief["recent_changes"]:

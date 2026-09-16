@@ -55,9 +55,22 @@ def _label(section_key: str, item: dict) -> str:
     """Linea unica por item para la lista del desk."""
     issuer = item.get("issuer_name") or "-"
     if section_key == "action_required":
+        if "action_status" in item:
+            # V2: item de CA_ES_ACTION_QUEUE_V1
+            return (
+                f"{item['action_status']}  {item['deadline_date']}  "
+                f"{item['days_until']}d  {issuer} · "
+                f"{item['event_type']} · {item['deadline_type']}"
+            )
         return (
             f"{item['date']}  +{item['days_until']}d  {issuer} · "
             f"{item['event_type']} · {item['field_path']}"
+        )
+    if section_key == "indeterminate_deadlines":
+        return (
+            f"{item['deadline_type']}  "
+            f"{','.join(item.get('reasons') or [])}  "
+            f"[{_eid8(item)}]"
         )
     if section_key == "new_since_previous":
         kind = item["kind"]
@@ -100,7 +113,11 @@ def build_desk_model(brief: dict) -> dict:
     previous; si falta, la seccion queda vacia con note explicita.
     """
     sections = []
-    for key, title in DESK_SECTIONS:
+    section_defs = list(DESK_SECTIONS)
+    if brief.get("indeterminate_deadlines") is not None:
+        section_defs.append(
+            ("indeterminate_deadlines", "INDETERMINATE DEADLINES"))
+    for key, title in section_defs:
         items = brief.get(key)
         note = None
         if items is None:
@@ -178,7 +195,20 @@ def evidence_blocks(
     kind = item.get("kind")
     labeled: list[tuple[str, dict | None]] = []
     if section_key == "action_required":
-        labeled = [("CURRENT", _resolve(surface, item.get("assertion_id")))]
+        if item.get("assertion_ids"):
+            labeled = [
+                (f"ASSERTION {aid}", _resolve(surface, aid))
+                for aid in item["assertion_ids"]
+            ]
+        else:
+            labeled = [
+                ("CURRENT", _resolve(surface, item.get("assertion_id")))
+            ]
+    elif section_key == "indeterminate_deadlines":
+        labeled = [
+            (f"ASSERTION {aid}", _resolve(surface, aid))
+            for aid in item.get("assertion_ids", [])
+        ]
     elif section_key == "conflicts":
         labeled = [
             (f"ASSERTION {aid}", _resolve(surface, aid))
@@ -270,6 +300,28 @@ def detail_lines(section_key: str, item: dict) -> list[str]:
     lines.append("")
 
     if section_key == "action_required":
+        if "action_status" in item:
+            lines.append(
+                f"{item['action_status']} · {item['days_until']} days")
+            lines.append("")
+            lines.append("Deadline")
+            lines.append(f"  type: {item['deadline_type']}")
+            lines.append(f"  date: {item['deadline_date']}")
+            lines.append(
+                f"  derivation: {item['derivation_status']}")
+            lines.append(f"  source_date: {item['source_date']}")
+            if item.get("rule_id"):
+                lines.append(f"  rule: {item['rule_id']}")
+            if item.get("calendar_id"):
+                lines.append(f"  calendar: {item['calendar_id']}")
+            lines.append("")
+            lines.append("Evidence")
+            for aid in item.get("assertion_ids", []):
+                lines.append(f"  assertion_id: {aid}")
+            for ev in item.get("evidence", []):
+                lines.append(
+                    f"  {ev.get('field_path')}: {ev.get('value')}")
+            return lines
         lines.append(f"ACTION_REQUIRED · {item['days_until']} days")
         lines.append("")
         lines.append("Value")
@@ -279,6 +331,23 @@ def detail_lines(section_key: str, item: dict) -> list[str]:
         lines.append(f"  assertion_id: {item['assertion_id']}")
         lines.append(f"  source_document_id: {item['source_document_id']}")
         lines.append(f"  evidence_locator: {item['evidence_locator']}")
+        return lines
+
+    if section_key == "indeterminate_deadlines":
+        lines.append("INDETERMINATE — no operational date derived")
+        lines.append("")
+        lines.append(f"  type: {item['deadline_type']}")
+        lines.append(f"  reasons: {', '.join(item.get('reasons') or [])}")
+        if item.get("rule_id"):
+            lines.append(f"  rule: {item['rule_id']}")
+        if item.get("calendar_id"):
+            lines.append(f"  calendar: {item['calendar_id']}")
+        lines.append("")
+        lines.append("Evidence")
+        for aid in item.get("assertion_ids", []):
+            lines.append(f"  assertion_id: {aid}")
+        for ev in item.get("evidence", []):
+            lines.append(f"  {ev.get('field_path')}: {ev.get('value')}")
         return lines
 
     if section_key == "conflicts":
