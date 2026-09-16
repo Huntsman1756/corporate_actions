@@ -1,0 +1,26 @@
+{
+ "phase": "G2_EXECUTED_PENDING_ADJUDICATION",
+ "protocol": {
+  "tag": "g2-protocol",
+  "commit": "8774c04",
+  "preregistration": "docs/gates/g2-preregistered.json"
+ },
+ "execution_commit": "de3cc58",
+ "qualification_corpus": {
+  "manifest": "g2/manifests/qualification-corpus.json",
+  "documents": 10,
+  "seals": "ALL_VERIFIED"
+ },
+ "parser_surface_freeze": "VERIFIED (git diff g2-protocol..HEAD vacio en frozen paths)",
+ "runs": {
+  "run_1": "g2/results/run-1-f401633-canon.json",
+  "run_2": "g2/results/run-2-f401633-canon.json",
+  "control_e": "g2/results/control-e-f401633-canon.json",
+  "run_bytes_identical": true,
+  "logical_sha256_main": "722c5f2c3a958ed91344b29a93477bbdffd1e55843300dd58c807db1bb7122e1",
+  "logical_sha256_control_e": "efd0adf5317fa3d4532ca50c39adf291a94213a9f8dd6967ac530a4fe0153c56"
+ },
+ "gates_eval": "g2/results/gates-eval.json",
+ "verdict": "PENDING_HUMAN_ADJUDICATION",
+ "note": "El evaluador no declara PASS. Siguiente paso: adjudicacion humana final."
+}
