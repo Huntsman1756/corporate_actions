@@ -388,6 +388,226 @@ class Surface:
         """Fidelidad canonica: el subarbol del evento tal cual."""
         return self._find(canonical_event_id)
 
+    # -------------------------------------------------------------- brief
+
+    def brief(self, as_of: str, window_days: int = 7) -> dict:
+        """Morning brief operacional (P1).
+
+        Reglas explicitas y deterministas sobre el canon:
+
+        - ACTION_REQUIRED: todo field date.* del estado vigente
+          (CURRENT) con as_of <= fecha <= as_of + window_days.
+        - REVISED: eventos con revisiones generation>0; se muestra el
+          diff de la ultima revision (CHANGED/ADDED) y los fields
+          carried_forward.
+        - CONFLICTS: eventos con conflicts[] del canon; cada conflicto
+          conserva todos sus values y fuentes (sin ganador).
+        - UNSUPPORTED: capacidades QUARANTINED_UNSUPPORTED aplicables
+          segun la policy pinneada; nunca se rellenan.
+
+        Nada se modifica ni se infiere: todo item enlaza a sus
+        assertion_ids / source_documents / evidence_locators.
+        """
+        from datetime import date, timedelta
+
+        start = date.fromisoformat(as_of)
+        horizon = start + timedelta(days=window_days)
+
+        action_required = []
+        revised = []
+        conflict_items = []
+        unsupported_items = []
+
+        for event in self.canon["events"]:
+            eid = event["canonical_event_id"]
+            issuer = event["issuer"].get("issuer_name")
+            current = self._current_state(event)
+
+            for field_path in sorted(current):
+                if not field_path.startswith("date."):
+                    continue
+                field_state = current[field_path]
+                if field_state["status"] != "CURRENT":
+                    continue
+                for entry in field_state["values"]:
+                    value = entry["value"]
+                    if not isinstance(value, str):
+                        continue
+                    try:
+                        day = date.fromisoformat(value)
+                    except ValueError:
+                        continue
+                    if start <= day <= horizon:
+                        action_required.append(
+                            {
+                                "canonical_event_id": eid,
+                                "issuer_name": issuer,
+                                "event_type": event["event_type"],
+                                "field_path": field_path,
+                                "date": value,
+                                "days_until": (day - start).days,
+                                "assertion_id": entry["assertion_id"],
+                                "source_document_id": entry[
+                                    "source_document_id"
+                                ],
+                                "evidence_locator": entry["evidence_locator"],
+                            }
+                        )
+
+            timeline = self.timeline(eid)
+            if len(timeline["revisions"]) > 1:
+                last = timeline["revisions"][-1]
+                revised.append(
+                    {
+                        "canonical_event_id": eid,
+                        "issuer_name": issuer,
+                        "event_type": event["event_type"],
+                        "latest_generation": last["generation"],
+                        "source_documents": last["source_documents"],
+                        "changes": {
+                            field: change
+                            for field, change in sorted(last["changes"].items())
+                            if change["kind"] in ("ADDED", "CHANGED")
+                        },
+                        "carried_forward": last["carried_forward"],
+                    }
+                )
+
+            for conflict in event["conflicts"]:
+                conflict_items.append(
+                    {
+                        "canonical_event_id": eid,
+                        "issuer_name": issuer,
+                        "event_type": event["event_type"],
+                        "field_path": conflict["field_path"],
+                        "values": conflict["values"],
+                        "assertion_ids": conflict["assertion_ids"],
+                        "asserted_as_of": conflict["asserted_as_of"],
+                    }
+                )
+
+            for item in self._unsupported_for_event(event):
+                unsupported_items.append(
+                    {
+                        "canonical_event_id": eid,
+                        "issuer_name": issuer,
+                        "event_type": event["event_type"],
+                        **item,
+                    }
+                )
+
+        action_required.sort(
+            key=lambda i: (i["date"], i["canonical_event_id"], i["field_path"])
+        )
+        revised.sort(key=lambda i: i["canonical_event_id"])
+        conflict_items.sort(
+            key=lambda i: (i["canonical_event_id"], i["field_path"])
+        )
+        unsupported_items.sort(
+            key=lambda i: (i["canonical_event_id"], i["field_path"])
+        )
+
+        return {
+            "surface_version": SURFACE_VERSION,
+            "brief_version": "CA_ES_MORNING_BRIEF_V1",
+            "as_of": as_of,
+            "window_days": window_days,
+            "summary": {
+                "events": len(self.canon["events"]),
+                "action_required": len(action_required),
+                "revised_events": len(revised),
+                "conflicting_events": len(
+                    {i["canonical_event_id"] for i in conflict_items}
+                ),
+                "unsupported_items": len(unsupported_items),
+            },
+            "action_required": action_required,
+            "recent_changes": revised,
+            "conflicts": conflict_items,
+            "unsupported": unsupported_items,
+        }
+
+
+def render_brief(brief: dict) -> str:
+    """Render de terminal deterministico del morning brief."""
+    lines = [
+        f"CA-ES BRIEF  as_of={brief['as_of']}  window={brief['window_days']}d",
+        "",
+        "SUMMARY",
+        "  events={events}  action_required={action_required}  "
+        "revised={revised_events}  conflicts={conflicting_events}  "
+        "unsupported={unsupported_items}".format(**brief["summary"]),
+        "",
+    ]
+    lines.append("ACTION REQUIRED")
+    if not brief["action_required"]:
+        lines.append("  (none)")
+    for item in brief["action_required"]:
+        lines.append(
+            "  {date} ({days}d) {issuer} {etype} {field} "
+            "[{eid}]".format(
+                date=item["date"],
+                days=item["days_until"],
+                issuer=item["issuer_name"] or "-",
+                etype=item["event_type"],
+                field=item["field_path"],
+                eid=item["canonical_event_id"][:8],
+            )
+        )
+        lines.append(f"      evidence: {item['evidence_locator']}")
+    lines.append("")
+    lines.append("RECENT CHANGES")
+    if not brief["recent_changes"]:
+        lines.append("  (none)")
+    for item in brief["recent_changes"]:
+        lines.append(
+            "  {issuer} {etype} gen{gen} [{eid}]".format(
+                issuer=item["issuer_name"] or "-",
+                etype=item["event_type"],
+                gen=item["latest_generation"],
+                eid=item["canonical_event_id"][:8],
+            )
+        )
+        for field, change in item["changes"].items():
+            prev = ", ".join(
+                str(v["normalized"]) if isinstance(v, dict) else str(v)
+                for v in change["previous_values"]
+            ) or "-"
+            cur = ", ".join(
+                str(v["normalized"]) if isinstance(v, dict) else str(v)
+                for v in change["values"]
+            )
+            lines.append(f"    {change['kind']:11s} {field}: {prev} -> {cur}")
+        for field in item["carried_forward"]:
+            lines.append(f"    RETAINED    {field}")
+    lines.append("")
+    lines.append("CONFLICTS")
+    if not brief["conflicts"]:
+        lines.append("  (none)")
+    for item in brief["conflicts"]:
+        lines.append(
+            "  {issuer} {field} [{eid}]".format(
+                issuer=item["issuer_name"] or "-",
+                field=item["field_path"],
+                eid=item["canonical_event_id"][:8],
+            )
+        )
+        lines.append(f"      values: {', '.join(item['values'])}")
+    lines.append("")
+    lines.append("UNSUPPORTED")
+    if not brief["unsupported"]:
+        lines.append("  (none)")
+    for item in brief["unsupported"]:
+        lines.append(
+            "  {issuer} {field} -> UNSUPPORTED ({cap}) [{eid}]".format(
+                issuer=item["issuer_name"] or "-",
+                field=item["field_path"],
+                cap=item["capability"],
+                eid=item["canonical_event_id"][:8],
+            )
+        )
+    return "\n".join(lines) + "\n"
+
 
 def load_surface(canon_path: Path, policy_path: Path) -> Surface:
     canon = json.loads(canon_path.read_text(encoding="utf-8"))

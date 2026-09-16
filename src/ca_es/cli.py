@@ -253,6 +253,16 @@ def cmd_export_event(args: argparse.Namespace) -> int:
     return _emit(_surface(args).export_event(args.canonical_event_id))
 
 
+def cmd_brief(args: argparse.Namespace) -> int:
+    from .surface import render_brief
+
+    brief = _surface(args).brief(args.as_of, window_days=args.window)
+    if args.format == "text":
+        print(render_brief(brief), end="")
+        return 0
+    return _emit(brief)
+
+
 def build_parser() -> argparse.ArgumentParser:
     parser = argparse.ArgumentParser(prog="ca-es", description=__doc__)
     parser.add_argument("--repo-root", default=None)
@@ -323,6 +333,12 @@ def build_parser() -> argparse.ArgumentParser:
     export.add_argument("canonical_event_id")
     export.add_argument("--format", default="json")
     export.set_defaults(func=cmd_export_event)
+
+    brief = sub.add_parser("brief", parents=[surface_common])
+    brief.add_argument("--as-of", required=True)
+    brief.add_argument("--window", type=int, default=7)
+    brief.add_argument("--format", choices=["json", "text"], default="text")
+    brief.set_defaults(func=cmd_brief)
 
     return parser
 

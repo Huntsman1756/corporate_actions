@@ -131,3 +131,77 @@ def test_deterministic_presentation(surface):
 def test_not_found(surface):
     assert surface.show("nonexistent") is None
     assert surface.evidence("nonexistent") is None
+
+
+# --------------------------------------------------------------------- P1
+
+def test_brief_structure(surface):
+    brief = surface.brief("2026-07-15")
+    assert brief["brief_version"] == "CA_ES_MORNING_BRIEF_V1"
+    assert brief["summary"]["events"] == 7
+    assert brief["summary"]["unsupported_items"] == 1
+    assert brief["summary"]["conflicting_events"] == 2
+    assert brief["summary"]["revised_events"] == 1
+
+
+def test_brief_action_required_window(surface):
+    brief = surface.brief("2026-07-15")
+    items = {(i["field_path"], i["date"]) for i in brief["action_required"]}
+    assert ("date.ex_date", "2026-07-20") in items
+    assert ("date.payment_date", "2026-07-22") in items
+    # fuera de ventana no aparece
+    narrow = surface.brief("2026-07-15", window_days=3)
+    assert not narrow["action_required"]
+    # antes de la ventana: as_of posterior a las fechas -> nada
+    late = surface.brief("2026-08-01")
+    assert not late["action_required"]
+
+
+def test_brief_items_carry_evidence(surface):
+    brief = surface.brief("2026-07-15")
+    for section in ("action_required", "recent_changes", "conflicts"):
+        for item in brief[section]:
+            assert item["canonical_event_id"]
+    for item in brief["action_required"]:
+        assert item["assertion_id"] and item["evidence_locator"]
+
+
+def test_brief_recent_changes_diff(surface):
+    brief = surface.brief("2026-07-15")
+    mfe = next(
+        i for i in brief["recent_changes"] if i["canonical_event_id"] == MFE
+    )
+    assert mfe["latest_generation"] == 1
+    assert mfe["changes"]["date.ex_date"]["previous_values"] == ["2026-07-27"]
+    assert mfe["changes"]["date.ex_date"]["values"] == ["2026-07-20"]
+    assert "amount.gross_per_share" in mfe["carried_forward"]
+
+
+def test_brief_unsupported_and_conflicts_honest(surface):
+    brief = surface.brief("2026-07-15")
+    poex_unsup = [
+        i for i in brief["unsupported"] if i["canonical_event_id"] == POEX
+    ]
+    assert poex_unsup[0]["field_path"] == "amount.issue_price_per_share"
+    assert poex_unsup[0]["status"] == "UNSUPPORTED"
+    almirall_conflict = [
+        i for i in brief["conflicts"] if i["canonical_event_id"] == ALMIRALL
+    ]
+    assert set(almirall_conflict[0]["values"]) == {
+        '"2023-06-12"', '"2023-06-13"',
+    }
+
+
+def test_brief_deterministic(surface):
+    a = surface.brief("2026-07-15")
+    b = load_surface(CANON, POLICY).brief("2026-07-15")
+    from ca_es.canonical import canonical_json
+    assert canonical_json(a) == canonical_json(b)
+
+
+def test_brief_render_deterministic(surface):
+    from ca_es.surface import render_brief
+    a = render_brief(surface.brief("2026-07-15"))
+    b = render_brief(load_surface(CANON, POLICY).brief("2026-07-15"))
+    assert a == b
+    assert "ACTION REQUIRED" in a and "UNSUPPORTED" in a
