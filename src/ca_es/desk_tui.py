@@ -18,33 +18,12 @@ from textual.screen import ModalScreen
 from textual.widgets import Input, OptionList, Static
 from textual.widgets.option_list import Option
 
-from .desk import detail_lines, item_matches
-
-
-def _evidence_payload(surface, item: dict) -> dict:
-    """Cadena de evidencia del item: surface.evidence() si existe
-    assertion_id y surface; si no, los campos del propio item."""
-    assertion_id = item.get("assertion_id")
-    if surface is not None and assertion_id:
-        found = surface.evidence(assertion_id)
-        if found is not None:
-            return found
-    return {
-        key: item[key]
-        for key in (
-            "assertion_id",
-            "source_document_id",
-            "evidence_locator",
-            "previous_assertion_id",
-            "previous_evidence_locator",
-            "assertion_ids",
-        )
-        if item.get(key)
-    }
+from .desk import detail_lines, evidence_blocks, item_matches
 
 
 class EvidenceScreen(ModalScreen):
-    """Cadena de evidencia/provenance, solo lectura."""
+    """Cadenas de evidencia/provenance, solo lectura. Cada bloque va
+    rotulado con su origen (CURRENT / PREVIOUS / ASSERTION <id>)."""
 
     BINDINGS = [
         Binding("escape", "dismiss", "Back"),
@@ -52,19 +31,26 @@ class EvidenceScreen(ModalScreen):
         Binding("enter", "dismiss", "Back"),
     ]
 
-    def __init__(self, payload: dict) -> None:
+    def __init__(self, blocks: list[dict]) -> None:
         super().__init__()
-        self.payload = payload
+        self.blocks = blocks
 
     def compose(self) -> ComposeResult:
-        with VerticalScroll(id="evidence-box"):
-            yield Static(
-                json.dumps(
-                    self.payload, ensure_ascii=False, sort_keys=True,
-                    indent=2, default=str,
+        text = "\n\n".join(
+            "== {label} ==\n{payload}".format(
+                label=block["label"],
+                payload=json.dumps(
+                    block["payload"],
+                    ensure_ascii=False,
+                    sort_keys=True,
+                    indent=2,
+                    default=str,
                 ),
-                id="evidence",
             )
+            for block in self.blocks
+        )
+        with VerticalScroll(id="evidence-box"):
+            yield Static(text, id="evidence")
 
 
 class DetailScreen(ModalScreen):
@@ -90,9 +76,14 @@ class DetailScreen(ModalScreen):
 
     def action_evidence(self) -> None:
         desk = self.app
-        payload = _evidence_payload(desk.surface, self.item)
-        if payload:
-            self.app.push_screen(EvidenceScreen(payload))
+        blocks = evidence_blocks(
+            desk.surface,
+            desk.previous_surface,
+            self.section_key,
+            self.item,
+        )
+        if blocks:
+            self.app.push_screen(EvidenceScreen(blocks))
 
 
 class OpsDesk(App):
@@ -150,10 +141,13 @@ class OpsDesk(App):
         Binding("escape", "cancel_search", "Back"),
     ]
 
-    def __init__(self, model: dict, surface=None) -> None:
+    def __init__(
+        self, model: dict, surface=None, previous_surface=None
+    ) -> None:
         super().__init__()
         self.model = model
         self.surface = surface
+        self.previous_surface = previous_surface
         self._items: dict[str, tuple[str, dict]] = {}
         self._first_index: dict[str, int] = {}
 
@@ -284,6 +278,8 @@ class OpsDesk(App):
         found = self._selected_item()
         if found is None:
             return
-        payload = _evidence_payload(self.surface, found[1])
-        if payload:
-            self.push_screen(EvidenceScreen(payload))
+        blocks = evidence_blocks(
+            self.surface, self.previous_surface, found[0], found[1]
+        )
+        if blocks:
+            self.push_screen(EvidenceScreen(blocks))

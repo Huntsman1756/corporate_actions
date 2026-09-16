@@ -292,12 +292,17 @@ def cmd_desk(args: argparse.Namespace) -> int:
         )
         return 2
     surface = _surface(args)
+    previous = _load_previous(args)
     brief = surface.brief(
         args.as_of,
         window_days=args.window,
-        previous=_load_previous(args),
+        previous=previous,
     )
-    OpsDesk(build_desk_model(brief), surface).run()
+    OpsDesk(
+        build_desk_model(brief),
+        surface,
+        previous_surface=previous,
+    ).run()
     return 0
 
 

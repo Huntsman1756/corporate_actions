@@ -6,7 +6,12 @@ from pathlib import Path
 
 import pytest
 
-from ca_es.desk import build_desk_model, detail_lines, item_matches
+from ca_es.desk import (
+    build_desk_model,
+    detail_lines,
+    evidence_blocks,
+    item_matches,
+)
 from ca_es.surface import Surface, load_surface
 
 pytest.importorskip("textual")
@@ -344,6 +349,143 @@ def test_desk_empty_brief_runs(surface):
         async with app.run_test(size=(80, 24)) as pilot:
             assert _enabled_options(app) == []
             await pilot.press("q")
+
+    asyncio.run(go())
+
+
+def test_evidence_bilateral_changed_assertion(surface):
+    previous_canon = _canon_copy()
+    mfe = next(
+        e for e in previous_canon["events"] if e["canonical_event_id"] == MFE
+    )
+    target = next(
+        f for f in mfe["facts"]
+        if f["field_path"] == "date.ex_date" and f["value"] == "2026-07-20"
+    )
+    target["value"] = "2026-07-19"
+    previous = _surface_of(previous_canon)
+    brief = surface.brief("2026-07-15", previous=previous)
+    changed = next(
+        i for i in brief["new_since_previous"]
+        if i["kind"] == "CHANGED_ASSERTION"
+    )
+    blocks = evidence_blocks(
+        surface, previous, "new_since_previous", changed
+    )
+    assert [b["label"] for b in blocks] == ["CURRENT", "PREVIOUS"]
+    cur, prev = blocks[0]["payload"], blocks[1]["payload"]
+    assert cur["assertion_id"] == changed["assertion_id"]
+    assert cur["value"] == "2026-07-20"
+    assert cur["raw_pointer"] and cur["source_document"]
+    assert prev["assertion_id"] == changed["previous_assertion_id"]
+    assert prev["value"] == "2026-07-19"
+    assert prev["raw_pointer"]
+
+
+def test_evidence_removed_assertion_uses_previous(surface):
+    previous_canon = _canon_copy()
+    mfe = next(
+        e for e in previous_canon["events"] if e["canonical_event_id"] == MFE
+    )
+    retracted = dict(mfe["facts"][0])
+    retracted["field_path"] = "date.election_deadline"
+    retracted["value"] = "2026-07-24"
+    retracted["assertion_id"] = "test-retracted-id"
+    mfe["facts"].append(retracted)
+    previous = _surface_of(previous_canon)
+    brief = surface.brief("2026-07-15", previous=previous)
+    removed = next(
+        i for i in brief["new_since_previous"]
+        if i["kind"] == "REMOVED_ASSERTION"
+    )
+    blocks = evidence_blocks(
+        surface, previous, "new_since_previous", removed
+    )
+    assert [b["label"] for b in blocks] == ["PREVIOUS"]
+    payload = blocks[0]["payload"]
+    # resuelto contra el snapshot previo, no metadata degradada
+    assert payload["assertion_id"] == "test-retracted-id"
+    assert payload["value"] == "2026-07-24"
+    assert payload["raw_pointer"]
+
+
+def test_evidence_conflict_expands_all_assertions(brief, surface):
+    conflict = next(
+        i for i in brief["conflicts"]
+        if i["canonical_event_id"] == ALMIRALL
+    )
+    blocks = evidence_blocks(surface, None, "conflicts", conflict)
+    assert len(blocks) == len(conflict["assertion_ids"])
+    values = {b["payload"]["value"] for b in blocks}
+    assert values == {"2023-06-12", "2023-06-13"}
+    for block in blocks:
+        assert block["payload"]["assertion_id"] in conflict[
+            "assertion_ids"
+        ]
+        assert block["payload"]["raw_pointer"]
+
+
+def test_evidence_resolved_conflict_uses_previous(surface):
+    current_canon = _canon_copy()
+    almirall = next(
+        e for e in current_canon["events"]
+        if e["canonical_event_id"] == ALMIRALL
+    )
+    # el conflicto y sus facts desaparecen del current: la cadena solo
+    # es resoluble contra previous
+    aids = {a for c in almirall["conflicts"] for a in c["assertion_ids"]}
+    almirall["conflicts"] = []
+    almirall["facts"] = [
+        f for f in almirall["facts"] if f["assertion_id"] not in aids
+    ]
+    current = _surface_of(current_canon)
+    brief = current.brief("2026-07-15", previous=surface)
+    resolved = next(
+        i for i in brief["new_since_previous"]
+        if i["kind"] == "RESOLVED_CONFLICT"
+    )
+    blocks = evidence_blocks(
+        current, surface, "new_since_previous", resolved
+    )
+    assert len(blocks) == len(resolved["assertion_ids"])
+    for block in blocks:
+        payload = block["payload"]
+        # resuelto contra previous: cadena completa, no fallback
+        assert payload["assertion_id"] in resolved["assertion_ids"]
+        assert payload["value"] in ("2023-06-12", "2023-06-13")
+        assert payload["raw_pointer"]
+
+
+def test_desk_evidence_bilateral_tui(surface):
+    previous_canon = _canon_copy()
+    mfe = next(
+        e for e in previous_canon["events"] if e["canonical_event_id"] == MFE
+    )
+    target = next(
+        f for f in mfe["facts"]
+        if f["field_path"] == "date.ex_date" and f["value"] == "2026-07-20"
+    )
+    target["value"] = "2026-07-19"
+    previous = _surface_of(previous_canon)
+    brief = surface.brief("2026-07-15", previous=previous)
+    model = build_desk_model(brief)
+    app = OpsDesk(model, surface, previous_surface=previous)
+
+    async def go():
+        async with app.run_test(size=(100, 30)) as pilot:
+            ol = app.query_one("#queue", OptionList)
+            ol.highlighted = app._first_index["new_since_previous"]
+            await pilot.press("enter")
+            assert isinstance(app.screen, DetailScreen)
+            await pilot.press("e")
+            assert isinstance(app.screen, EvidenceScreen)
+            text = str(
+                app.screen.query_one("#evidence", Static).visual
+            )
+            assert "== CURRENT ==" in text
+            assert "== PREVIOUS ==" in text
+            assert "2026-07-20" in text
+            assert "2026-07-19" in text
 
     asyncio.run(go())
 

@@ -131,6 +131,109 @@ def build_desk_model(brief: dict) -> dict:
     }
 
 
+def _item_metadata(item: dict) -> dict:
+    """Fallback de provenance a nivel de item cuando no hay cadena
+    resoluble (p. ej. NEW_EVENT, UNSUPPORTED, assertion_id no
+    encontrado)."""
+    keys = (
+        "assertion_id",
+        "source_document_id",
+        "evidence_locator",
+        "previous_assertion_id",
+        "previous_evidence_locator",
+        "assertion_ids",
+        "source_id",
+        "capability",
+        "capability_status",
+        "evidence",
+    )
+    return {k: item[k] for k in keys if item.get(k)}
+
+
+def _resolve(surface, assertion_id):
+    if surface is None or not assertion_id:
+        return None
+    return surface.evidence(assertion_id)
+
+
+def evidence_blocks(
+    surface,
+    previous_surface,
+    section_key: str,
+    item: dict,
+) -> list[dict]:
+    """Cadenas de evidencia de un item, conscientes del origen.
+
+    Cada bloque es {"label", "payload"}; payload es la cadena
+    completa de Surface.evidence() o, si no es resoluble, el fallback
+    de metadatos del item. Reglas de origen:
+
+      ACTION_REQUIRED    -> current
+      NEW_ASSERTION      -> current
+      CHANGED_ASSERTION  -> CURRENT + PREVIOUS (ambos lados)
+      REMOVED_ASSERTION  -> previous
+      conflicts / NEW_CONFLICT     -> todos los assertion_ids, current
+      RESOLVED_CONFLICT  -> todos los assertion_ids, previous
+    """
+    kind = item.get("kind")
+    labeled: list[tuple[str, dict | None]] = []
+    if section_key == "action_required":
+        labeled = [("CURRENT", _resolve(surface, item.get("assertion_id")))]
+    elif section_key == "conflicts":
+        labeled = [
+            (f"ASSERTION {aid}", _resolve(surface, aid))
+            for aid in item.get("assertion_ids", [])
+        ]
+    elif section_key == "new_since_previous":
+        if kind == "CHANGED_ASSERTION":
+            labeled = [
+                ("CURRENT", _resolve(surface, item.get("assertion_id"))),
+                (
+                    "PREVIOUS",
+                    _resolve(
+                        previous_surface,
+                        item.get("previous_assertion_id"),
+                    ),
+                ),
+            ]
+        elif kind == "NEW_ASSERTION":
+            labeled = [
+                ("CURRENT", _resolve(surface, item.get("assertion_id")))
+            ]
+        elif kind == "REMOVED_ASSERTION":
+            labeled = [
+                (
+                    "PREVIOUS",
+                    _resolve(
+                        previous_surface,
+                        item.get("previous_assertion_id"),
+                    ),
+                )
+            ]
+        elif kind == "NEW_CONFLICT":
+            labeled = [
+                (f"ASSERTION {aid}", _resolve(surface, aid))
+                for aid in item.get("assertion_ids", [])
+            ]
+        elif kind == "RESOLVED_CONFLICT":
+            labeled = [
+                (
+                    f"ASSERTION {aid}",
+                    _resolve(previous_surface, aid),
+                )
+                for aid in item.get("assertion_ids", [])
+            ]
+    blocks = [
+        {"label": label, "payload": chain or _item_metadata(item)}
+        for label, chain in labeled
+    ]
+    if not blocks:
+        meta = _item_metadata(item)
+        if meta:
+            blocks.append({"label": "ITEM", "payload": meta})
+    return blocks
+
+
 def _haystack(entry: dict) -> str:
     return _normalize(
         entry["label"]
