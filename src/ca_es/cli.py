@@ -320,6 +320,52 @@ def cmd_entitlement(args: argparse.Namespace) -> int:
     )
 
 
+def cmd_reconcile(args: argparse.Namespace) -> int:
+    from .entitlement_engine import compute_entitlements, load_positions
+    from .reconciliation import load_movements, reconcile
+
+    if args.entitlements:
+        entitlement_doc = json.loads(
+            Path(args.entitlements).read_text(encoding="utf-8")
+        )
+    elif args.canon and args.event and args.positions:
+        surface = _surface(args)
+        try:
+            positions = load_positions(Path(args.positions))
+        except (ValueError, OSError) as exc:
+            print(
+                json.dumps(
+                    {"status": "INVALID_POSITIONS", "detail": str(exc)}
+                )
+            )
+            return 2
+        entitlement_doc = compute_entitlements(
+            surface, args.event, positions
+        )
+        if entitlement_doc is None:
+            print(json.dumps({"status": "NOT_FOUND"}, sort_keys=True))
+            return 1
+    else:
+        print(
+            json.dumps(
+                {
+                    "status": "MISSING_INPUT",
+                    "detail": "--entitlements o --canon+--event+--positions",
+                },
+                sort_keys=True,
+            )
+        )
+        return 2
+    try:
+        movements = load_movements(Path(args.cash))
+    except (ValueError, OSError) as exc:
+        print(
+            json.dumps({"status": "INVALID_MOVEMENTS", "detail": str(exc)})
+        )
+        return 2
+    return _emit(reconcile(entitlement_doc, movements))
+
+
 def build_parser() -> argparse.ArgumentParser:
     parser = argparse.ArgumentParser(prog="ca-es", description=__doc__)
     parser.add_argument("--repo-root", default=None)
@@ -408,6 +454,15 @@ def build_parser() -> argparse.ArgumentParser:
     entitlement.add_argument("--event", required=True)
     entitlement.add_argument("--positions", required=True)
     entitlement.set_defaults(func=cmd_entitlement)
+
+    reconcile = sub.add_parser("reconcile")
+    reconcile.add_argument("--canon", default=None)
+    reconcile.add_argument("--policy", default=None)
+    reconcile.add_argument("--event", default=None)
+    reconcile.add_argument("--positions", default=None)
+    reconcile.add_argument("--entitlements", default=None)
+    reconcile.add_argument("--cash", required=True)
+    reconcile.set_defaults(func=cmd_reconcile)
 
     return parser
 

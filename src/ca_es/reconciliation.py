@@ -1,0 +1,315 @@
+"""P3.0 Cash Reconciliation — expected entitlement vs actual cash.
+
+Contrato:
+
+    expected entitlements (CA_ES_ENTITLEMENT_V1)
+        + actual cash movements (CA_ES_CASH_MOVEMENTS_V1)
+        -> reconcile()
+        -> MATCH / AMOUNT_MISMATCH / MISSING_CASH / UNEXPECTED_CASH
+           / INDETERMINATE
+
+Reglas estrictas (P3.0):
+
+- solo se reconcilian entitlements ENTITLED; un entitlement
+  INDETERMINATE/NOT_ENTITLED/UNSUPPORTED pasa a INDETERMINATE sin
+  convertirse en excepcion monetaria falsa;
+- clave de match: account_id + referencia de evento
+  (movement.event_id == canonical_event_id, o movement.isin ==
+  isin del entitlement) + currency;
+- Decimal exclusivamente, sin tolerancias: expected gross_cash ==
+  actual amount -> MATCH; distintos -> AMOUNT_MISMATCH con delta
+  exacto (actual - expected);
+- expected sin cash -> MISSING_CASH; cash sin expected ->
+  UNEXPECTED_CASH;
+- varios movimientos para una misma clave -> INDETERMINATE /
+  MULTIPLE_CASH_MOVEMENTS (no se suma silenciosamente en v1);
+- varios entitlements ENTITLED con la misma clave -> INDETERMINATE /
+  DUPLICATE_ENTITLEMENT_KEY;
+- value_date es informativa, nunca criterio de match;
+- movimientos malformados -> invalid_movements, nunca participan
+  en el match;
+- evidencia en ambos lados: provenance del entitlement +
+  movement_id del actual.
+
+reconcile() es pura sobre los dos artefactos: no toca canon ni
+Surface; la provenance viaja dentro del documento de entitlements.
+"""
+from __future__ import annotations
+
+import json
+from decimal import Decimal, InvalidOperation
+from pathlib import Path
+
+RECON_VERSION = "CA_ES_CASH_RECON_V1"
+MOVEMENTS_SCHEMA = "CA_ES_CASH_MOVEMENTS_V1"
+
+MATCH = "MATCH"
+AMOUNT_MISMATCH = "AMOUNT_MISMATCH"
+MISSING_CASH = "MISSING_CASH"
+UNEXPECTED_CASH = "UNEXPECTED_CASH"
+INDETERMINATE = "INDETERMINATE"
+
+MOVEMENT_REQUIRED = ("movement_id", "account_id", "currency", "amount")
+
+
+def load_movements(path: Path) -> dict:
+    doc = json.loads(path.read_text(encoding="utf-8"))
+    if doc.get("schema") != MOVEMENTS_SCHEMA:
+        raise ValueError(
+            f"movements schema debe ser {MOVEMENTS_SCHEMA}, "
+            f"recibido {doc.get('schema')!r}"
+        )
+    return doc
+
+
+def _movement_amount(movement: dict) -> Decimal | None:
+    raw = movement.get("amount")
+    if isinstance(raw, float):
+        return None
+    try:
+        return Decimal(str(raw))
+    except (InvalidOperation, ValueError):
+        return None
+
+
+def _money(normalized: Decimal, currency: str) -> dict:
+    return {
+        "normalized": format(normalized, "f"),
+        "currency": currency,
+        "scale": -normalized.as_tuple().exponent,
+    }
+
+
+def _references_event(movement: dict, canonical_event_id: str, isin) -> bool:
+    if movement.get("event_id") == canonical_event_id:
+        return True
+    return bool(isin) and movement.get("isin") == isin
+
+
+def _movement_key_match(
+    movement: dict, canonical_event_id: str, entitlement: dict
+) -> bool:
+    """Clave completa: account + evento + currency."""
+    if movement.get("account_id") != entitlement.get("account_id"):
+        return False
+    if not _references_event(
+        movement, canonical_event_id, entitlement.get("isin")
+    ):
+        return False
+    gross = entitlement.get("gross_cash") or {}
+    return movement.get("currency") == gross.get("currency")
+
+
+def _movement_linked(
+    movement: dict, canonical_event_id: str, entitlement: dict
+) -> bool:
+    """Vinculo informativo (account + evento) para entitlements sin
+    importe calculable; nunca produce excepcion."""
+    if movement.get("account_id") != entitlement.get("account_id"):
+        return False
+    return _references_event(
+        movement, canonical_event_id, entitlement.get("isin")
+    )
+
+
+def reconcile(entitlement_doc: dict, movements_doc: dict) -> dict:
+    canonical_event_id = entitlement_doc["canonical_event_id"]
+
+    valid_movements = []
+    invalid_movements = []
+    for movement in movements_doc.get("movements", []):
+        missing = [k for k in MOVEMENT_REQUIRED if movement.get(k) is None]
+        if not movement.get("event_id") and not movement.get("isin"):
+            missing.append("event_id|isin")
+        if _movement_amount(movement) is None:
+            missing.append("amount(parseable)")
+        if missing:
+            invalid_movements.append(
+                {"movement": movement, "reasons": sorted(set(missing))}
+            )
+        else:
+            valid_movements.append(movement)
+
+    used: set[int] = set()
+    items = []
+
+    # claves ENTITLED duplicadas: el cash no puede asignarse sin
+    # ambiguedad -> INDETERMINATE para todos los del grupo
+    entitled = [
+        e for e in entitlement_doc.get("entitlements", [])
+        if e.get("status") == "ENTITLED"
+    ]
+    key_counts: dict[tuple, int] = {}
+    for ent in entitled:
+        key = (
+            ent["account_id"],
+            canonical_event_id,
+            (ent.get("gross_cash") or {}).get("currency"),
+        )
+        key_counts[key] = key_counts.get(key, 0) + 1
+
+    for ent in entitlement_doc.get("entitlements", []):
+        base = {
+            "account_id": ent.get("account_id"),
+            "isin": ent.get("isin"),
+            "canonical_event_id": canonical_event_id,
+            "movement_ids": [],
+            "reasons": [],
+            "evidence": {
+                "entitlement": ent.get("evidence"),
+                "movement_ids": [],
+            },
+        }
+        if ent.get("status") != "ENTITLED":
+            linked = [
+                m
+                for m in valid_movements
+                if id(m) not in used
+                and _movement_linked(m, canonical_event_id, ent)
+            ]
+            used.update(id(m) for m in linked)
+            items.append(
+                {
+                    **base,
+                    "status": INDETERMINATE,
+                    "entitlement_status": ent.get("status"),
+                    "reasons": [
+                        f"ENTITLEMENT_{ent.get('status')}",
+                        *ent.get("reasons", []),
+                    ],
+                    "linked_movement_ids": [
+                        m["movement_id"] for m in linked
+                    ],
+                }
+            )
+            continue
+
+        key = (
+            ent["account_id"],
+            canonical_event_id,
+            ent["gross_cash"]["currency"],
+        )
+        if key_counts[key] > 1:
+            linked = [
+                m
+                for m in valid_movements
+                if _movement_key_match(m, canonical_event_id, ent)
+            ]
+            used.update(id(m) for m in linked)
+            items.append(
+                {
+                    **base,
+                    "status": INDETERMINATE,
+                    "reasons": ["DUPLICATE_ENTITLEMENT_KEY"],
+                    "expected_gross_cash": ent["gross_cash"],
+                    "movement_ids": [m["movement_id"] for m in linked],
+                    "evidence": {
+                        "entitlement": ent.get("evidence"),
+                        "movement_ids": [m["movement_id"] for m in linked],
+                    },
+                }
+            )
+            continue
+
+        matched = [
+            m
+            for m in valid_movements
+            if id(m) not in used
+            and _movement_key_match(m, canonical_event_id, ent)
+        ]
+        expected = Decimal(ent["gross_cash"]["normalized"])
+        currency = ent["gross_cash"]["currency"]
+
+        if len(matched) > 1:
+            used.update(id(m) for m in matched)
+            items.append(
+                {
+                    **base,
+                    "status": INDETERMINATE,
+                    "reasons": ["MULTIPLE_CASH_MOVEMENTS"],
+                    "expected_gross_cash": ent["gross_cash"],
+                    "movement_ids": [m["movement_id"] for m in matched],
+                    "evidence": {
+                        "entitlement": ent.get("evidence"),
+                        "movement_ids": [m["movement_id"] for m in matched],
+                    },
+                }
+            )
+        elif not matched:
+            items.append(
+                {
+                    **base,
+                    "status": MISSING_CASH,
+                    "expected_gross_cash": ent["gross_cash"],
+                }
+            )
+        else:
+            movement = matched[0]
+            used.add(id(movement))
+            actual = _movement_amount(movement)
+            delta = actual - expected
+            status = MATCH if actual == expected else AMOUNT_MISMATCH
+            items.append(
+                {
+                    **base,
+                    "status": status,
+                    "expected_gross_cash": ent["gross_cash"],
+                    "actual_amount": format(actual, "f"),
+                    "delta": _money(delta, currency),
+                    "movement_ids": [movement["movement_id"]],
+                    "value_date": movement.get("value_date"),
+                    "evidence": {
+                        "entitlement": ent.get("evidence"),
+                        "movement_ids": [movement["movement_id"]],
+                    },
+                }
+            )
+
+    for movement in valid_movements:
+        if id(movement) in used:
+            continue
+        items.append(
+            {
+                "account_id": movement.get("account_id"),
+                "isin": movement.get("isin"),
+                "canonical_event_id": canonical_event_id,
+                "status": UNEXPECTED_CASH,
+                "actual_amount": format(_movement_amount(movement), "f"),
+                "currency": movement.get("currency"),
+                "value_date": movement.get("value_date"),
+                "movement_ids": [movement["movement_id"]],
+                "reasons": [],
+                "evidence": {
+                    "entitlement": None,
+                    "movement_ids": [movement["movement_id"]],
+                },
+            }
+        )
+
+    items.sort(
+        key=lambda i: (
+            i.get("account_id") or "",
+            i["status"] == UNEXPECTED_CASH,
+            ",".join(i.get("movement_ids") or []),
+        )
+    )
+
+    summary = {"items": len(items), "invalid_movements": len(invalid_movements)}
+    for status in (
+        MATCH,
+        AMOUNT_MISMATCH,
+        MISSING_CASH,
+        UNEXPECTED_CASH,
+        INDETERMINATE,
+    ):
+        summary[status.casefold()] = sum(
+            1 for i in items if i["status"] == status
+        )
+
+    return {
+        "recon_version": RECON_VERSION,
+        "canonical_event_id": canonical_event_id,
+        "items": items,
+        "invalid_movements": invalid_movements,
+        "summary": summary,
+    }

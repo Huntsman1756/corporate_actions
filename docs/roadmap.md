@@ -65,9 +65,12 @@ P2  Entitlements
     Decimal-only; fórmulas portadas y testeadas desde vn-corporate-actions
 
 P3  Reconciliation / Exceptions
-    expected entitlement vs actual cash
-    MATCH / EXCEPTION / MISSING; CSV in/out
-    ca-es reconcile --event <id> --positions p.csv --actual c.csv
+    P3.0 cash reconciliation                              DONE
+         (ca-es reconcile; CA_ES_CASH_MOVEMENTS_V1;
+          MATCH / AMOUNT_MISMATCH / MISSING_CASH /
+          UNEXPECTED_CASH / INDETERMINATE; sin tolerancias
+          ni agregación silenciosa)
+    exceptions / workflow, CSV in/out
 
 P4  SWIFT / ISO adapters
     Prowide MT564/565/566/567/568
@@ -88,3 +91,10 @@ P7  Automation / alerts
 
 P1 → P2 → P3 → P4. Cada fase se implementa con tests; sin nuevos gates
 formales (G4+ no existen).
+
+## Deuda conocida (no bugs)
+
+- El join SAN→posición usa `isin='ESTIMACIONES'` (quirk del canon):
+  demuestra cálculo y trazabilidad, no una cadena de identificación
+  de instrumento realista. Deuda del corpus / instrument binding,
+  no del entitlement engine.
