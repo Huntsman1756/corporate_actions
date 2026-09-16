@@ -1,0 +1,69 @@
+{
+ "eval_version": "CA_ES_G3_GATES_EVAL_V1",
+ "protocol": "docs/gates/g3-preregistered.json @ g3-protocol",
+ "gates": {
+  "current_state_correctness": {
+   "measured": 1.0,
+   "required": 1.0,
+   "met": true,
+   "detail": []
+  },
+  "revision_timeline_correctness": {
+   "measured": 1.0,
+   "required": 1.0,
+   "met": true,
+   "detail": []
+  },
+  "conflict_visibility": {
+   "measured": 1.0,
+   "required": 1.0,
+   "met": true,
+   "detail": []
+  },
+  "provenance_navigability": {
+   "measured": 1.0,
+   "required": 1.0,
+   "met": true,
+   "detail": []
+  },
+  "unsupported_capability_honesty": {
+   "measured": 1.0,
+   "required": 1.0,
+   "met": true,
+   "detail": []
+  },
+  "canonical_export_fidelity": {
+   "measured": 1.0,
+   "required": 1.0,
+   "met": true,
+   "detail": []
+  },
+  "deterministic_presentation": {
+   "measured": 1.0,
+   "required": 1.0,
+   "met": true,
+   "detail": []
+  }
+ },
+ "cases": {
+  "G3-A": {
+   "pass": true
+  },
+  "G3-B": {
+   "pass": true
+  },
+  "G3-C": {
+   "pass": true
+  },
+  "G3-D": {
+   "pass": true
+  },
+  "G3-E": {
+   "pass": true
+  },
+  "G3-F": {
+   "pass": true
+  }
+ },
+ "verdict": "PENDING_HUMAN_ADJUDICATION"
+}

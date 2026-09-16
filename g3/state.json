@@ -1,0 +1,25 @@
+{
+ "phase": "G3_EXECUTED_PENDING_ADJUDICATION",
+ "protocol": {
+  "tag": "g3-protocol",
+  "commit": "87a3dd6",
+  "preregistration": "docs/gates/g3-preregistered.json"
+ },
+ "inputs": {
+  "canon": {
+   "artifact": "g3/input/canon.json",
+   "file_sha256": "c0f7dcd5d330ea69168ef90edcb207b561c237a07c5de216c140ef2147a06f0c",
+   "logical_sha256": "722c5f2c3a958ed91344b29a93477bbdffd1e55843300dd58c807db1bb7122e1"
+  },
+  "policy": {
+   "artifact": "docs/sources/source-policy.json",
+   "mode": "READ_ONLY",
+   "file_sha256": "5ec0136ab3f4d15e435072ed00a7c0417407c0a6de2ef636d6727a9ac6c5dea3"
+  }
+ },
+ "frozen_surface": "VERIFIED (git diff g3-protocol..HEAD vacio en frozen paths, incl. src/ca_es/identity/**)",
+ "commands_executed": "24 comandos x2 -> g3/results/commands/ (bytes identicos entre repeticiones)",
+ "gates_eval": "g3/results/gates-eval.json",
+ "verdict": "PENDING_HUMAN_ADJUDICATION",
+ "note": "Ultimo gate del ciclo; tras G3 el proyecto pasa a modo producto (roadmap P1-P7). El evaluador no declara PASS; siguiente paso: adjudicacion humana final."
+}

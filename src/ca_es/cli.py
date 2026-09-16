@@ -10,8 +10,10 @@ from .gates import evaluate_gates
 from .pipeline import run_pipeline
 from .reference.esma_firds import load_firds_listings
 from .source_policy import load_source_policy
+from .surface import load_surface
 
 DEFAULT_RESULTS = Path("g0/results")
+DEFAULT_POLICY = Path("docs/sources/source-policy.json")
 
 
 def _repo_root(explicit: str | None) -> Path:
@@ -197,6 +199,60 @@ def cmd_isin(args: argparse.Namespace) -> int:
     return 0 if events else 1
 
 
+# --------------------------------------------------------------------- G3
+# Subcomandos de superficie operacional (G3): consumen un artefacto
+# CA_ES_OPERATIONAL_CANON_V1 ya generado (--canon) + source-policy.json
+# READ_ONLY. Thin adapter: la semantica vive en ca_es.surface.
+
+
+def _surface(args: argparse.Namespace):
+    repo_root = _repo_root(args.repo_root)
+    policy = Path(args.policy) if args.policy else repo_root / DEFAULT_POLICY
+    return load_surface(Path(args.canon), policy)
+
+
+def _emit(payload: object) -> int:
+    if payload is None:
+        print(json.dumps({"status": "NOT_FOUND"}, sort_keys=True))
+        return 1
+    print(canonical_json(payload))
+    return 0
+
+
+def cmd_events(args: argparse.Namespace) -> int:
+    surface = _surface(args)
+    return _emit(
+        {
+            "events": surface.search(
+                isin=args.isin, event_type=args.type, issuer=args.issuer
+            )
+        }
+    )
+
+
+def cmd_show(args: argparse.Namespace) -> int:
+    return _emit(_surface(args).show(args.canonical_event_id))
+
+
+def cmd_timeline(args: argparse.Namespace) -> int:
+    return _emit(_surface(args).timeline(args.canonical_event_id))
+
+
+def cmd_conflicts(args: argparse.Namespace) -> int:
+    return _emit(_surface(args).conflicts(args.canonical_event_id))
+
+
+def cmd_evidence(args: argparse.Namespace) -> int:
+    return _emit(_surface(args).evidence(args.assertion_id))
+
+
+def cmd_export_event(args: argparse.Namespace) -> int:
+    if args.format != "json":
+        print(json.dumps({"status": "UNSUPPORTED_FORMAT", "format": args.format}))
+        return 2
+    return _emit(_surface(args).export_event(args.canonical_event_id))
+
+
 def build_parser() -> argparse.ArgumentParser:
     parser = argparse.ArgumentParser(prog="ca-es", description=__doc__)
     parser.add_argument("--repo-root", default=None)
@@ -236,6 +292,37 @@ def build_parser() -> argparse.ArgumentParser:
     isin = sub.add_parser("isin", parents=[common])
     isin.add_argument("isin")
     isin.set_defaults(func=cmd_isin)
+
+    surface_common = argparse.ArgumentParser(add_help=False)
+    surface_common.add_argument("--canon", required=True)
+    surface_common.add_argument("--policy", default=None)
+
+    events = sub.add_parser("events", parents=[surface_common])
+    events.add_argument("--isin", default=None)
+    events.add_argument("--type", dest="type", default=None)
+    events.add_argument("--issuer", default=None)
+    events.set_defaults(func=cmd_events)
+
+    show = sub.add_parser("show", parents=[surface_common])
+    show.add_argument("canonical_event_id")
+    show.set_defaults(func=cmd_show)
+
+    timeline = sub.add_parser("timeline", parents=[surface_common])
+    timeline.add_argument("canonical_event_id")
+    timeline.set_defaults(func=cmd_timeline)
+
+    conflicts = sub.add_parser("conflicts", parents=[surface_common])
+    conflicts.add_argument("canonical_event_id")
+    conflicts.set_defaults(func=cmd_conflicts)
+
+    evidence = sub.add_parser("evidence", parents=[surface_common])
+    evidence.add_argument("assertion_id")
+    evidence.set_defaults(func=cmd_evidence)
+
+    export = sub.add_parser("export", parents=[surface_common])
+    export.add_argument("canonical_event_id")
+    export.add_argument("--format", default="json")
+    export.set_defaults(func=cmd_export_event)
 
     return parser
 
