@@ -272,8 +272,12 @@ def test_desk_goto_and_filter(brief, surface):
             ol = app.query_one("#queue", OptionList)
             await pilot.press("3")
             assert ol.highlighted == app._first_index["conflicts"]
+            status = str(app.query_one("#status", Static).visual)
+            assert "CONFLICTS" in status
             await pilot.press("4")
             assert ol.highlighted == app._first_index["unsupported"]
+            status = str(app.query_one("#status", Static).visual)
+            assert "UNSUPPORTED" in status
             # la busqueda filtra la vista sin tocar el modelo
             await pilot.press("slash")
             search = app.query_one("#search")

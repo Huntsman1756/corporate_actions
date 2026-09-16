@@ -17,6 +17,14 @@ python -m ca_es.cli gates --second-run --firds-listings g0/corpus/reference/esma
 python -m ca_es.cli metrics --firds-listings g0/corpus/reference/esma-firds-listings.json
 python -m ca_es.cli event <event-id>
 python -m ca_es.cli isin <isin>
+
+# superficie operacional (G3/P1): consumen un canon ya generado
+python -m ca_es.cli events|show|timeline|conflicts|evidence|export \
+    --canon g3/input/canon.json ...
+python -m ca_es.cli brief --canon g3/input/canon.json --as-of 2026-07-15 \
+    [--previous-canon p1/smoke/previous-canon.json] [--format text|json]
+python -m ca_es.cli desk --canon g3/input/canon.json --as-of 2026-07-15
+    # requiere extra [desk] (textual); read-only sobre brief()
 ```
 
 No hay linter/formatter configurado; el estilo es PEP 8 + stdlib.

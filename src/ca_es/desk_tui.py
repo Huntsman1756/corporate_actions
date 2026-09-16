@@ -117,6 +117,12 @@ class OpsDesk(App):
     #queue {
         height: 1fr;
     }
+    #status {
+        dock: bottom;
+        height: 1;
+        padding: 0 1;
+        background: $boost;
+    }
     DetailScreen, EvidenceScreen {
         align: center middle;
     }
@@ -168,10 +174,27 @@ class OpsDesk(App):
         )
         yield Input(placeholder="filter — esc clears", id="search")
         yield OptionList(id="queue")
+        yield Static(id="status")
 
     def on_mount(self) -> None:
         self._populate("")
         self.query_one("#queue", OptionList).focus()
+
+    def _section_title(self, key: str) -> str:
+        for section in self.model["sections"]:
+            if section["key"] == key:
+                return section["title"]
+        return key
+
+    def _set_status(self, section_key: str | None) -> None:
+        status = self.query_one("#status", Static)
+        where = (
+            self._section_title(section_key) if section_key else "-"
+        )
+        status.update(
+            f"{where}   1-4/a n c u secciones · enter detalle · "
+            f"e evidencia · / filtro · q salir"
+        )
 
     # ---------------------------------------------------------- view
 
@@ -198,6 +221,7 @@ class OpsDesk(App):
                     section["key"],
                     entry["item"],
                 )
+        self._set_status(self.model["sections"][0]["key"])
 
     def _selected_item(self) -> tuple[str, dict] | None:
         options = self.query_one("#queue", OptionList)
@@ -217,6 +241,13 @@ class OpsDesk(App):
         found = self._items.get(event.option.id or "")
         if found is not None:
             self.push_screen(DetailScreen(*found))
+
+    def on_option_list_option_highlighted(
+        self, event: OptionList.OptionHighlighted
+    ) -> None:
+        option_id = event.option.id
+        if option_id:
+            self._set_status(option_id.split(":", 1)[0])
 
     def on_input_changed(self, event: Input.Changed) -> None:
         if event.input.id == "search":
