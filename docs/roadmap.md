@@ -52,9 +52,8 @@ P1  Ops Desk
     P1.0 morning brief (ca-es brief --as-of ...)        DONE
     P1.1 snapshot delta (--previous-canon,             DONE
          NEW/CHANGED/REMOVED_*, conflictos, UNSUPPORTED)
-    P1.2 Textual Ops Desk (ca-es desk, read-only        CODE COMPLETE
-         sobre brief(); extra `desk`)                    — pending human
-                                                         UX smoke
+    P1.2 Textual Ops Desk (ca-es desk, read-only        DONE
+         sobre brief(); extra `desk`)                    — P1 CLOSED
     deadline queue
 
 P2  Entitlements
