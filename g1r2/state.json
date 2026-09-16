@@ -1,9 +1,9 @@
 {
  "state_version": "CA_ES_G1R2_STATE_V1",
- "updated_at": "2026-09-15",
+ "updated_at": "2026-09-16",
  "protocol": "docs/gates/g1r2-preregistered.json",
  "protocol_tag": "g1r2-protocol",
- "phase": "HOLDOUT_EXECUTED_PENDING_ADJUDICATION",
+ "phase": "HOLDOUT_ADJUDICATED_FAIL",
  "snapshot": "g1r2/manifests/snapshot-portfolio-2026-09-15.json",
  "precondition": {
   "min_stratum_cas": 8,
@@ -16,7 +16,14 @@
   "manifests_dir": "g1r2/manifests/holdout/",
   "ca_groups": 8,
   "documents": 11,
-  "status": "SEALED"
+  "status": "ADJUDICATED",
+  "verdict": "FAIL",
+  "verdict_artifact": "g1r2/results/holdout-verdict.json",
+  "verdict_signed_at": "2026-09-16",
+  "binding_cause": "false_financial_facts=1 (POEX-DOC-3507, ISSUE_PRICE_COMPONENT_CONFUSION); target_opportunity_recall <= 1/3 vs gate 1.0",
+  "min_opportunities": "3 observados, anti-PASS-vacio cumplido",
+  "p0_review_coverage": "13/13 facts P0 emitidos revisados contra fuente",
+  "disposition": "SPENT_EVIDENCE: prohibido corregir el parser y re-ejecutar estos 8 CA-groups; remediacion en fase nueva con holdout virgen"
  },
  "development": {
   "binding_target": "AMOUNT_ROLE_MISBINDING",
@@ -49,7 +56,13 @@
    "g1r2/adjudication/holdout-seed-review.jsonl",
    "g1r2/adjudication/holdout-instrument-review.jsonl"
   ],
-  "status": "PENDING_ADJUDICATION"
+  "status": "ADJUDICATED"
  },
- "next": "adjudicacion humana del holdout -> veredicto PASS / FAIL / INCONCLUSIVE"
+ "discovered_in_holdout": [
+  "ISSUE_PRICE_COMPONENT_CONFUSION (P0, recurrencia de FALSE_FINANCIAL_SEMANTIC_ANCHOR: prima por accion != tipo de emision)",
+  "ISSUE_PRICE_LEXEME_VARIANT (target recall: 'valor de emision ... cada accion' no reconocido)"
+ ],
+ "post_holdout_findings": "g1r2/results/post-holdout-findings.jsonl",
+ "reading": "G1-R2 elimino el error original gross_per_share -> issue_price_per_share (0 observado), pero el holdout demuestra que la semantica del precio de emision todavia no generaliza con seguridad",
+ "next": "fase nueva: remediar ISSUE_PRICE_COMPONENT_CONFUSION + ISSUE_PRICE_LEXEME_VARIANT con holdout virgen; deuda P2 ISIN_ROLE_DISAMBIGUATION (POEX-DOC-38393) sigue abierta, no binding"
 }

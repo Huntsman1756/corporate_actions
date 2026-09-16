@@ -1,0 +1,133 @@
+{
+ "verdict_version": "CA_ES_G1R2_HOLDOUT_VERDICT_V1",
+ "status": "SIGNED",
+ "verdict": "FAIL",
+ "signed_at": "2026-09-16",
+ "signed_by": "human-reviewer",
+ "protocol": {
+  "file": "docs/gates/g1r2-preregistered.json",
+  "tag": "g1r2-protocol",
+  "commit": "8f5b36bb92560b53e1b2b055e22500f73be414bf",
+  "verified": "tag -> 8f5b36b (ELIGIBILITY_V1 + CA_GROUP_V1 machine-executable), posterior al DRAFT 05252e7"
+ },
+ "adjudicates": {
+  "facts": "g1r2/adjudication/holdout-facts.json",
+  "texts": "g1r2/adjudication/holdout-text/ (11 docs)",
+  "reviews": [
+   "g1r2/adjudication/holdout-missingness-review.jsonl",
+   "g1r2/adjudication/holdout-seed-review.jsonl",
+   "g1r2/adjudication/holdout-instrument-review.jsonl"
+  ],
+  "note": "filas PENDING_ADJUDICATION conservadas como evidencia; este veredicto las resuelve"
+ },
+ "holdout_integrity": {
+  "sealed_before_parser_change": "holdout SEALED en 0bbb625; primer cambio de parser en 03584d8",
+  "freeze_to_verdict_diff": "17fca52..abfd950 = solo runs + artefactos de adjudicacion; 0 lineas en src/",
+  "sealed_paths_clean": true
+ },
+ "runs": {
+  "artifacts": [
+   "g1r2/results/holdout-run-1-17fca52-results.json",
+   "g1r2/results/holdout-run-2-17fca52-results.json"
+  ],
+  "parser_freeze": {"tag": "g1r2-parser-freeze", "commit": "17fca52de7c5abce9997ed013e36f61a681e5ed1"},
+  "parser_commit_dirty": false,
+  "second_run_determinism": {"value": 1.0, "provenance": "VERIFIED: mismo parser, dirty=false, mismos funnels, mismos result_sha por seed"}
+ },
+ "anti_pass_vacio": {
+  "min_opportunities": 3,
+  "observed": 3,
+  "met": true,
+  "note": "3 CA-groups distintos con oportunidad target inequivoca -> el resultado no es INCONCLUSIVE"
+ },
+ "binding_cause": "false_financial_facts = 1 (POEX-DOC-3507); target_opportunity_recall <= 1/3 vs gate 1.0",
+ "target_opportunities": [
+  {
+   "ca_group": "Round Robin",
+   "ca_group_id": "d8d68c8af340c368da155cceb01c977ef303ac5a2c0e3e108aa4e9f8a18a71ea",
+   "docs": ["POEX-DOC-2657", "POEX-DOC-2680"],
+   "published": "precio/valor de emision 1,45 EUR por accion (tambien en el calculo del desembolso)",
+   "emitted": "ningun issue_price_per_share; solo event_type=CAPITAL_INCREASE",
+   "verdict": "FAIL - target missing"
+  },
+  {
+   "ca_group": "Living Residential",
+   "ca_group_id": "58dd76cb7e447db52388bda5802aac757abc851a51676d3a708b04218f114d8b",
+   "docs": ["POEX-DOC-3507"],
+   "published": "nominal 1,00 + prima ~0,58 -> tipo de emision ~1,58 EUR por accion",
+   "emitted": {"amount.issue_price_per_share": {"normalized": "0.58", "currency": "EUR", "raw_lexeme": "0,58", "scale": 2}},
+   "verdict": "FAIL - P0 false financial fact"
+  },
+  {
+   "ca_group": "Orion",
+   "ca_group_id": "ef9d07b5b262a2abcd1cf13c1f496127c7819a7ccc44e583f685a472e4fbf46a",
+   "docs": ["POEX-DOC-38393", "POEX-DOC-39939"],
+   "published": "precio de suscripcion/emision 1,34 EUR por accion",
+   "emitted": "POEX-DOC-39939 issue_price_per_share=1.34 correcto ('Precio de suscripcion ... 1,34 EUR' / 'Precio de emision: 1,34 euros por accion'); POEX-DOC-38393 abstiene; conflicts=1 (ISIN derechos ES0605829904)",
+   "verdict": "como maximo PASS a nivel CA-group"
+  }
+ ],
+ "metrics": {
+  "target_opportunities": 3,
+  "target_opportunities_correct": "<= 1",
+  "target_opportunity_recall": "<= 0.333 (gate exige 1.0)"
+ },
+ "p0_verdict": {
+  "false_financial_facts": 1,
+  "wrong_event_type": 0,
+  "amount_role_misbinding_original_gross_to_issue": 0,
+  "detail": [
+   {
+    "frame_item_id": "POEX-DOC-3507",
+    "field": "amount.issue_price_per_share",
+    "family": "CAPITAL_INCREASE",
+    "published": "nominal 1,00 EUR + prima de emision ~0,58 EUR -> tipo de emision ~1,58 EUR por accion",
+    "emitted": {"amount.issue_price_per_share": {"normalized": "0.58", "currency": "EUR", "raw_lexeme": "0,58", "scale": 2}},
+    "expected": {"amount.issue_price_per_share": {"normalized": "1.58", "currency": "EUR"}},
+    "p0_error": "FALSE_FINANCIAL_FACT",
+    "failure_class": "ISSUE_PRICE_COMPONENT_CONFUSION",
+    "note": "prima de emision por accion promovida como precio total de emision. Recurrencia de FALSE_FINANCIAL_SEMANTIC_ANCHOR bajo variante Portfolio: el field_path ahora es correcto, pero el valor se liga al componente premium en vez del issue price."
+   }
+  ],
+  "target_missing": {
+   "ca_group": "Round Robin (POEX-DOC-2657/2680)",
+   "published": "1.45 EUR/share",
+   "emitted": "ABSENT"
+  }
+ },
+ "p0_review_coverage": {
+  "value": "13/13",
+  "provenance": "VERIFIED_HUMAN_REVIEW",
+  "basis": "11 event_type + 2 importes unitarios emitidos revisados contra fuente; 39939=1.34 correcto, 3507=0.58 es el false fact vinculante"
+ },
+ "human_sign_table": {
+  "POEX-DOC-3507 issue_price_per_share": "REJECT - P0 FALSE_FINANCIAL_FACT (0.58 prima emitida; ~1.58 tipo de emision esperado)",
+  "Round Robin CA-group": "FAIL - target missing (1,45 EUR/accion publicado, nada emitido)",
+  "Orion CA-group": "PASS a nivel CA-group (39939=1.34 correcto; 38393 abstencion)",
+  "POEX-DOC-38393 ISIN conflict": "ACCEPT - conflicts=1 explicito; deuda P2 ISIN_ROLE_DISAMBIGUATION conocida, no binding en G1-R2",
+  "event_type 11/11": "ACCEPT - las 11 son ampliaciones de capital bajo la semantica Portfolio firmada; sin WRONG_EVENT_TYPE",
+  "RIGHTS_ISSUE boundary": "KEPT - el precedente congelado POEX-DOC-39649 adjudico ampliacion con derechos como CAPITAL_INCREASE; no se cambia la frontera durante el HOLDOUT",
+  "second_run_determinism": "1.0",
+  "parser_freeze": "valido",
+  "experimental_sequence": "valida: protocol 8f5b36b -> holdout sealed 0bbb625 -> parser change 03584d8 -> freeze 17fca52 -> runs abfd950 sin cambios en src/"
+ },
+ "new_failure_classes": [
+  {
+   "name": "ISSUE_PRICE_COMPONENT_CONFUSION",
+   "safety": "P0",
+   "discovered_in": "holdout",
+   "seeds": ["POEX-DOC-3507"],
+   "description": "recurrencia de FALSE_FINANCIAL_SEMANTIC_ANCHOR: prima por accion != tipo/precio total de emision; el field_path es correcto pero el valor se liga al componente premium"
+  },
+  {
+   "name": "ISSUE_PRICE_LEXEME_VARIANT",
+   "safety": "P1",
+   "discovered_in": "holdout",
+   "seeds": ["POEX-DOC-2657", "POEX-DOC-2680"],
+   "description": "target recall: expresiones 'valor de emision ... cada accion' deben reconocer el precio sin exigir literalmente 'precio de suscripcion/emision ... euros por accion'; binding via target_opportunity_recall (gate 1.0)"
+  }
+ ],
+ "holdout_disposition": "SPENT_EVIDENCE: prohibido corregir POEX-DOC-3507, ampliar la regex y re-ejecutar estos 8 CA-groups (convertiria el holdout en DEV). El holdout ya dio la respuesta; remediacion en fase nueva con holdout virgen.",
+ "post_holdout_findings": "g1r2/results/post-holdout-findings.jsonl",
+ "reading": "G1-R2 elimino el error original gross_per_share -> issue_price_per_share, pero el holdout demuestra que la semantica del precio de emision todavia no generaliza con seguridad."
+}
