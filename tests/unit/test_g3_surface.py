@@ -291,11 +291,53 @@ def test_delta_conflict_new_and_resolved(surface):
     )
 
 
-def test_delta_supported_now(surface):
+def test_delta_removed_event_no_cascade(surface):
+    # Almirall tiene conflicto: al desaparecer el evento, su conflicto
+    # no debe emitir RESOLVED_CONFLICT (cascada cubierta por REMOVED_EVENT)
     current_canon = _canon_copy()
     current_canon["events"] = [
-        e for e in current_canon["events"] if e["canonical_event_id"] != POEX
+        e for e in current_canon["events"]
+        if e["canonical_event_id"] != ALMIRALL
     ]
+    delta = _surface_of(current_canon).delta(surface)
+    assert [i["kind"] for i in delta] == ["REMOVED_EVENT"]
+    assert delta[0]["canonical_event_id"] == ALMIRALL
+
+
+def test_delta_removed_assertion(surface):
+    current_canon = _canon_copy()
+    mfe = next(
+        e for e in current_canon["events"] if e["canonical_event_id"] == MFE
+    )
+    removed = next(
+        f for f in mfe["facts"]
+        if f["field_path"] == "date.ex_date" and f["value"] == "2026-07-20"
+    )
+    mfe["facts"] = [f for f in mfe["facts"] if f is not removed]
+    delta = _surface_of(current_canon).delta(surface)
+    assert [i["kind"] for i in delta] == ["REMOVED_ASSERTION"]
+    item = delta[0]
+    assert item["field_path"] == "date.ex_date"
+    assert item["previous_value"] == "2026-07-20"
+    assert item["previous_assertion_id"] == removed["assertion_id"]
+    assert item["previous_evidence_locator"]
+
+
+def test_delta_supported_now(surface):
+    # SUPPORTED_NOW = el evento sigue existiendo pero la capacidad
+    # deja de estar unsupported (aparece una afirmacion para el field)
+    current_canon = _canon_copy()
+    poex = next(
+        e for e in current_canon["events"]
+        if e["canonical_event_id"] == POEX
+    )
+    new_fact = dict(poex["facts"][0])
+    new_fact["field_path"] = "amount.issue_price_per_share"
+    new_fact["value"] = {
+        "__financial__": True, "normalized": "1.58",
+        "currency": "EUR", "raw_lexeme": "1,58", "scale": 2,
+    }
+    poex["facts"].append(new_fact)
     delta = _surface_of(current_canon).delta(surface)
     assert any(
         i["kind"] == "SUPPORTED_NOW"

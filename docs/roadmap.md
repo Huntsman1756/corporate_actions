@@ -49,8 +49,11 @@ operacional. Sin reinventar piezas básicas.
 
 ```text
 P1  Ops Desk
-    Textual cockpit: current/revision/conflict/evidence
-    morning brief (ca-es brief --as-of ...)
+    P1.0 morning brief (ca-es brief --as-of ...)        DONE
+    P1.1 snapshot delta (--previous-canon,             DONE
+         NEW/CHANGED/REMOVED_*, conflictos, UNSUPPORTED)
+    P1.2 Textual Ops Desk (ca-es desk, read-only        DONE
+         sobre brief(); extra `desk`)
     deadline queue
 
 P2  Entitlements

@@ -253,24 +253,52 @@ def cmd_export_event(args: argparse.Namespace) -> int:
     return _emit(_surface(args).export_event(args.canonical_event_id))
 
 
+def _load_previous(args: argparse.Namespace):
+    if not args.previous_canon:
+        return None
+    repo_root = _repo_root(args.repo_root)
+    policy = Path(args.policy) if args.policy else repo_root / DEFAULT_POLICY
+    return load_surface(Path(args.previous_canon), policy)
+
+
 def cmd_brief(args: argparse.Namespace) -> int:
     from .surface import render_brief
 
     surface = _surface(args)
-    previous = None
-    if args.previous_canon:
-        repo_root = _repo_root(args.repo_root)
-        policy = (
-            Path(args.policy) if args.policy else repo_root / DEFAULT_POLICY
-        )
-        previous = load_surface(Path(args.previous_canon), policy)
     brief = surface.brief(
-        args.as_of, window_days=args.window, previous=previous
+        args.as_of,
+        window_days=args.window,
+        previous=_load_previous(args),
     )
     if args.format == "text":
         print(render_brief(brief), end="")
         return 0
     return _emit(brief)
+
+
+def cmd_desk(args: argparse.Namespace) -> int:
+    try:
+        from .desk import build_desk_model
+        from .desk_tui import OpsDesk
+    except ImportError:
+        print(
+            json.dumps(
+                {
+                    "status": "DESK_UNAVAILABLE",
+                    "hint": "pip install 'ca-es[desk]'",
+                },
+                sort_keys=True,
+            )
+        )
+        return 2
+    surface = _surface(args)
+    brief = surface.brief(
+        args.as_of,
+        window_days=args.window,
+        previous=_load_previous(args),
+    )
+    OpsDesk(build_desk_model(brief), surface).run()
+    return 0
 
 
 def build_parser() -> argparse.ArgumentParser:
@@ -350,6 +378,12 @@ def build_parser() -> argparse.ArgumentParser:
     brief.add_argument("--window", type=int, default=7)
     brief.add_argument("--format", choices=["json", "text"], default="text")
     brief.set_defaults(func=cmd_brief)
+
+    desk = sub.add_parser("desk", parents=[surface_common])
+    desk.add_argument("--as-of", required=True)
+    desk.add_argument("--previous-canon", default=None)
+    desk.add_argument("--window", type=int, default=7)
+    desk.set_defaults(func=cmd_desk)
 
     return parser
 

@@ -13,6 +13,9 @@ tooling = ["jsonschema>=4.21,<5"]
 # Ingesta de documentos PDF reales (CNMV). Se importa de forma perezosa;
 # el core sigue siendo stdlib-only. Licencia BSD-3-Clause.
 pdf = ["pypdf>=4,<6"]
+# Ops Desk TUI (P1.2). Importacion perezosa desde cmd_desk; el core
+# sigue siendo stdlib-only. Licencia MIT.
+desk = ["textual>=0.86,<9"]
 
 [project.scripts]
 ca-es = "ca_es.cli:main"

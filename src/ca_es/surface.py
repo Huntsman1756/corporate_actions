@@ -400,21 +400,44 @@ class Surface:
         la afirmacion NO genera item; una variacion factual si.
 
         Categorias explicitas:
-          NEW_EVENT / NEW_ASSERTION / CHANGED_ASSERTION /
+          NEW_EVENT / REMOVED_EVENT /
+          NEW_ASSERTION / CHANGED_ASSERTION / REMOVED_ASSERTION /
           NEW_CONFLICT / RESOLVED_CONFLICT /
           NEW_UNSUPPORTED / SUPPORTED_NOW
+
+        Desapariciones: el canon es append-mostly, pero nada garantiza
+        que un evento o una afirmacion no pueda desaparecer entre
+        snapshots (correccion, recorte de universo, reconstruccion).
+        Las desapariciones se hacen explicitas — REMOVED_EVENT /
+        REMOVED_ASSERTION — nunca silenciosas. Un REMOVED_EVENT cubre
+        sus aserciones/conflictos/unsupported (sin cascada); un
+        conflicto que desaparece con el evento presente es
+        RESOLVED_CONFLICT, y un unsupported que desaparece con el
+        evento presente es SUPPORTED_NOW.
         """
         items = []
 
         prev_events = {e["canonical_event_id"] for e in previous.canon["events"]}
         cur_events = {e["canonical_event_id"] for e in self.canon["events"]}
         new_event_ids = set()
+        removed_event_ids = set()
         for event in self.canon["events"]:
             if event["canonical_event_id"] not in prev_events:
                 new_event_ids.add(event["canonical_event_id"])
                 items.append(
                     {
                         "kind": "NEW_EVENT",
+                        "canonical_event_id": event["canonical_event_id"],
+                        "event_type": event["event_type"],
+                        "issuer_name": event["issuer"].get("issuer_name"),
+                    }
+                )
+        for event in previous.canon["events"]:
+            if event["canonical_event_id"] not in cur_events:
+                removed_event_ids.add(event["canonical_event_id"])
+                items.append(
+                    {
+                        "kind": "REMOVED_EVENT",
                         "canonical_event_id": event["canonical_event_id"],
                         "event_type": event["event_type"],
                         "issuer_name": event["issuer"].get("issuer_name"),
@@ -439,8 +462,8 @@ class Surface:
             cur = current_claims.get(key)
             prev = previous_claims.get(key)
             event_id, source_document_id, field_path = key
-            if event_id in new_event_ids:
-                continue  # el NEW_EVENT cubre sus aserciones (sin cascada)
+            if event_id in new_event_ids or event_id in removed_event_ids:
+                continue  # NEW_EVENT / REMOVED_EVENT cubren sus aserciones
             if prev is None:
                 items.append(
                     {
@@ -453,7 +476,19 @@ class Surface:
                         "evidence_locator": cur["evidence_locator"],
                     }
                 )
-            elif cur is not None and (
+            elif cur is None:
+                items.append(
+                    {
+                        "kind": "REMOVED_ASSERTION",
+                        "canonical_event_id": event_id,
+                        "field_path": field_path,
+                        "previous_value": prev["value"],
+                        "previous_assertion_id": prev["assertion_id"],
+                        "source_document_id": source_document_id,
+                        "previous_evidence_locator": prev["evidence_locator"],
+                    }
+                )
+            elif (
                 _fingerprint(cur["value"]) != _fingerprint(prev["value"])
                 or cur["asserted_as_of"] != prev["asserted_as_of"]
                 or cur["fact_origin"] != prev["fact_origin"]
@@ -502,6 +537,8 @@ class Surface:
                 }
             )
         for key in sorted(set(previous_conflicts) - set(current_conflicts)):
+            if key[0] in removed_event_ids:
+                continue  # el REMOVED_EVENT cubre sus conflictos
             c = previous_conflicts[key]
             items.append(
                 {
@@ -540,6 +577,8 @@ class Surface:
                 }
             )
         for key in sorted(previous_unsup - current_unsup):
+            if key[0] in removed_event_ids:
+                continue  # el REMOVED_EVENT cubre sus unsupported
             items.append(
                 {
                     "kind": "SUPPORTED_NOW",
@@ -551,8 +590,10 @@ class Surface:
 
         kind_order = [
             "NEW_EVENT",
+            "REMOVED_EVENT",
             "NEW_ASSERTION",
             "CHANGED_ASSERTION",
+            "REMOVED_ASSERTION",
             "NEW_CONFLICT",
             "RESOLVED_CONFLICT",
             "NEW_UNSUPPORTED",
@@ -825,8 +866,17 @@ def render_brief(brief: dict) -> str:
                 if isinstance(cur, dict):
                     cur = cur.get("normalized", cur)
                 lines.append(f"      {prev} -> {cur}")
+            if item["kind"] == "REMOVED_ASSERTION":
+                prev = item["previous_value"]
+                if isinstance(prev, dict):
+                    prev = prev.get("normalized", prev)
+                lines.append(f"      removed: {prev}")
             if item.get("evidence_locator"):
                 lines.append(f"      evidence: {item['evidence_locator']}")
+            if item.get("previous_evidence_locator"):
+                lines.append(
+                    f"      previous evidence: {item['previous_evidence_locator']}"
+                )
             if item["kind"] in ("NEW_CONFLICT", "RESOLVED_CONFLICT"):
                 lines.append(f"      values: {', '.join(item['values'])}")
     return "\n".join(lines) + "\n"
