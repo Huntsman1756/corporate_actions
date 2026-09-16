@@ -42,16 +42,16 @@ def _pos(account="A001", isin=SAN_ISIN, quantity="12500", as_of=SAN_RECORD):
     }
 
 
-def _movements(*movements):
+def _movements(*movements, schema="CA_ES_CASH_MOVEMENTS_V2"):
     return {
-        "schema": "CA_ES_CASH_MOVEMENTS_V1",
+        "schema": schema,
         "movements": list(movements),
     }
 
 
 def _mov(mid="MOV-1", account="A001", amount="1562.50",
          event_id=SAN, isin=None, currency="EUR",
-         value_date="2026-05-06"):
+         value_date="2026-05-06", basis="GROSS"):
     m = {
         "movement_id": mid,
         "account_id": account,
@@ -63,6 +63,8 @@ def _mov(mid="MOV-1", account="A001", amount="1562.50",
         m["event_id"] = event_id
     if isin is not None:
         m["isin"] = isin
+    if basis is not None:
+        m["amount_basis"] = basis
     return m
 
 
@@ -270,3 +272,61 @@ def test_load_movements_schema(tmp_path):
     good = tmp_path / "m.json"
     good.write_text(json.dumps(_movements(_mov())), encoding="utf-8")
     assert load_movements(good)["movements"][0]["movement_id"] == "MOV-1"
+
+
+# --------------------------------------------------------------- P3.1
+
+def test_net_basis_indeterminate_not_mismatch(surface):
+    # un abono neto contra expected gross NO es AMOUNT_MISMATCH:
+    # no existe expected net -> INDETERMINATE honesto
+    ent = _entitlements(surface, _pos())
+    recon = reconcile(
+        ent, _movements(_mov(amount="1294.06", basis="NET"))
+    )
+    item = recon["items"][0]
+    assert item["status"] == "INDETERMINATE"
+    assert item["reasons"] == ["NET_EXPECTED_NOT_AVAILABLE"]
+    assert item["amount_basis"] == "NET"
+    assert item["actual_amount"] == "1294.06"
+    assert "delta" not in item
+
+
+def test_unknown_basis_indeterminate(surface):
+    ent = _entitlements(surface, _pos())
+    recon = reconcile(
+        ent, _movements(_mov(basis="UNKNOWN"))
+    )
+    item = recon["items"][0]
+    assert item["status"] == "INDETERMINATE"
+    assert item["reasons"] == ["UNKNOWN_AMOUNT_BASIS"]
+
+
+def test_v1_document_treated_as_unknown(surface):
+    # V1 (sin amount_basis) se acepta; la ausencia nunca se asume GROSS
+    ent = _entitlements(surface, _pos())
+    doc = _movements(
+        _mov(basis=None), schema="CA_ES_CASH_MOVEMENTS_V1"
+    )
+    assert "amount_basis" not in doc["movements"][0]
+    recon = reconcile(ent, doc)
+    item = recon["items"][0]
+    assert item["status"] == "INDETERMINATE"
+    assert item["reasons"] == ["UNKNOWN_AMOUNT_BASIS"]
+    assert item["amount_basis"] == "UNKNOWN"
+
+
+def test_invalid_amount_basis_never_matches(surface):
+    ent = _entitlements(surface, _pos())
+    recon = reconcile(
+        ent,
+        _movements(
+            _mov(),
+            _mov(mid="BAD-B", basis="WITH_TAX"),
+        ),
+    )
+    assert recon["summary"]["match"] == 1
+    bad = next(
+        m for m in recon["invalid_movements"]
+        if m["movement"]["movement_id"] == "BAD-B"
+    )
+    assert "amount_basis(invalid)" in bad["reasons"]

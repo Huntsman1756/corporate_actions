@@ -1,5 +1,5 @@
 {
- "schema": "CA_ES_CASH_MOVEMENTS_V1",
+ "schema": "CA_ES_CASH_MOVEMENTS_V2",
  "movements": [
   {
    "movement_id": "MOV-1",
@@ -7,6 +7,7 @@
    "event_id": "6443e2be-b70d-50c7-88d1-4a62f43789e9",
    "currency": "EUR",
    "amount": "1562.50",
+   "amount_basis": "GROSS",
    "value_date": "2026-05-06"
   },
   {
@@ -15,6 +16,7 @@
    "event_id": "6443e2be-b70d-50c7-88d1-4a62f43789e9",
    "currency": "EUR",
    "amount": "10.00",
+   "amount_basis": "UNKNOWN",
    "value_date": "2026-05-06"
   }
  ]

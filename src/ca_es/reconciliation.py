@@ -26,8 +26,12 @@ Reglas estrictas (P3.0):
 - varios entitlements ENTITLED con la misma clave -> INDETERMINATE /
   DUPLICATE_ENTITLEMENT_KEY;
 - value_date es informativa, nunca criterio de match;
-- movimientos malformados -> invalid_movements, nunca participan
-  en el match;
+- movimientos malformados (campos ausentes, amount no parseable,
+  amount_basis fuera del vocabulario) -> invalid_movements, nunca
+  participan en el match;
+- amount_basis (V2): GROSS reconcilia contra gross_cash; NET o
+  UNKNOWN -> INDETERMINATE, nunca un AMOUNT_MISMATCH conceptualmente
+  falso;
 - evidencia en ambos lados: provenance del entitlement +
   movement_id del actual.
 
@@ -41,7 +45,18 @@ from decimal import Decimal, InvalidOperation
 from pathlib import Path
 
 RECON_VERSION = "CA_ES_CASH_RECON_V1"
-MOVEMENTS_SCHEMA = "CA_ES_CASH_MOVEMENTS_V1"
+MOVEMENTS_SCHEMA_V1 = "CA_ES_CASH_MOVEMENTS_V1"
+MOVEMENTS_SCHEMA = "CA_ES_CASH_MOVEMENTS_V2"
+MOVEMENTS_SCHEMAS = {MOVEMENTS_SCHEMA_V1, MOVEMENTS_SCHEMA}
+
+# P3.1: base del importe observado. El canon solo produce expected
+# GROSS (gross_cash); por tanto:
+#   GROSS   -> reconciliable
+#   NET     -> INDETERMINATE / NET_EXPECTED_NOT_AVAILABLE
+#   UNKNOWN -> INDETERMINATE / UNKNOWN_AMOUNT_BASIS
+# Un documento V1 (sin amount_basis) se acepta y cada movimiento se
+# trata como UNKNOWN: nunca se asume bruto.
+AMOUNT_BASES = {"GROSS", "NET", "UNKNOWN"}
 
 MATCH = "MATCH"
 AMOUNT_MISMATCH = "AMOUNT_MISMATCH"
@@ -54,9 +69,9 @@ MOVEMENT_REQUIRED = ("movement_id", "account_id", "currency", "amount")
 
 def load_movements(path: Path) -> dict:
     doc = json.loads(path.read_text(encoding="utf-8"))
-    if doc.get("schema") != MOVEMENTS_SCHEMA:
+    if doc.get("schema") not in MOVEMENTS_SCHEMAS:
         raise ValueError(
-            f"movements schema debe ser {MOVEMENTS_SCHEMA}, "
+            f"movements schema debe ser {sorted(MOVEMENTS_SCHEMAS)}, "
             f"recibido {doc.get('schema')!r}"
         )
     return doc
@@ -123,6 +138,9 @@ def reconcile(entitlement_doc: dict, movements_doc: dict) -> dict:
             missing.append("event_id|isin")
         if _movement_amount(movement) is None:
             missing.append("amount(parseable)")
+        basis = movement.get("amount_basis")
+        if basis is not None and str(basis).upper() not in AMOUNT_BASES:
+            missing.append("amount_basis(invalid)")
         if missing:
             invalid_movements.append(
                 {"movement": movement, "reasons": sorted(set(missing))}
@@ -247,23 +265,46 @@ def reconcile(entitlement_doc: dict, movements_doc: dict) -> dict:
             movement = matched[0]
             used.add(id(movement))
             actual = _movement_amount(movement)
-            delta = actual - expected
-            status = MATCH if actual == expected else AMOUNT_MISMATCH
-            items.append(
-                {
-                    **base,
-                    "status": status,
-                    "expected_gross_cash": ent["gross_cash"],
-                    "actual_amount": format(actual, "f"),
-                    "delta": _money(delta, currency),
+            basis = str(movement.get("amount_basis") or "UNKNOWN").upper()
+            common = {
+                **base,
+                "expected_gross_cash": ent["gross_cash"],
+                "actual_amount": format(actual, "f"),
+                "amount_basis": basis,
+                "movement_ids": [movement["movement_id"]],
+                "value_date": movement.get("value_date"),
+                "evidence": {
+                    "entitlement": ent.get("evidence"),
                     "movement_ids": [movement["movement_id"]],
-                    "value_date": movement.get("value_date"),
-                    "evidence": {
-                        "entitlement": ent.get("evidence"),
-                        "movement_ids": [movement["movement_id"]],
-                    },
-                }
-            )
+                },
+            }
+            if basis == "NET":
+                items.append(
+                    {
+                        **common,
+                        "status": INDETERMINATE,
+                        "reasons": ["NET_EXPECTED_NOT_AVAILABLE"],
+                    }
+                )
+            elif basis != "GROSS":
+                items.append(
+                    {
+                        **common,
+                        "status": INDETERMINATE,
+                        "reasons": ["UNKNOWN_AMOUNT_BASIS"],
+                    }
+                )
+            else:
+                delta = actual - expected
+                items.append(
+                    {
+                        **common,
+                        "status": (
+                            MATCH if actual == expected else AMOUNT_MISMATCH
+                        ),
+                        "delta": _money(delta, currency),
+                    }
+                )
 
     for movement in valid_movements:
         if id(movement) in used:
@@ -275,6 +316,9 @@ def reconcile(entitlement_doc: dict, movements_doc: dict) -> dict:
                 "canonical_event_id": canonical_event_id,
                 "status": UNEXPECTED_CASH,
                 "actual_amount": format(_movement_amount(movement), "f"),
+                "amount_basis": str(
+                    movement.get("amount_basis") or "UNKNOWN"
+                ).upper(),
                 "currency": movement.get("currency"),
                 "value_date": movement.get("value_date"),
                 "movement_ids": [movement["movement_id"]],

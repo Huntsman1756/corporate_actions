@@ -70,6 +70,14 @@ P3  Reconciliation / Exceptions
           MATCH / AMOUNT_MISMATCH / MISSING_CASH /
           UNEXPECTED_CASH / INDETERMINATE; sin tolerancias
           ni agregación silenciosa)
+    P3.1 cash basis semantics                             DONE
+         (CA_ES_CASH_MOVEMENTS_V2: amount_basis =
+          GROSS/NET/UNKNOWN; V1 aceptado con basis
+          UNKNOWN implícito — nunca se asume bruto;
+          GROSS reconcilia contra gross_cash, NET ->
+          INDETERMINATE/NET_EXPECTED_NOT_AVAILABLE,
+          UNKNOWN -> INDETERMINATE/UNKNOWN_AMOUNT_BASIS;
+          sin withholding ni net-to-gross)
     exceptions / workflow, CSV in/out
 
 P4  SWIFT / ISO adapters

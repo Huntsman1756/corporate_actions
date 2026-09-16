@@ -30,8 +30,10 @@ python -m ca_es.cli desk --canon g3/input/canon.json --as-of 2026-07-15
 python -m ca_es.cli entitlement --canon g3/input/canon.json \
     --event <canonical_event_id> --positions p1/smoke/positions.json
 
-# P3.0 reconciliación cash (CA_ES_CASH_MOVEMENTS_V1; --entitlements
-# acepta un doc CA_ES_ENTITLEMENT_V1 ya calculado, sin canon)
+# P3 reconciliación cash (CA_ES_CASH_MOVEMENTS_V2 con amount_basis
+# GROSS/NET/UNKNOWN; V1 aceptado, basis ausente = UNKNOWN y nunca
+# se asume bruto; --entitlements acepta un doc CA_ES_ENTITLEMENT_V1
+# ya calculado, sin canon)
 python -m ca_es.cli reconcile --canon g3/input/canon.json \
     --event <canonical_event_id> --positions p1/smoke/positions.json \
     --cash p1/smoke/cash-movements.json
