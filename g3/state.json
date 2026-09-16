@@ -1,5 +1,5 @@
 {
- "phase": "G3_EXECUTED_PENDING_ADJUDICATION",
+ "phase": "G3_ADJUDICATED_PASS",
  "protocol": {
   "tag": "g3-protocol",
   "commit": "87a3dd6",
@@ -20,6 +20,8 @@
  "frozen_surface": "VERIFIED (git diff g3-protocol..HEAD vacio en frozen paths, incl. src/ca_es/identity/**)",
  "commands_executed": "24 comandos x2 -> g3/results/commands/ (bytes identicos entre repeticiones)",
  "gates_eval": "g3/results/gates-eval.json",
- "verdict": "PENDING_HUMAN_ADJUDICATION",
- "note": "Ultimo gate del ciclo; tras G3 el proyecto pasa a modo producto (roadmap P1-P7). El evaluador no declara PASS; siguiente paso: adjudicacion humana final."
+ "verdict": "PASS",
+ "verdict_artifact": "g3/results/verdict.json",
+ "verdict_basis": "adjudicacion humana contrastada contra origin/main = dc50461; 7/7 gates, casos G3-A..F, test operacional, sellos y freeze verificados",
+ "next": "ciclo G0-G3 cerrado; modo producto P1-P7 (docs/roadmap.md)"
 }

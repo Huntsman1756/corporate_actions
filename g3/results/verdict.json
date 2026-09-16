@@ -1,0 +1,67 @@
+{
+ "verdict_version": "CA_ES_G3_VERDICT_V1",
+ "status": "SIGNED",
+ "verdict": "PASS",
+ "signed_at": "2026-09-16",
+ "signed_by": "human-reviewer",
+ "protocol": {
+  "file": "docs/gates/g3-preregistered.json",
+  "tag": "g3-protocol",
+  "commit": "87a3dd6a7ebc084dac48dff3efc7bcd973774660",
+  "verified": "tag -> 87a3dd6 (HOLD mecanico resuelto: identity/** + file_sha256 vs logical_sha256 + policy read-only pinneada + casos binding)"
+ },
+ "execution": {
+  "commit": "dc50461f5ecd5fdde6ef090dca9b590331e76036",
+  "remote_verified": "origin/main = dc50461 en GitHub; adjudicacion contrastada contra remoto, no contra resumen del agente",
+  "surface_diff": "g3-protocol..dc50461 = solo superficie permitida (surface.py nuevo, cli.py thin adapter, scripts, tests, g3/**); motor congelado intacto"
+ },
+ "inputs": {
+  "canon": {
+   "artifact": "g3/input/canon.json",
+   "file_sha256": "c0f7dcd5d330ea69168ef90edcb207b561c237a07c5de216c140ef2147a06f0c",
+   "logical_sha256": "722c5f2c3a958ed91344b29a93477bbdffd1e55843300dd58c807db1bb7122e1",
+   "status": "VERIFIED"
+  },
+  "policy": {
+   "artifact": "docs/sources/source-policy.json",
+   "mode": "READ_ONLY",
+   "file_sha256": "5ec0136ab3f4d15e435072ed00a7c0417407c0a6de2ef636d6727a9ac6c5dea3",
+   "status": "VERIFIED"
+  }
+ },
+ "frozen_surface": "PRESERVED (runner verifica diff g3-protocol..HEAD y working tree sobre parsers, semantic contracts, source-policy, identity/**, revisions, provenance, canon/export y pipeline antes de ejecutar)",
+ "gates": {
+  "current_state_correctness": {"measured": 1.0, "required": 1.0, "sign": "PASS"},
+  "revision_timeline_correctness": {"measured": 1.0, "required": 1.0, "sign": "PASS"},
+  "conflict_visibility": {"measured": 1.0, "required": 1.0, "sign": "PASS"},
+  "provenance_navigability": {"measured": 1.0, "required": 1.0, "sign": "PASS"},
+  "unsupported_capability_honesty": {"measured": 1.0, "required": 1.0, "sign": "PASS"},
+  "canonical_export_fidelity": {"measured": 1.0, "required": 1.0, "sign": "PASS"},
+  "deterministic_presentation": {"measured": 1.0, "required": 1.0, "sign": "PASS"}
+ },
+ "cases": {
+  "G3-A": "PASS - MFE: current state 0.22 EUR desde gen0 + fechas 20/21/22-07-2026 desde gen1; timeline explica sustitucion 27->20, 28->21, 29->22 y marca gross carried_forward",
+  "G3-B": "PASS - Almirall: announcement_date CONFLICTING con 2023-06-12 y 2023-06-13, ambas fuentes, sin ganador implicito",
+  "G3-C": "PASS - BME Growth dividend: ISIN, gross 0.08690661, net 0.07039435, ex 2026-07-08, payment 2026-07-10; export identico al subarbol canon",
+  "G3-D": "PASS - Portfolio 39649: amount.issue_price_per_share declarado UNSUPPORTED/QUARANTINED_UNSUPPORTED (estado desde policy pinneada, no hardcodeado); conflicto de 3 ISIN visible",
+  "G3-E": "PASS - SAN: merge via MANUAL_ADJUDICATION, 2 source_documents, gross 0.125 con ambas fuentes; quirk isin='ESTIMACIONES' mostrado tal cual",
+  "G3-F": "PASS - BME Growth capital increase: amounts estructurados exactos del oracle"
+ },
+ "human_operational_test": {
+  "result": "PASS",
+  "detail": "preguntas operativas respondidas SOLO desde la superficie: MFE cuanto/cuando/que cambio; Almirall conflicto con ambos valores/fuentes; BMEG dividend gross/net+ex/payment; Portfolio 39649 -> UNSUPPORTED (nunca 0/null/inferido); evidencia navegable assertion_id -> valor -> estado vigente -> fragmento CNMV -> raw_pointer -> documento oficial -> URL de adquisicion, sin abrir el raw"
+ },
+ "commands": "24 comandos x2 -> bytes identicos (deterministic_presentation)",
+ "binding_gates": "7/7 PASS",
+ "conclusion": "Un usuario de operaciones puede consumir CA_ES_OPERATIONAL_CANON_V1 a traves de la superficie G3 y determinar estado vigente, historial de revisiones, conflictos y evidencia sin reabrir los raws fuente.",
+ "unchanged_verdicts": {
+  "G1": "FAIL (historico)",
+  "G1-R": "FAIL (historico)",
+  "G1-R2": "FAIL (historico); holdout SPENT_EVIDENCE",
+  "G2": "PASS",
+  "portfolio_capital_increase_issue_price": "QUARANTINED_UNSUPPORTED"
+ },
+ "gates_eval_artifact": "g3/results/gates-eval.json",
+ "state": "g3/state.json",
+ "next": "cierre del ciclo de gates G0-G3; modo producto P1-P7 (docs/roadmap.md): Ops Desk -> Entitlements -> Reconciliation -> SWIFT/ISO (Prowide) -> Elections/deadlines -> positions/impact -> automation/alerts"
+}

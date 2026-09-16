@@ -27,6 +27,11 @@ G1-R2   FAIL      — histórico (ISSUE_PRICE_COMPONENT_CONFUSION +
 G2      PASS      — Operational Canon (g2/results/verdict.json;
                     8/8 gates, casos A–E+AUX, export byte-determinista;
                     scope: capacidades soportadas, núcleo CNMV+BME Growth)
+G3      PASS      — Operational Surface (g3/results/verdict.json;
+                    7/7 gates, casos A–F, test operacional humano;
+                    superficie de consumo sobre el canon G2)
+
+Ciclo de gates G0–G3 CERRADO. Modo producto: docs/roadmap.md.
 
 PORTFOLIO_CAPITAL_INCREASE_PRICE = QUARANTINED / UNSUPPORTED
 ```
@@ -37,9 +42,11 @@ virgen.
 
 ## Siguiente fase
 
-G2 — Operational Canon: **PASS** (`g2/results/verdict.json`,
-`g2/state.json`). `CA_ES_OPERATIONAL_CANON_V1` probado end-to-end sobre
-el qualification corpus preregistrado para las capacidades soportadas.
-El veredicto no afirma recall de parsers ni soporte universal de CAs
-españoles — ambos fuera del scope de G2. La siguiente fase se decide
-desde producto, no desde parsing.
+G2 — Operational Canon: **PASS**. G3 — Operational Surface: **PASS**
+(`g3/results/verdict.json`). El canon es consumible por un operador:
+estado vigente, timeline, conflictos y evidencia sin abrir raws.
+
+Ciclo de gates cerrado; no hay G4. La evolución continúa como producto
+vertical sobre el canon probado: `docs/roadmap.md` (P1 Ops Desk →
+P2 Entitlements → P3 Reconciliation → P4 SWIFT/ISO → P5 Elections →
+P6 Positions → P7 Automation).
