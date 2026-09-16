@@ -256,7 +256,17 @@ def cmd_export_event(args: argparse.Namespace) -> int:
 def cmd_brief(args: argparse.Namespace) -> int:
     from .surface import render_brief
 
-    brief = _surface(args).brief(args.as_of, window_days=args.window)
+    surface = _surface(args)
+    previous = None
+    if args.previous_canon:
+        repo_root = _repo_root(args.repo_root)
+        policy = (
+            Path(args.policy) if args.policy else repo_root / DEFAULT_POLICY
+        )
+        previous = load_surface(Path(args.previous_canon), policy)
+    brief = surface.brief(
+        args.as_of, window_days=args.window, previous=previous
+    )
     if args.format == "text":
         print(render_brief(brief), end="")
         return 0
@@ -336,6 +346,7 @@ def build_parser() -> argparse.ArgumentParser:
 
     brief = sub.add_parser("brief", parents=[surface_common])
     brief.add_argument("--as-of", required=True)
+    brief.add_argument("--previous-canon", default=None)
     brief.add_argument("--window", type=int, default=7)
     brief.add_argument("--format", choices=["json", "text"], default="text")
     brief.set_defaults(func=cmd_brief)

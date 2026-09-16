@@ -205,3 +205,129 @@ def test_brief_render_deterministic(surface):
     b = render_brief(load_surface(CANON, POLICY).brief("2026-07-15"))
     assert a == b
     assert "ACTION REQUIRED" in a and "UNSUPPORTED" in a
+
+
+# ------------------------------------------------------------------- P1.1
+
+def _surface_of(canon_dict):
+    return Surface(
+        canon_dict, json.loads(POLICY.read_text(encoding="utf-8"))
+    )
+
+
+def _canon_copy():
+    return json.loads(CANON.read_text(encoding="utf-8"))
+
+
+
+def test_delta_identical_snapshots_empty(surface):
+    previous = _surface_of(_canon_copy())
+    assert surface.delta(previous) == []
+    brief = surface.brief("2026-07-15", previous=previous)
+    assert brief["new_since_previous"] == []
+    assert brief["summary"]["new_since_previous"] == 0
+
+
+def test_delta_new_event_no_cascade(surface):
+    previous_canon = _canon_copy()
+    previous_canon["events"] = [
+        e for e in previous_canon["events"]
+        if e["canonical_event_id"] != "03888619-246f-58da-850b-1f715ad1008e"
+    ]
+    delta = surface.delta(_surface_of(previous_canon))
+    assert [i["kind"] for i in delta] == ["NEW_EVENT"]
+    assert delta[0]["canonical_event_id"].startswith("03888619")
+
+
+def test_delta_changed_assertion_before_after(surface):
+    previous_canon = _canon_copy()
+    mfe = next(
+        e for e in previous_canon["events"] if e["canonical_event_id"] == MFE
+    )
+    target = next(
+        f for f in mfe["facts"]
+        if f["field_path"] == "date.ex_date" and f["value"] == "2026-07-20"
+    )
+    target["value"] = "2026-07-19"
+    delta = surface.delta(_surface_of(previous_canon))
+    assert [i["kind"] for i in delta] == ["CHANGED_ASSERTION"]
+    item = delta[0]
+    assert item["field_path"] == "date.ex_date"
+    assert item["previous_value"] == "2026-07-19"
+    assert item["value"] == "2026-07-20"
+    assert item["assertion_id"] and item["previous_assertion_id"]
+    assert item["evidence_locator"] and item["previous_evidence_locator"]
+
+
+def test_delta_provenance_only_change_silent(surface):
+    previous_canon = _canon_copy()
+    for event in previous_canon["events"]:
+        for fact in event["facts"]:
+            fact["evidence_locator"] = "LOCATOR-DIFFERENT"
+            fact["raw_pointer"] = "/different/pointer"
+            fact["assertion_id"] = "00000000-0000-0000-0000-000000000000"
+    assert surface.delta(_surface_of(previous_canon)) == []
+
+
+def test_delta_conflict_new_and_resolved(surface):
+    previous_canon = _canon_copy()
+    almirall = next(
+        e for e in previous_canon["events"]
+        if e["canonical_event_id"] == ALMIRALL
+    )
+    almirall["conflicts"] = []
+    delta = surface.delta(_surface_of(previous_canon))
+    assert any(
+        i["kind"] == "NEW_CONFLICT"
+        and i["field_path"] == "date.announcement_date"
+        and set(i["values"]) == {'"2023-06-12"', '"2023-06-13"'}
+        for i in delta
+    )
+    reverse = _surface_of(previous_canon).delta(surface)
+    assert any(
+        i["kind"] == "RESOLVED_CONFLICT"
+        and i["field_path"] == "date.announcement_date"
+        for i in reverse
+    )
+
+
+def test_delta_supported_now(surface):
+    current_canon = _canon_copy()
+    current_canon["events"] = [
+        e for e in current_canon["events"] if e["canonical_event_id"] != POEX
+    ]
+    delta = _surface_of(current_canon).delta(surface)
+    assert any(
+        i["kind"] == "SUPPORTED_NOW"
+        and i["field_path"] == "amount.issue_price_per_share"
+        for i in delta
+    )
+
+
+def test_delta_no_snapshot_mutation(surface):
+    before_cur = _canon_copy()
+    before_prev = _canon_copy()
+    prev_canon = _canon_copy()
+    prev_canon["events"][0]["facts"][0]["value"] = "MUTATED"
+    _surface_of(json.loads(CANON.read_text(encoding="utf-8"))).delta(
+        _surface_of(prev_canon)
+    )
+    assert _canon_copy() == before_cur
+    assert prev_canon[  # previous tampoco mutado
+        "events"
+    ][0]["facts"][0]["value"] == "MUTATED"
+
+
+def test_delta_deterministic_and_render(surface):
+    previous = _surface_of(_canon_copy())
+    from ca_es.canonical import canonical_json
+    a = canonical_json(surface.brief("2026-07-15", previous=previous))
+    b = canonical_json(
+        load_surface(CANON, POLICY).brief("2026-07-15", previous=previous)
+    )
+    assert a == b
+    from ca_es.surface import render_brief
+    text = render_brief(
+        surface.brief("2026-07-15", previous=previous)
+    )
+    assert "NEW SINCE PREVIOUS" in text

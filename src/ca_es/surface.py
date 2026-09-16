@@ -390,7 +390,191 @@ class Surface:
 
     # -------------------------------------------------------------- brief
 
-    def brief(self, as_of: str, window_days: int = 7) -> dict:
+    def delta(self, previous: "Surface") -> list[dict]:
+        """NEW_SINCE_PREVIOUS: diferencias operacionales entre dos
+        snapshots canonicos (P1.1).
+
+        Compara identidad estructural + payload de la afirmacion, no
+        blobs: un cambio de serializacion o de provenance
+        (evidence_locator / raw_pointer / assertion_id) que no altere
+        la afirmacion NO genera item; una variacion factual si.
+
+        Categorias explicitas:
+          NEW_EVENT / NEW_ASSERTION / CHANGED_ASSERTION /
+          NEW_CONFLICT / RESOLVED_CONFLICT /
+          NEW_UNSUPPORTED / SUPPORTED_NOW
+        """
+        items = []
+
+        prev_events = {e["canonical_event_id"] for e in previous.canon["events"]}
+        cur_events = {e["canonical_event_id"] for e in self.canon["events"]}
+        new_event_ids = set()
+        for event in self.canon["events"]:
+            if event["canonical_event_id"] not in prev_events:
+                new_event_ids.add(event["canonical_event_id"])
+                items.append(
+                    {
+                        "kind": "NEW_EVENT",
+                        "canonical_event_id": event["canonical_event_id"],
+                        "event_type": event["event_type"],
+                        "issuer_name": event["issuer"].get("issuer_name"),
+                    }
+                )
+
+        def claim_index(surface: "Surface") -> dict:
+            index = {}
+            for event in surface.canon["events"]:
+                for fact in event["facts"]:
+                    key = (
+                        event["canonical_event_id"],
+                        fact["source_document_id"],
+                        fact["field_path"],
+                    )
+                    index[key] = fact
+            return index
+
+        current_claims = claim_index(self)
+        previous_claims = claim_index(previous)
+        for key in sorted(set(current_claims) | set(previous_claims)):
+            cur = current_claims.get(key)
+            prev = previous_claims.get(key)
+            event_id, source_document_id, field_path = key
+            if event_id in new_event_ids:
+                continue  # el NEW_EVENT cubre sus aserciones (sin cascada)
+            if prev is None:
+                items.append(
+                    {
+                        "kind": "NEW_ASSERTION",
+                        "canonical_event_id": event_id,
+                        "field_path": field_path,
+                        "value": cur["value"],
+                        "assertion_id": cur["assertion_id"],
+                        "source_document_id": source_document_id,
+                        "evidence_locator": cur["evidence_locator"],
+                    }
+                )
+            elif cur is not None and (
+                _fingerprint(cur["value"]) != _fingerprint(prev["value"])
+                or cur["asserted_as_of"] != prev["asserted_as_of"]
+                or cur["fact_origin"] != prev["fact_origin"]
+            ):
+                items.append(
+                    {
+                        "kind": "CHANGED_ASSERTION",
+                        "canonical_event_id": event_id,
+                        "field_path": field_path,
+                        "previous_value": prev["value"],
+                        "value": cur["value"],
+                        "assertion_id": cur["assertion_id"],
+                        "previous_assertion_id": prev["assertion_id"],
+                        "source_document_id": source_document_id,
+                        "evidence_locator": cur["evidence_locator"],
+                        "previous_evidence_locator": prev["evidence_locator"],
+                    }
+                )
+
+        def conflict_index(surface: "Surface") -> dict:
+            index = {}
+            for event in surface.canon["events"]:
+                for conflict in event["conflicts"]:
+                    index[
+                        (
+                            event["canonical_event_id"],
+                            conflict["field_path"],
+                            conflict["asserted_as_of"],
+                        )
+                    ] = conflict
+            return index
+
+        current_conflicts = conflict_index(self)
+        previous_conflicts = conflict_index(previous)
+        for key in sorted(set(current_conflicts) - set(previous_conflicts)):
+            if key[0] in new_event_ids:
+                continue
+            c = current_conflicts[key]
+            items.append(
+                {
+                    "kind": "NEW_CONFLICT",
+                    "canonical_event_id": key[0],
+                    "field_path": key[1],
+                    "values": c["values"],
+                    "assertion_ids": c["assertion_ids"],
+                }
+            )
+        for key in sorted(set(previous_conflicts) - set(current_conflicts)):
+            c = previous_conflicts[key]
+            items.append(
+                {
+                    "kind": "RESOLVED_CONFLICT",
+                    "canonical_event_id": key[0],
+                    "field_path": key[1],
+                    "values": c["values"],
+                    "assertion_ids": c["assertion_ids"],
+                }
+            )
+
+        def unsupported_index(surface: "Surface") -> set:
+            out = set()
+            for event in surface.canon["events"]:
+                for item in surface._unsupported_for_event(event):
+                    out.add(
+                        (
+                            event["canonical_event_id"],
+                            item["field_path"],
+                            item["capability"],
+                        )
+                    )
+            return out
+
+        current_unsup = unsupported_index(self)
+        previous_unsup = unsupported_index(previous)
+        for key in sorted(current_unsup - previous_unsup):
+            if key[0] in new_event_ids:
+                continue
+            items.append(
+                {
+                    "kind": "NEW_UNSUPPORTED",
+                    "canonical_event_id": key[0],
+                    "field_path": key[1],
+                    "capability": key[2],
+                }
+            )
+        for key in sorted(previous_unsup - current_unsup):
+            items.append(
+                {
+                    "kind": "SUPPORTED_NOW",
+                    "canonical_event_id": key[0],
+                    "field_path": key[1],
+                    "capability": key[2],
+                }
+            )
+
+        kind_order = [
+            "NEW_EVENT",
+            "NEW_ASSERTION",
+            "CHANGED_ASSERTION",
+            "NEW_CONFLICT",
+            "RESOLVED_CONFLICT",
+            "NEW_UNSUPPORTED",
+            "SUPPORTED_NOW",
+        ]
+        items.sort(
+            key=lambda i: (
+                kind_order.index(i["kind"]),
+                i["canonical_event_id"],
+                i.get("field_path") or "",
+                i.get("source_document_id") or "",
+                i.get("assertion_id") or "",
+            )
+        )
+        return items
+
+    def brief(
+        self,
+        as_of: str,
+        window_days: int = 7,
+        previous: "Surface | None" = None,
+    ) -> dict:
         """Morning brief operacional (P1).
 
         Reglas explicitas y deterministas sobre el canon:
@@ -404,6 +588,9 @@ class Surface:
           conserva todos sus values y fuentes (sin ganador).
         - UNSUPPORTED: capacidades QUARANTINED_UNSUPPORTED aplicables
           segun la policy pinneada; nunca se rellenan.
+        - NEW_SINCE_PREVIOUS (si previous != None): delta entre
+          snapshots canonicos via Surface.delta(); pregunta distinta de
+          RECENT_CHANGES (revisiones dentro de un mismo canon).
 
         Nada se modifica ni se infiere: todo item enlaza a sus
         assertion_ids / source_documents / evidence_locators.
@@ -507,25 +694,35 @@ class Surface:
             key=lambda i: (i["canonical_event_id"], i["field_path"])
         )
 
-        return {
+        delta_items = self.delta(previous) if previous is not None else None
+        summary = {
+            "events": len(self.canon["events"]),
+            "action_required": len(action_required),
+            "revised_events": len(revised),
+            "conflicting_events": len(
+                {i["canonical_event_id"] for i in conflict_items}
+            ),
+            "unsupported_items": len(unsupported_items),
+        }
+        if delta_items is not None:
+            summary["new_since_previous"] = len(delta_items)
+        out = {
             "surface_version": SURFACE_VERSION,
             "brief_version": "CA_ES_MORNING_BRIEF_V1",
             "as_of": as_of,
             "window_days": window_days,
-            "summary": {
-                "events": len(self.canon["events"]),
-                "action_required": len(action_required),
-                "revised_events": len(revised),
-                "conflicting_events": len(
-                    {i["canonical_event_id"] for i in conflict_items}
-                ),
-                "unsupported_items": len(unsupported_items),
-            },
+            "summary": summary,
             "action_required": action_required,
             "recent_changes": revised,
             "conflicts": conflict_items,
             "unsupported": unsupported_items,
         }
+        if delta_items is not None:
+            out["previous_canon_logical_sha256"] = previous.canon.get(
+                "logical_sha256"
+            )
+            out["new_since_previous"] = delta_items
+        return out
 
 
 def render_brief(brief: dict) -> str:
@@ -606,6 +803,32 @@ def render_brief(brief: dict) -> str:
                 eid=item["canonical_event_id"][:8],
             )
         )
+    if "new_since_previous" in brief:
+        lines.append("")
+        lines.append("NEW SINCE PREVIOUS")
+        if not brief["new_since_previous"]:
+            lines.append("  (none)")
+        for item in brief["new_since_previous"]:
+            field = item.get("field_path") or ""
+            lines.append(
+                "  {kind} {eid} {field}".format(
+                    kind=item["kind"],
+                    eid=item["canonical_event_id"][:8],
+                    field=field,
+                )
+            )
+            if item["kind"] == "CHANGED_ASSERTION":
+                prev = item["previous_value"]
+                cur = item["value"]
+                if isinstance(prev, dict):
+                    prev = prev.get("normalized", prev)
+                if isinstance(cur, dict):
+                    cur = cur.get("normalized", cur)
+                lines.append(f"      {prev} -> {cur}")
+            if item.get("evidence_locator"):
+                lines.append(f"      evidence: {item['evidence_locator']}")
+            if item["kind"] in ("NEW_CONFLICT", "RESOLVED_CONFLICT"):
+                lines.append(f"      values: {', '.join(item['values'])}")
     return "\n".join(lines) + "\n"
 
 
