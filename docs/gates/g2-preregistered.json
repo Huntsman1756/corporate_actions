@@ -35,8 +35,8 @@
         "case_id": "A",
         "name": "exact identity / cross-reference",
         "documents": [
-          {"id": "CNMV-IP-1884", "source": "CNMV", "content_sha256": "b9d8b44c5699f2af", "from_manifest": "g0/manifests/real-corpus.json"},
-          {"id": "CNMV-IP-1885", "source": "CNMV", "content_sha256": "af046988125f5260", "from_manifest": "g0/manifests/real-corpus.json"}
+          {"id": "CNMV-IP-1884", "source": "CNMV", "content_sha256": "b9d8b44c5699f2afd6a9e516d700a9a6257716f932175c406c3f6cb5488d0680", "from_manifest": "g0/manifests/real-corpus.json"},
+          {"id": "CNMV-IP-1885", "source": "CNMV", "content_sha256": "af046988125f5260f88e1f031d1e4f2745730239a5cfe74efacfdf5ef656177b", "from_manifest": "g0/manifests/real-corpus.json"}
         ],
         "expectations": [
           "2 docs -> 1 canonical CORPORATE_ACTION (event_type CAPITAL_INCREASE)",
@@ -51,8 +51,8 @@
         "case_id": "B",
         "name": "lifecycle revision",
         "documents": [
-          {"id": "CNMV-OIR-40280", "source": "CNMV", "content_sha256": "a896917f8da04af1", "from_manifest": "g0/manifests/real-corpus.json"},
-          {"id": "CNMV-OIR-40319", "source": "CNMV", "content_sha256": "d9ef7d8ec10e2f44", "from_manifest": "g0/manifests/real-corpus.json"}
+          {"id": "CNMV-OIR-40280", "source": "CNMV", "content_sha256": "a896917f8da04af13a571473d40f89d02a6447825de3e359ee4ccb94d1b1cea4", "from_manifest": "g0/manifests/real-corpus.json"},
+          {"id": "CNMV-OIR-40319", "source": "CNMV", "content_sha256": "d9ef7d8ec10e2f444ec84400f33a41a2e29d8778e8fba2e0f7971dbe3a26405a", "from_manifest": "g0/manifests/real-corpus.json"}
         ],
         "expectations": [
           "2 docs -> 1 canonical CA (CASH_DIVIDEND) con revisions generation 0 y 1",
@@ -67,7 +67,7 @@
         "case_id": "C",
         "name": "BME Growth dividend",
         "documents": [
-          {"id": "BMEG-Dividends-ES0105448007-2026-07-08", "source": "BME_GROWTH", "content_sha256": "d379114c4b659f25", "from_manifest": "g1/manifests/holdout/BMEG-Dividends-ES0105448007-2026-07-08.json"}
+          {"id": "BMEG-Dividends-ES0105448007-2026-07-08", "source": "BME_GROWTH", "content_sha256": "d379114c4b659f25f1eeb57fb2c11ac95db9a91dfa4f65bf86a57b2d9cea3ea5", "from_manifest": "g1/manifests/holdout/BMEG-Dividends-ES0105448007-2026-07-08.json"}
         ],
         "expectations": [
           "single structured event -> 1 canonical CA (CASH_DIVIDEND)",
@@ -81,7 +81,7 @@
         "case_id": "D",
         "name": "BME Growth capital increase",
         "documents": [
-          {"id": "BMEG-CapitalIncreases-ES0105606190-2025-03-27", "source": "BME_GROWTH", "content_sha256": "ca5e2be6bb82c0a7", "from_manifest": "g1/manifests/holdout/BMEG-CapitalIncreases-ES0105606190-2025-03-27.json"}
+          {"id": "BMEG-CapitalIncreases-ES0105606190-2025-03-27", "source": "BME_GROWTH", "content_sha256": "ca5e2be6bb82c0a70de521ca855171aefe2ee622cceb4b5fddeee6e0cb3be0b9", "from_manifest": "g1/manifests/holdout/BMEG-CapitalIncreases-ES0105606190-2025-03-27.json"}
         ],
         "expectations": [
           "single structured event -> 1 canonical CA (CAPITAL_INCREASE)",
@@ -94,8 +94,8 @@
         "case_id": "E",
         "name": "NO MERGE — negative identity control",
         "documents": [
-          {"id": "CNMV-SAN-DIV-2026", "source": "CNMV", "content_sha256": "9e7bb6a31fd14668", "from_manifest": "g0/manifests/real-corpus.json"},
-          {"id": "SAN-IR-REMUNERATION", "source": "ISSUER_IR", "content_sha256": "38c126aacf32f18a", "from_manifest": "g0/manifests/real-corpus.json"}
+          {"id": "CNMV-SAN-DIV-2026", "source": "CNMV", "content_sha256": "9e7bb6a31fd146684b2cf2a28123552a8cb9fa9685d8b18bc677a4b4f14f7a28", "from_manifest": "g0/manifests/real-corpus.json"},
+          {"id": "SAN-IR-REMUNERATION", "source": "ISSUER_IR", "content_sha256": "38c126aacf32f18ad76fcb14d99622734cf55f2e87fc6adf009658d17ca2a8eb", "from_manifest": "g0/manifests/real-corpus.json"}
         ],
         "execution": "misma corrida del corpus pero SIN adjudications_relpath",
         "expectations": [
@@ -109,8 +109,8 @@
         "case_id": "AUX",
         "name": "quarantine temptation (spent evidence)",
         "documents": [
-          {"id": "POEX-DOC-39649", "source": "PORTFOLIO_STOCK_EXCHANGE", "content_sha256": "4533d49d83c4873b", "from_manifest": "g1r/manifests/holdout/POEX-DOC-39649.json"},
-          {"id": "BORME-C-2026-4914", "source": "BOE_BORME", "content_sha256": "94c6571d50a97785", "from_manifest": "g0/manifests/real-corpus.json"}
+          {"id": "POEX-DOC-39649", "source": "PORTFOLIO_STOCK_EXCHANGE", "content_sha256": "4533d49d83c4873bddc59fc4a94995c3d9a2c47eb213efe1a2161c073232f39f", "from_manifest": "g1r/manifests/holdout/POEX-DOC-39649.json"},
+          {"id": "BORME-C-2026-4914", "source": "BOE_BORME", "content_sha256": "94c6571d50a97785990411abf2fbe2e84ab9c157089caf188d25ed7ac48fce4e", "from_manifest": "g0/manifests/real-corpus.json"}
         ],
         "expectations": [
           "POEX-DOC-39649 produce event CAPITAL_INCREASE sin amount.issue_price_per_share en canon ni export (tentacion real de la capacidad cuarentenada)",
@@ -136,7 +136,7 @@
       "provenance",
       "source_documents[]"
     ],
-    "ordering": "contractual: events por canonical_event_id; revisions por generation; facts por (field_path, revision_id); conflicts por field_path; source_documents por official_document_id",
+    "ordering": "orden total contractual (sin empates ni orden incidental de Python): events por canonical_event_id; revisions por (generation, revision_id); facts por (field_path, revision_id, source_document_id, assertion_id); conflicts por (field_path, revision_id, asserted_as_of, assertion_ids); source_documents por (source_id, official_document_id)",
     "runtime_metadata": "prohibida dentro del payload logico (no run_id, executed_at, timestamps)",
     "logical_sha256": "sha256 sobre bytes canonicos del payload",
     "determinism": "run1 bytes == run2 bytes AND logical_sha256 run1 == run2; no solo estructuras equivalentes"
@@ -152,7 +152,7 @@
     },
     "fact_provenance_rate": {
       "required": 1.0,
-      "definition": "todo fact exportado tiene evidence_locator no vacio y raw_pointer que resuelve dentro del texto del source document"
+      "definition": "todo fact exportado: evidence_locator != vacio Y raw_pointer != vacio Y raw_pointer resuelve contra el raw_record/fixture correspondiente al source document, conforme al contrato del parser (p. ej. /metadata/* en BME Growth). evidence_locator es la cita humana; raw_pointer es la trazabilidad mecanica"
     },
     "deterministic_export": {
       "required": 1.0,
