@@ -1,0 +1,219 @@
+{
+ "manifest_version": "CA_ES_SOURCE_MANIFEST_V1",
+ "corpus_id": "CA_ES_G2_QUALIFICATION_V1",
+ "retrieved_at": "2026-09-16",
+ "note": "G2 qualification corpus: documentos compuestos desde manifests origen con content_sha256 fijado en g2-preregistered.json",
+ "documents": [
+  {
+   "source_id": "BME_GROWTH",
+   "official_document_id": "BMEG-CapitalIncreases-ES0105606190-2025-03-27",
+   "content_sha256": "ca5e2be6bb82c0a70de521ca855171aefe2ee622cceb4b5fddeee6e0cb3be0b9",
+   "retrieved_at": "2026-09-14",
+   "publication_date": "2025-03-27",
+   "media_type": "application/json",
+   "raw_relpath": "g1/corpus/raw/holdout/BMEG-CapitalIncreases-ES0105606190-2025-03-27.json",
+   "synthetic": false,
+   "retrieval_status": "OK",
+   "acquisition": {
+    "url": "https://apiweb.bolsasymercados.es/Market/v1/EQ/CorporateActions/CapitalIncreases",
+    "retrieval_method": "BME_API_ROW_SNAPSHOT"
+   },
+   "relations": []
+  },
+  {
+   "source_id": "BME_GROWTH",
+   "official_document_id": "BMEG-Dividends-ES0105448007-2026-07-08",
+   "content_sha256": "d379114c4b659f25f1eeb57fb2c11ac95db9a91dfa4f65bf86a57b2d9cea3ea5",
+   "retrieved_at": "2026-09-14",
+   "publication_date": "2026-07-08",
+   "media_type": "application/json",
+   "raw_relpath": "g1/corpus/raw/holdout/BMEG-Dividends-ES0105448007-2026-07-08.json",
+   "synthetic": false,
+   "retrieval_status": "OK",
+   "acquisition": {
+    "url": "https://apiweb.bolsasymercados.es/Market/v1/EQ/CorporateActions/Dividends",
+    "retrieval_method": "BME_API_ROW_SNAPSHOT"
+   },
+   "relations": []
+  },
+  {
+   "source_id": "BOE_BORME",
+   "official_document_id": "BORME-C-2026-4914",
+   "content_sha256": "94c6571d50a97785990411abf2fbe2e84ab9c157089caf188d25ed7ac48fce4e",
+   "retrieved_at": "2026-09-13T00:00:00Z",
+   "publication_date": null,
+   "media_type": "text/html",
+   "raw_relpath": "g0/corpus/raw/parlem/borme-c-2026-4914.html",
+   "synthetic": false,
+   "notes": "Parlem Telecom. Aumento de capital con derecho de suscripcion preferente. Fecha de publicacion no explicita en el documento (se registra la fecha de firma como announcement_date).",
+   "acquisition": {
+    "url": "https://www.boe.es/buscar/doc.php?id=BORME-C-2026-4914",
+    "official_identifier": "BORME-C-2026-4914",
+    "section": "SECCION SEGUNDA. Anuncios y avisos legales / AUMENTO DE CAPITAL",
+    "borme_number": 174,
+    "pages": "6127 a 6129",
+    "retrieved_by": "ca-es G0-R",
+    "http_status": 200,
+    "terms_source": "https://www.boe.es/informacion/aviso_legal.php",
+    "terms_reviewed_at": "2026-09-13",
+    "redistribution": "HASH_AND_METADATA_ONLY"
+   }
+  },
+  {
+   "source_id": "CNMV",
+   "official_document_id": "CNMV-IP-1884",
+   "content_sha256": "b9d8b44c5699f2afd6a9e516d700a9a6257716f932175c406c3f6cb5488d0680",
+   "retrieved_at": "2026-09-13T00:00:00Z",
+   "publication_date": "2023-06-12",
+   "media_type": "application/pdf",
+   "raw_relpath": "g0/corpus/raw/cnmv/almirall/ip-1884.pdf",
+   "synthetic": false,
+   "notes": "Almirall: lanzamiento de aumento de capital con exclusion del derecho de suscripcion preferente (ABB).",
+   "acquisition": {
+    "url": "https://www.cnmv.es/webservices/verdocumento/ver?t=%7b6fb06a75-26a7-4b3a-9898-37fb15e3fcbe%7d",
+    "official_identifier": "CNMV-IP-1884",
+    "registry": "Informacion Privilegiada",
+    "registration_number": 1884,
+    "retrieved_by": "ca-es G0-R",
+    "http_status": 200,
+    "terms_source": "https://www.cnmv.es/portal/inversor/aviso-legal.aspx",
+    "terms_reviewed_at": "2026-09-13",
+    "redistribution": "NOT_REDISTRIBUTED"
+   }
+  },
+  {
+   "source_id": "CNMV",
+   "official_document_id": "CNMV-IP-1885",
+   "content_sha256": "af046988125f5260f88e1f031d1e4f2745730239a5cfe74efacfdf5ef656177b",
+   "retrieved_at": "2026-09-13T00:00:00Z",
+   "publication_date": "2023-06-13",
+   "media_type": "application/pdf",
+   "raw_relpath": "g0/corpus/raw/cnmv/almirall/ip-1885.pdf",
+   "synthetic": false,
+   "notes": "Almirall: fijacion de terminos definitivos; referencia explicita a la comunicacion 1884.",
+   "acquisition": {
+    "url": "https://www.cnmv.es/webservices/verdocumento/ver?t=%7be4bba367-14ce-496b-b2fe-1cd5635fee1f%7d",
+    "official_identifier": "CNMV-IP-1885",
+    "registry": "Informacion Privilegiada",
+    "registration_number": 1885,
+    "retrieved_by": "ca-es G0-R",
+    "http_status": 200,
+    "terms_source": "https://www.cnmv.es/portal/inversor/aviso-legal.aspx",
+    "terms_reviewed_at": "2026-09-13",
+    "redistribution": "NOT_REDISTRIBUTED"
+   }
+  },
+  {
+   "source_id": "CNMV",
+   "official_document_id": "CNMV-OIR-40280",
+   "content_sha256": "a896917f8da04af13a571473d40f89d02a6447825de3e359ee4ccb94d1b1cea4",
+   "retrieved_at": "2026-09-13T00:00:00Z",
+   "publication_date": "2026-04-15",
+   "media_type": "application/pdf",
+   "raw_relpath": "g0/corpus/raw/mfe/oir-40280.pdf",
+   "synthetic": false,
+   "notes": "MFE-MEDIAFOREUROPE: resultados 2025 y propuesta de dividendo 0,22 EUR; pago previsto 29/07/2026 (ex 27/07, record 28/07).",
+   "acquisition": {
+    "url": "https://www.cnmv.es/webservices/verdocumento/ver?t=%7b9eb0222e-df50-4c2f-b9a1-6fbcfccb5ac4%7d",
+    "official_identifier": "CNMV-OIR-40280",
+    "registry": "Otra Informacion Relevante",
+    "registration_number": 40280,
+    "nif": "N0239727A",
+    "retrieved_by": "ca-es G0-R2",
+    "http_status": 200,
+    "terms_source": "https://www.cnmv.es/portal/inversor/aviso-legal.aspx",
+    "terms_reviewed_at": "2026-09-13",
+    "redistribution": "NOT_REDISTRIBUTED"
+   }
+  },
+  {
+   "source_id": "CNMV",
+   "official_document_id": "CNMV-OIR-40319",
+   "content_sha256": "d9ef7d8ec10e2f444ec84400f33a41a2e29d8778e8fba2e0f7971dbe3a26405a",
+   "retrieved_at": "2026-09-13T00:00:00Z",
+   "publication_date": "2026-04-17",
+   "media_type": "application/pdf",
+   "raw_relpath": "g0/corpus/raw/mfe/oir-40319.pdf",
+   "synthetic": false,
+   "notes": "MFE: nuevas fechas del mismo dividendo (pago 22/07/2026, ex 20/07, record 21/07). Revision explicita de 40280.",
+   "relations": [
+    {
+     "relation": "EXPLICIT_PREDECESSOR_REFERENCE",
+     "target_source_id": "CNMV",
+     "target_official_document_id": "CNMV-OIR-40280",
+     "evidence_locator": "CNMV OIR 40319: 'nuevas fechas relativas a la distribucion del dividendo' y registro vinculado a la comunicacion 40280 del 15/04/2026",
+     "target_publication_date": "2026-04-15"
+    }
+   ],
+   "acquisition": {
+    "url": "https://www.cnmv.es/webservices/verdocumento/ver?t=%7b27ce01f5-9ab6-4fe0-bb05-bd95cd0e8d09%7d",
+    "official_identifier": "CNMV-OIR-40319",
+    "registry": "Otra Informacion Relevante",
+    "registration_number": 40319,
+    "nif": "N0239727A",
+    "retrieved_by": "ca-es G0-R2",
+    "http_status": 200,
+    "terms_source": "https://www.cnmv.es/portal/inversor/aviso-legal.aspx",
+    "terms_reviewed_at": "2026-09-13",
+    "redistribution": "NOT_REDISTRIBUTED"
+   }
+  },
+  {
+   "source_id": "CNMV",
+   "official_document_id": "CNMV-SAN-DIV-2026",
+   "content_sha256": "9e7bb6a31fd146684b2cf2a28123552a8cb9fa9685d8b18bc677a4b4f14f7a28",
+   "retrieved_at": "2026-09-13T00:00:00Z",
+   "publication_date": null,
+   "media_type": "application/pdf",
+   "raw_relpath": "g0/corpus/raw/san/cnmv-dividend.pdf",
+   "synthetic": false,
+   "notes": "Banco Santander: dividendo complementario 2025, 12,50 centimos/accion, pago 05/05/2026, ex 30/04, record 04/05.",
+   "acquisition": {
+    "url": "https://www.cnmv.es/webservices/verdocumento/ver?t=%7b1fb33d80-7a85-4932-b727-6cc3174415cb%7d",
+    "official_identifier": "CNMV-SAN-DIV-2026",
+    "registry": "Informacion Privilegiada",
+    "retrieved_by": "ca-es G0-R2",
+    "http_status": 200,
+    "terms_source": "https://www.cnmv.es/portal/inversor/aviso-legal.aspx",
+    "terms_reviewed_at": "2026-09-13",
+    "redistribution": "NOT_REDISTRIBUTED"
+   }
+  },
+  {
+   "source_id": "PORTFOLIO_STOCK_EXCHANGE",
+   "official_document_id": "POEX-DOC-39649",
+   "content_sha256": "4533d49d83c4873bddc59fc4a94995c3d9a2c47eb213efe1a2161c073232f39f",
+   "retrieved_at": "2026-09-14",
+   "publication_date": "2026-07-13",
+   "media_type": "application/pdf",
+   "raw_relpath": "g1r/corpus/raw/holdout/POEX-DOC-39649.pdf",
+   "synthetic": false,
+   "retrieval_status": "OK",
+   "acquisition": {
+    "url": "https://api.portfolio.exchange/poex/document/39649",
+    "retrieval_method": "HTTP_GET"
+   },
+   "relations": []
+  },
+  {
+   "source_id": "ISSUER_IR",
+   "official_document_id": "SAN-IR-REMUNERATION",
+   "content_sha256": "38c126aacf32f18ad76fcb14d99622734cf55f2e87fc6adf009658d17ca2a8eb",
+   "retrieved_at": "2026-09-13T00:00:00Z",
+   "publication_date": null,
+   "media_type": "text/html",
+   "raw_relpath": "g0/corpus/raw/san/ir-remuneration.html",
+   "synthetic": false,
+   "notes": "Banco Santander IR: dividendo final en efectivo 12.50 centimos/accion contra resultados H2 2025, pagado en mayo 2026.",
+   "acquisition": {
+    "url": "https://www.santander.com/en/accionistas-e-inversores/accion-santander/shareholder-remuneration",
+    "official_identifier": "SAN-IR-REMUNERATION",
+    "retrieved_by": "ca-es G0-R2",
+    "http_status": 200,
+    "terms_source": "https://www.santander.com/",
+    "terms_reviewed_at": "2026-09-13",
+    "redistribution": "NOT_REDISTRIBUTED"
+   }
+  }
+ ]
+}
