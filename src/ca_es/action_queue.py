@@ -105,6 +105,8 @@ def build_action_queue(deadlines_doc: dict, as_of: str,
         "as_of": as_of,
         "window_days": window_days,
         "due_soon_days": due_soon_days,
+        "source_canon_logical_sha256": deadlines_doc.get(
+            "source_canon_logical_sha256"),
         "items": items,
         "indeterminate": indeterminate,
     }

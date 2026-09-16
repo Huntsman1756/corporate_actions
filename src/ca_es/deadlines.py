@@ -187,5 +187,6 @@ def compute_deadlines(canon_doc: dict, rules_doc: dict,
     return {
         "schema": DEADLINE_SCHEMA,
         "generated_at": now or _now(),
+        "source_canon_logical_sha256": canon_doc.get("logical_sha256"),
         "deadlines": deadlines,
     }

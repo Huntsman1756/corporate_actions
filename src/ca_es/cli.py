@@ -269,8 +269,12 @@ def cmd_brief(args: argparse.Namespace) -> int:
         queue, code = _load_json(args.queue, "queue")
         if queue is None:
             return code
-        brief = surface.brief_v2(
-            args.as_of, queue, previous=_load_previous(args))
+        try:
+            brief = surface.brief_v2(
+                args.as_of, queue, previous=_load_previous(args))
+        except ValueError as exc:
+            print(json.dumps({"status": str(exc)}))
+            return 2
     else:
         brief = surface.brief(
             args.as_of,
@@ -304,7 +308,12 @@ def cmd_desk(args: argparse.Namespace) -> int:
         queue, code = _load_json(args.queue, "queue")
         if queue is None:
             return code
-        brief = surface.brief_v2(args.as_of, queue, previous=previous)
+        try:
+            brief = surface.brief_v2(
+                args.as_of, queue, previous=previous)
+        except ValueError as exc:
+            print(json.dumps({"status": str(exc)}))
+            return 2
     else:
         brief = surface.brief(
             args.as_of,

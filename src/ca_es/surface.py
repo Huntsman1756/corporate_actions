@@ -780,7 +780,17 @@ class Surface:
         unsupported/new_since_previous se reutilizan de V1 sin
         cambios. Cada item se enriquece con issuer_name/event_type
         para el desk; la cola original no se muta.
+
+        Binding fail-closed (P5.1.1): la cola debe haberse calculado
+        para este as_of y sobre este canon; si no, ValueError con
+        QUEUE_AS_OF_MISMATCH / QUEUE_CANON_MISMATCH — nunca se
+        muestran days_until ni action_status de otro snapshot.
         """
+        if action_queue.get("as_of") != as_of:
+            raise ValueError("QUEUE_AS_OF_MISMATCH")
+        if action_queue.get("source_canon_logical_sha256") != \
+                self.canon.get("logical_sha256"):
+            raise ValueError("QUEUE_CANON_MISMATCH")
         brief = self.brief(
             as_of,
             window_days=action_queue["window_days"],

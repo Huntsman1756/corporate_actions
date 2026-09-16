@@ -189,6 +189,41 @@ def test_v2_action_required_is_queue_not_proximity(surface):
     assert "indeterminate_deadlines" in v2
 
 
+def _real_queue(canon, as_of=AS_OF):
+    rules, cals = _rules_cals()
+    deadlines = compute_deadlines(canon, rules, cals, now=NOW)
+    assert deadlines["source_canon_logical_sha256"] == \
+        canon["logical_sha256"]
+    return build_action_queue(
+        deadlines, as_of, window_days=7, due_soon_days=2, now=NOW)
+
+
+def test_brief_v2_rejects_queue_as_of_mismatch(surface):
+    canon = json.loads(CANON.read_text(encoding="utf-8"))
+    queue = _real_queue(canon, as_of="2026-07-06")
+    assert queue["source_canon_logical_sha256"] == \
+        canon["logical_sha256"]
+    with pytest.raises(ValueError, match="QUEUE_AS_OF_MISMATCH"):
+        surface.brief_v2("2026-07-10", queue)
+
+
+def test_brief_v2_rejects_queue_canon_mismatch(surface):
+    canon = json.loads(CANON.read_text(encoding="utf-8"))
+    other = json.loads(CANON.read_text(encoding="utf-8"))
+    other["logical_sha256"] = "0" * 64
+    queue = _real_queue(other)
+    with pytest.raises(ValueError, match="QUEUE_CANON_MISMATCH"):
+        surface.brief_v2(AS_OF, queue)
+
+
+def test_brief_v2_accepts_matching_queue(surface):
+    canon = json.loads(CANON.read_text(encoding="utf-8"))
+    queue = _real_queue(canon)
+    v2 = surface.brief_v2(AS_OF, queue)
+    assert v2["brief_version"] == "CA_ES_MORNING_BRIEF_V2"
+    assert len(v2["action_required"]) == len(queue["items"])
+
+
 def test_desk_consumes_v2_without_recomputing(surface):
     canon = json.loads(CANON.read_text(encoding="utf-8"))
     rules, cals = _rules_cals()

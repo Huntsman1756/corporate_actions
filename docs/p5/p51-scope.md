@@ -48,6 +48,27 @@ evidence
 
 `action_status`: `OVERDUE | DUE_TODAY | DUE_SOON | UPCOMING`.
 
+## Binding de artefacto (P5.1.1)
+
+Cada artefacto conserva el snapshot que lo originó y se valida en la
+frontera siguiente, fail-closed:
+
+```text
+CA_ES_OPERATIONAL_DEADLINE_V1
+  source_canon_logical_sha256        (del canon de entrada)
+        ↓ propagado
+CA_ES_ACTION_QUEUE_V1
+  source_canon_logical_sha256
+  as_of
+        ↓ validado por brief_v2
+brief.as_of        == queue.as_of
+canon.logical_sha256 == queue.source_canon_logical_sha256
+```
+
+En caso contrario: `ValueError(QUEUE_AS_OF_MISMATCH)` /
+`ValueError(QUEUE_CANON_MISMATCH)` — nunca se muestran
+`days_until`/`action_status` de otro snapshot.
+
 ## Morning Brief V2
 
 `CA_ES_MORNING_BRIEF_V1` **no se modifica**. V2 = V1 con:
