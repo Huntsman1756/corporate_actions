@@ -1,6 +1,8 @@
 # G2 — Operational Canon (CNMV + BME Growth)
 
-Status: **DRAFT v1 — PENDING APPROVAL, NOT YET TAGGED** (2026-09-16).
+Status: **APPROVED** (2026-09-16, revisión humana sobre `27eed15`).
+Preregistro: `docs/gates/g2-preregistered.json` — el tag `g2-protocol`
+solo se crea tras firma humana de ese diff.
 Parent: G1-R2 cerrado en FAIL — `g1r2/results/holdout-verdict.json`
 (`996f214`). Matriz de capacidades: `docs/sources/support-matrix.md`.
 
@@ -61,9 +63,10 @@ ISIN_ROLE_DISAMBIGUATION         (P2)             -> abierto
 SCANNED_PDF_NO_TEXT_LAYER        (P1_PENDING)     -> OCR fuera
 ```
 
-## Formalización pendiente
+## Formalización
 
-Antes de ejecutar: preregistered `docs/gates/g2-preregistered.json`
-(gates, oráculos, criterios de PASS/FAIL/INCONCLUSIVE) y aprobación
-humana con tag `g2-protocol`, siguiendo el patrón G1-R2. Sin gates
-preregistrados no hay evaluación: `NOT_RUN` != `PASS`.
+Preregistered en `docs/gates/g2-preregistered.json` (qualification
+corpus A–E + auxiliar de cuarentena, ocho gates, parser-surface freeze,
+contrato `CA_ES_OPERATIONAL_CANON_V1`). Siguiente: firma humana ->
+tag `g2-protocol` -> ejecución. Sin gates preregistrados no hay
+evaluación: `NOT_RUN` != `PASS`.

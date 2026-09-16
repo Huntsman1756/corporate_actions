@@ -1,0 +1,219 @@
+{
+  "preregistration_version": "CA_ES_G2_PREREG_V1",
+  "status": "DRAFT_PENDING_APPROVAL",
+  "drafted_at": "2026-09-16",
+  "note": "El tag g2-protocol solo se crea tras aprobacion humana del diff final.",
+  "parent": "G1-R2 FAIL — g1r2/results/holdout-verdict.json (996f214); scope aprobado docs/gates/g2-scope.md (27eed15)",
+  "question": "Con las capacidades/fuentes declaradas seguras, el producto integra correctamente un corporate action canonico de principio a fin: source document -> event candidate -> affected instrument -> canonical CA -> revisions/conflicts -> operational facts -> provenance -> deterministic export?",
+  "nature": "gate de producto/integracion, NO de extraccion ni generalizacion de parser. Sin targets de recall ni numero minimo de facts.",
+  "parser_surface_freeze": {
+    "base_commit": "27eed15",
+    "frozen_paths": [
+      "src/ca_es/sources/parsers/**",
+      "docs/sources/source-policy.json",
+      "docs/sources/*/semantic-contract.json"
+    ],
+    "allowed_paths": [
+      "src/ca_es/identity*",
+      "src/ca_es/revisions*",
+      "src/ca_es/provenance*",
+      "src/ca_es/canonical*",
+      "export view (nuevo modulo)",
+      "scripts/run_g2*.py y gates/eval G2",
+      "tests/**",
+      "g2/**"
+    ],
+    "rule": "cualquier bug de extraccion descubierto durante G2 se registra en backlog y NO se corrige dentro del gate",
+    "verification": "git diff <freeze_ref>..HEAD -- frozen_paths debe ser vacio al evaluar"
+  },
+  "qualification_corpus": {
+    "name": "G2_QUALIFICATION_CORPUS_V1",
+    "type": "congelado por comportamiento sobre evidencia ya pagada; NO es un holdout de generalizacion",
+    "manifest": "g2/manifests/qualification-corpus.json (compuesto al ejecutar: documentos referenciados por manifest origen + content_sha256 fijados aqui)",
+    "cases": [
+      {
+        "case_id": "A",
+        "name": "exact identity / cross-reference",
+        "documents": [
+          {"id": "CNMV-IP-1884", "source": "CNMV", "content_sha256": "b9d8b44c5699f2af", "from_manifest": "g0/manifests/real-corpus.json"},
+          {"id": "CNMV-IP-1885", "source": "CNMV", "content_sha256": "af046988125f5260", "from_manifest": "g0/manifests/real-corpus.json"}
+        ],
+        "expectations": [
+          "2 docs -> 1 canonical CORPORATE_ACTION (event_type CAPITAL_INCREASE)",
+          "ledger contiene SAME_CORPORATE_ACTION con decision_basis=DETERMINISTIC y evidence no vacio",
+          "conflicts[] incluye date.announcement_date con 2 values (conflicto explicito, no sobrescritura)",
+          "event.revisions tiene longitud 1: cross-reference no es revision",
+          "ningun merge basado en similitud de issuer/type/date"
+        ],
+        "evidence": "tests/canaries/test_almirall_real.py"
+      },
+      {
+        "case_id": "B",
+        "name": "lifecycle revision",
+        "documents": [
+          {"id": "CNMV-OIR-40280", "source": "CNMV", "content_sha256": "a896917f8da04af1", "from_manifest": "g0/manifests/real-corpus.json"},
+          {"id": "CNMV-OIR-40319", "source": "CNMV", "content_sha256": "d9ef7d8ec10e2f44", "from_manifest": "g0/manifests/real-corpus.json"}
+        ],
+        "expectations": [
+          "2 docs -> 1 canonical CA (CASH_DIVIDEND) con revisions generation 0 y 1",
+          "rev1.supersedes_revision_id == rev0.revision_id y rev1.evidence no vacio",
+          "rev1 cambia fechas: ex 2026-07-20, record 2026-07-21, payment 2026-07-22",
+          "amount.gross_per_share=0.22 permanece unicamente en rev0 (2026-07-27/28/29)",
+          "la historia anterior no se borra: facts de rev0 siguen presentes"
+        ],
+        "evidence": "tests/canaries/test_mfe_real.py"
+      },
+      {
+        "case_id": "C",
+        "name": "BME Growth dividend",
+        "documents": [
+          {"id": "BMEG-Dividends-ES0105448007-2026-07-08", "source": "BME_GROWTH", "content_sha256": "d379114c4b659f25", "from_manifest": "g1/manifests/holdout/BMEG-Dividends-ES0105448007-2026-07-08.json"}
+        ],
+        "expectations": [
+          "single structured event -> 1 canonical CA (CASH_DIVIDEND)",
+          "affected instrument explicito: ISIN ES0105448007",
+          "date.ex_date=2026-07-08, date.payment_date=2026-07-10",
+          "amount.gross_per_share=0.08690661 EUR, amount.net_per_share=0.07039435 EUR"
+        ],
+        "evidence": "g1r/manifests/g1-regression-oracle.json (SIGNED)"
+      },
+      {
+        "case_id": "D",
+        "name": "BME Growth capital increase",
+        "documents": [
+          {"id": "BMEG-CapitalIncreases-ES0105606190-2025-03-27", "source": "BME_GROWTH", "content_sha256": "ca5e2be6bb82c0a7", "from_manifest": "g1/manifests/holdout/BMEG-CapitalIncreases-ES0105606190-2025-03-27.json"}
+        ],
+        "expectations": [
+          "single structured event -> 1 canonical CA (CAPITAL_INCREASE)",
+          "affected instrument explicito: ISIN ES0105606190",
+          "financial fields exactos (oracle firmado): amount.disbursement_per_share=0.15, amount.price=0.15, amount.rights_price=0.0, amount.effective_total=0.0, amount.liberated_percentage=0.0, amount.nominal_total=83333.3 (EUR)"
+        ],
+        "evidence": "g1r/manifests/g1-regression-oracle.json (SIGNED)"
+      },
+      {
+        "case_id": "E",
+        "name": "NO MERGE — negative identity control",
+        "documents": [
+          {"id": "CNMV-SAN-DIV-2026", "source": "CNMV", "content_sha256": "9e7bb6a31fd14668", "from_manifest": "g0/manifests/real-corpus.json"},
+          {"id": "SAN-IR-REMUNERATION", "source": "ISSUER_IR", "content_sha256": "38c126aacf32f18a", "from_manifest": "g0/manifests/real-corpus.json"}
+        ],
+        "execution": "misma corrida del corpus pero SIN adjudications_relpath",
+        "expectations": [
+          "los 2 candidatos permanecen como canonical_event_id distintos",
+          "el ledger no contiene ninguna relacion entre ambos candidatos",
+          "control de contraste: CON adjudications (g0/manifests/adjudications-real.json) la misma pareja fusiona via MANUAL_ADJUDICATION registrada"
+        ],
+        "rationale": "canonical_identity_unproven_merges=0 no vale si el corpus nunca contiene una tentacion de merge"
+      },
+      {
+        "case_id": "AUX",
+        "name": "quarantine temptation (spent evidence)",
+        "documents": [
+          {"id": "POEX-DOC-39649", "source": "PORTFOLIO_STOCK_EXCHANGE", "content_sha256": "4533d49d83c4873b", "from_manifest": "g1r/manifests/holdout/POEX-DOC-39649.json"},
+          {"id": "BORME-C-2026-4914", "source": "BOE_BORME", "content_sha256": "94c6571d50a97785", "from_manifest": "g0/manifests/real-corpus.json"}
+        ],
+        "expectations": [
+          "POEX-DOC-39649 produce event CAPITAL_INCREASE sin amount.issue_price_per_share en canon ni export (tentacion real de la capacidad cuarentenada)",
+          "BORME-C-2026-4914 ejercita RIGHTS_ISSUE + entitlement_basis + provenance sobre real (auxiliar, no binding de caso)"
+        ]
+      }
+    ],
+    "corpus_integrity": "todo raw LOCAL_ONLY verificado por sha256 contra manifest compuesto; divergencia -> abort",
+    "adjudications": "g0/manifests/adjudications-real.json en la corrida principal (escribe solo relaciones); ausente en el control del caso E"
+  },
+  "export_contract": {
+    "name": "CA_ES_OPERATIONAL_CANON_V1",
+    "definition": "vista operacional explicita del canon; NO es el dump interno completo de run_pipeline",
+    "per_event_fields": [
+      "canonical_event_id",
+      "event_type + status",
+      "affected_instrument",
+      "issuer",
+      "revisions[]",
+      "facts[]",
+      "conflicts[]",
+      "temporal",
+      "provenance",
+      "source_documents[]"
+    ],
+    "ordering": "contractual: events por canonical_event_id; revisions por generation; facts por (field_path, revision_id); conflicts por field_path; source_documents por official_document_id",
+    "runtime_metadata": "prohibida dentro del payload logico (no run_id, executed_at, timestamps)",
+    "logical_sha256": "sha256 sobre bytes canonicos del payload",
+    "determinism": "run1 bytes == run2 bytes AND logical_sha256 run1 == run2; no solo estructuras equivalentes"
+  },
+  "gates": {
+    "canonical_identity_unproven_merges": {
+      "required": 0,
+      "definition": "todo canonical CA con >1 candidate requiere relacion SAME_CORPORATE_ACTION en el ledger por candidato anadido: DETERMINISTIC con evidence, o MANUAL_ADJUDICATION con reviewer+reviewed_at"
+    },
+    "revision_history_loss": {
+      "required": 0,
+      "definition": "toda revision superseded permanece presente con sus facts; supersedes_revision_id apunta a revision existente; nada se borra"
+    },
+    "fact_provenance_rate": {
+      "required": 1.0,
+      "definition": "todo fact exportado tiene evidence_locator no vacio y raw_pointer que resuelve dentro del texto del source document"
+    },
+    "deterministic_export": {
+      "required": 1.0,
+      "definition": "run1 bytes == run2 bytes del payload CA_ES_OPERATIONAL_CANON_V1 y logical_sha256 identicos"
+    },
+    "silent_conflicts": {
+      "required": 0,
+      "definition": "ningun valor divergente entre candidatos fusionados se sobrescribe sin aparecer en conflicts[]"
+    },
+    "human_authored_business_facts": {
+      "required": 0,
+      "definition": "la adjudicacion humana solo escribe relaciones; ningun fact del canon procede de archivos de adjudicacion"
+    },
+    "financial_precision_loss": {
+      "required": 0,
+      "definition": "todo importe exportado conserva raw_lexeme + scale + normalized Decimal; ningun float en el payload"
+    },
+    "unsupported_capability_emissions": {
+      "required": 0,
+      "definition": "ningun fact del canon/export corresponde a una capacidad QUARANTINED_UNSUPPORTED de source-policy.json (concretamente PORTFOLIO + amount.issue_price_per_share), aunque docs Portfolio aparezcan en el corpus auxiliar"
+    }
+  },
+  "verdict": {
+    "PASS_requires": {
+      "all_case_expectations_met": true,
+      "canonical_identity_unproven_merges": 0,
+      "revision_history_loss": 0,
+      "fact_provenance_rate": 1.0,
+      "deterministic_export": 1.0,
+      "silent_conflicts": 0,
+      "human_authored_business_facts": 0,
+      "financial_precision_loss": 0,
+      "unsupported_capability_emissions": 0
+    },
+    "INCONCLUSIVE": "corpus incompleto por raws LOCAL_ONLY ausentes (NOT_RUN != PASS; los docs faltantes no se sustituyen)",
+    "FAIL": "cualquier gate > 0 / < 1.0 o cualquier expectativa de caso no satisfecha",
+    "explicitly_not_measured": ["recall de extraccion", "numero minimo de facts", "parser generalization"]
+  },
+  "human_intervention": {
+    "human_relation_adjudication": "ALLOWED (solo relaciones; p. ej. adjudications-real.json para la pareja SAN)",
+    "human_fact_entry": "FORBIDDEN",
+    "evaluation_oracle_annotations": "ALLOWED (nunca facts del producto)"
+  },
+  "core_vs_auxiliary": {
+    "core_binding": ["CNMV", "BME_GROWTH"],
+    "auxiliary": ["BOE_BORME (canary/evidencia auxiliar)", "ISSUER_IR (caso E/control)", "PORTFOLIO_STOCK_EXCHANGE (tentacion de cuarentena, spent evidence)"]
+  },
+  "out_of_scope": [
+    "mejorar recall o precision de parsers (bug de extraccion -> backlog)",
+    "Portfolio capital increase issue price (QUARANTINED hasta fase nueva con holdout virgen)",
+    "ISIN_ROLE_DISAMBIGUATION (P2 abierto, no binding)",
+    "OCR / image-only",
+    "generacion ISO 15022/20022 (ADR-010)",
+    "reescribir veredictos G1 / G1-R / G1-R2 (permanentes)"
+  ],
+  "execution": [
+    "aprobacion humana -> tag g2-protocol",
+    "componer g2/manifests/qualification-corpus.json (sha256 fijados; verificacion de sello)",
+    "implementar vista CA_ES_OPERATIONAL_CANON_V1 + scripts/run_g2.py + evaluador de gates (superficie permitida)",
+    "corrida principal x2 (con adjudications) + corrida control caso E (sin adjudications)",
+    "artefacto g2/results/gates-eval.json",
+    "adjudicacion humana -> veredicto PASS / FAIL / INCONCLUSIVE"
+  ]
+}
