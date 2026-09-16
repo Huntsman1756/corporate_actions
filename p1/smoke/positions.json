@@ -1,0 +1,22 @@
+{
+ "schema": "CA_ES_POSITIONS_V1",
+ "as_of": "2026-05-04",
+ "positions": [
+  {
+   "account_id": "A001",
+   "isin": "ESTIMACIONES",
+   "quantity": "12500"
+  },
+  {
+   "account_id": "A002",
+   "isin": "ES0105448007",
+   "quantity": "3000"
+  },
+  {
+   "account_id": "A003",
+   "isin": "ESTIMACIONES",
+   "quantity": "4000",
+   "as_of": "2026-05-02"
+  }
+ ]
+}

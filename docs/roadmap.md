@@ -58,9 +58,12 @@ P1  Ops Desk
     deadline queue
 
 P2  Entitlements
-    cash dividend / split / stock dividend / rights issue
+    P2.0 cash dividend entitlement                      DONE
+         (ca-es entitlement --event <id> --positions p.json
+          CA_ES_POSITIONS_V1 / CA_ES_ENTITLEMENT_V1;
+          POSITION_AT_RECORD_DATE; INDETERMINATE nunca estima)
+    split / stock dividend / rights issue
     Decimal-only; fórmulas portadas y testeadas desde vn-corporate-actions
-    ca-es entitlement --event <id> --position N
 
 P3  Reconciliation / Exceptions
     expected entitlement vs actual cash

@@ -306,6 +306,20 @@ def cmd_desk(args: argparse.Namespace) -> int:
     return 0
 
 
+def cmd_entitlement(args: argparse.Namespace) -> int:
+    from .entitlement_engine import compute_entitlements, load_positions
+
+    surface = _surface(args)
+    try:
+        positions = load_positions(Path(args.positions))
+    except (ValueError, OSError) as exc:
+        print(json.dumps({"status": "INVALID_POSITIONS", "detail": str(exc)}))
+        return 2
+    return _emit(
+        compute_entitlements(surface, args.event, positions)
+    )
+
+
 def build_parser() -> argparse.ArgumentParser:
     parser = argparse.ArgumentParser(prog="ca-es", description=__doc__)
     parser.add_argument("--repo-root", default=None)
@@ -389,6 +403,11 @@ def build_parser() -> argparse.ArgumentParser:
     desk.add_argument("--previous-canon", default=None)
     desk.add_argument("--window", type=int, default=7)
     desk.set_defaults(func=cmd_desk)
+
+    entitlement = sub.add_parser("entitlement", parents=[surface_common])
+    entitlement.add_argument("--event", required=True)
+    entitlement.add_argument("--positions", required=True)
+    entitlement.set_defaults(func=cmd_entitlement)
 
     return parser
 

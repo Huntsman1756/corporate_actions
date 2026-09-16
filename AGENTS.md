@@ -25,6 +25,10 @@ python -m ca_es.cli brief --canon g3/input/canon.json --as-of 2026-07-15 \
     [--previous-canon p1/smoke/previous-canon.json] [--format text|json]
 python -m ca_es.cli desk --canon g3/input/canon.json --as-of 2026-07-15
     # requiere extra [desk] (textual); read-only sobre brief()
+
+# P2.0 entitlements (posiciones = input separado CA_ES_POSITIONS_V1)
+python -m ca_es.cli entitlement --canon g3/input/canon.json \
+    --event <canonical_event_id> --positions p1/smoke/positions.json
 ```
 
 No hay linter/formatter configurado; el estilo es PEP 8 + stdlib.
