@@ -45,6 +45,15 @@ python -m ca_es.cli exceptions --recon recon.json --now <iso> \
 python -m ca_es.cli case-transition --cases cases.json \
     --case-key <key> --to IN_REVIEW --actor <quien> --now <iso> \
     [--resolution-code CORRECTED] [--note "..."] [--out cases.json]
+
+# P4.0 ingestión SWIFT MT564/MT566 read-only (subproceso JVM/Prowide)
+# build del adapter (requiere JDK 11+; dependencias fijadas con
+# verification-metadata sha256):
+cd adapters/iso-adapter-jvm && ./gradlew build fatJar
+# uso (FIN raw -> CA_ES_SWIFT_MT_FACTS_V1 por stdout):
+python -m ca_es.cli swift-facts --fin <fichero.fin>
+# exit codes: 0 OK / 2 PARSE_ERROR / 3 UNSUPPORTED_MESSAGE_TYPE /
+# 4 ADAPTER_ERROR; CA_ES_SWIFT_ADAPTER_JAR sobreescribe la ruta del jar
 ```
 
 No hay linter/formatter configurado; el estilo es PEP 8 + stdlib.

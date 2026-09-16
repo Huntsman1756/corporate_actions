@@ -90,3 +90,7 @@ g1r2/results/*.json
 !g1r2/results/quarantine-g1-oracle-eval.json
 !g1r2/results/quarantine-dev-oracle-eval.json
 !g1r2/results/quarantine-spent-holdout-facts.json
+
+# P4.0 JVM adapter: build outputs (sources y wrapper se commitean)
+adapters/iso-adapter-jvm/build/
+adapters/iso-adapter-jvm/.gradle/

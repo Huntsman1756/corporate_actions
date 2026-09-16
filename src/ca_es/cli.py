@@ -469,6 +469,24 @@ def cmd_case_transition(args: argparse.Namespace) -> int:
     return _emit(doc)
 
 
+def cmd_swift_facts(args: argparse.Namespace) -> int:
+    from .swift_mt import AdapterUnavailable, parse_mt
+
+    try:
+        fin = Path(args.fin).read_bytes().decode("utf-8")
+    except OSError as exc:
+        print(json.dumps({"status": "INVALID_INPUT", "detail": str(exc)}))
+        return 2
+    try:
+        doc, code = parse_mt(fin)
+    except AdapterUnavailable as exc:
+        print(json.dumps({"status": "ADAPTER_UNAVAILABLE",
+                          "detail": str(exc)}))
+        return 2
+    _emit(doc)
+    return code
+
+
 def build_parser() -> argparse.ArgumentParser:
     parser = argparse.ArgumentParser(prog="ca-es", description=__doc__)
     parser.add_argument("--repo-root", default=None)
@@ -593,6 +611,13 @@ def build_parser() -> argparse.ArgumentParser:
     transition.add_argument("--now", required=True)
     transition.add_argument("--out", default=None)
     transition.set_defaults(func=cmd_case_transition)
+
+    swift_facts = sub.add_parser("swift-facts")
+    swift_facts.add_argument("--fin", required=True,
+                             help="fichero con el mensaje FIN raw "
+                                  "(MT564/MT566); viaja al adapter JVM "
+                                  "solo por stdin")
+    swift_facts.set_defaults(func=cmd_swift_facts)
 
     return parser
 
