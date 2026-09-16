@@ -2,9 +2,9 @@
  "eval_version": "CA_ES_G2_GATES_EVAL_V1",
  "protocol": "docs/gates/g2-preregistered.json @ g2-protocol",
  "artifacts": {
-  "run1": "g2/results/run-1-8f9c3e7-canon.json",
-  "run2": "g2/results/run-2-8f9c3e7-canon.json",
-  "control_e": "g2/results/control-e-8f9c3e7-canon.json"
+  "run1": "g2/results/run-1-f401633-canon.json",
+  "run2": "g2/results/run-2-f401633-canon.json",
+  "control_e": "g2/results/control-e-f401633-canon.json"
  },
  "gates": {
   "canonical_identity_unproven_merges": {
