@@ -34,6 +34,8 @@ class FinancialAmount:
     def __post_init__(self) -> None:
         if isinstance(self.normalized, float):  # defensa en profundidad
             raise FloatingPointProhibited("FinancialAmount.normalized no puede ser float")
+        if isinstance(self.normalized, Decimal) and not self.normalized.is_finite():
+            raise AmbiguousLexemeError("FinancialAmount.normalized debe ser finito")
 
     @classmethod
     def parse_localized(
@@ -134,7 +136,13 @@ class FinancialAmount:
         )
         factor = Decimal(cents_per_unit)
         exponent = factor.adjusted()
-        normalized = published.normalized / factor
+        if factor == Decimal((0, (1,), exponent)):
+            parts = published.normalized.as_tuple()
+            normalized = Decimal(
+                (parts.sign, parts.digits, parts.exponent - exponent)
+            )
+        else:
+            normalized = published.normalized / factor
         return cls(
             raw_lexeme=published.raw_lexeme,
             normalized=normalized,

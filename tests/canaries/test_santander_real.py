@@ -13,7 +13,7 @@ def _san_event(result: dict) -> dict:
         if any(
             isinstance(f["value"], dict)
             and f["value"].get("__financial__")
-            and f["value"]["normalized"] == "0.125"
+            and f["value"]["normalized"] == "0.1250"
             for f in facts
         ):
             return event
@@ -38,8 +38,9 @@ def test_santander_same_amount_from_both_sources(repo_root, real_run):
     ]
     assert len(amounts) == 2
     assert {a["source_id"] for a in amounts} == {"CNMV", "ISSUER_IR"}
-    # Ambos normalizan a 0,125 EUR (centimos -> EUR, etiquetado derivado).
-    assert {a["value"]["normalized"] for a in amounts} == {"0.125"}
+    # Ambos normalizan a 0,1250 EUR (centimos -> EUR, escala
+    # preservada, etiquetado derivado).
+    assert {a["value"]["normalized"] for a in amounts} == {"0.1250"}
     assert all(a["evidence_mode"] == "DERIVED_BY_DEFINITION" for a in amounts)
 
 

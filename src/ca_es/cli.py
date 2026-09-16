@@ -629,6 +629,34 @@ def cmd_action_queue(args: argparse.Namespace) -> int:
     return _emit(doc)
 
 
+def cmd_swift_election(args: argparse.Namespace) -> int:
+    from .election import project_election
+
+    facts_doc, code = _facts_doc(args)
+    if facts_doc is None:
+        return code
+    canon, code = _load_json(args.canon, "canon")
+    if canon is None:
+        return code
+    queue = None
+    if args.queue:
+        queue, code = _load_json(args.queue, "queue")
+        if queue is None:
+            return code
+        if not args.deadline_type:
+            print(json.dumps({"status": "MISSING_DEADLINE_TYPE_CONFIG"}))
+            return 2
+    try:
+        doc = project_election(
+            facts_doc, canon, queue_doc=queue,
+            deadline_types=tuple(args.deadline_type or ()),
+            now=args.now)
+    except ValueError as exc:
+        print(json.dumps({"status": str(exc)}))
+        return 2
+    return _emit(doc)
+
+
 def build_parser() -> argparse.ArgumentParser:
     parser = argparse.ArgumentParser(prog="ca-es", description=__doc__)
     parser.add_argument("--repo-root", default=None)
@@ -802,6 +830,19 @@ def build_parser() -> argparse.ArgumentParser:
     aq.add_argument("--due-soon-days", type=int, required=True)
     aq.add_argument("--now", default=None)
     aq.set_defaults(func=cmd_action_queue)
+
+    election = sub.add_parser("swift-election")
+    election.add_argument("--fin", default=None)
+    election.add_argument("--facts", default=None)
+    election.add_argument("--canon", required=True)
+    election.add_argument("--queue", default=None,
+                          help="doc CA_ES_ACTION_QUEUE_V1")
+    election.add_argument("--deadline-type", action="append",
+                          default=None,
+                          help="deadline_type aplicable; requerido "
+                               "con --queue")
+    election.add_argument("--now", default=None)
+    election.set_defaults(func=cmd_swift_election)
 
     return parser
 

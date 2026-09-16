@@ -133,6 +133,13 @@ P5  Elections / deadlines
           CA_ES_MORNING_BRIEF_V2 donde action_required
           consume deadlines, no date.* por proximidad;
           V1 intacto)
+    P5.2 Election Opportunity (MT564 CAOPTN)            DONE
+         (docs/p5/p52-scope.md; ca-es swift-election ->
+          CA_ES_ELECTION_OPPORTUNITY_V1; CAON/CAOP/DFLT/
+          RDDT evidenciados en SRU2025-10.3.19; whitelist
+          CASH/SECU; deadline operativo via queue,
+          nunca el mas temprano; sin positions ni
+          instrucciones)
 
 P6  Positions / impact
 

@@ -78,6 +78,12 @@ python -m ca_es.cli brief --canon <canon.json> --as-of <fecha> \
     --queue <CA_ES_ACTION_QUEUE_V1.json>   # -> CA_ES_MORNING_BRIEF_V2
 python -m ca_es.cli desk --canon <canon.json> --as-of <fecha> \
     --queue <CA_ES_ACTION_QUEUE_V1.json>
+
+# P5.2 election opportunity (MT564 CAOPTN; --queue requiere --deadline-type)
+python -m ca_es.cli swift-election --fin <fichero.fin> \
+    --canon g3/input/canon.json \
+    [--queue <CA_ES_ACTION_QUEUE_V1.json> --deadline-type <T>] \
+    [--now <iso>]
 ```
 
 No hay linter/formatter configurado; el estilo es PEP 8 + stdlib.
