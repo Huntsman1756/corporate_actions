@@ -44,6 +44,7 @@ from pathlib import Path
 from .canonical import load_strict_json_object
 
 CASES_SCHEMA = "CA_ES_EXCEPTION_CASES_V1"
+SECURITY_RECON_SCHEMA = "CA_ES_SECURITY_RECON_V1"
 
 WORKFLOW_OPEN = "OPEN"
 WORKFLOW_IN_REVIEW = "IN_REVIEW"
@@ -79,6 +80,11 @@ PRIORITY = {
     "AMOUNT_MISMATCH": "HIGH",
     "MISSING_CASH": "HIGH",
     "UNEXPECTED_CASH": "MEDIUM",
+    # P6.5: factual statuses del recon de valores (taxonomia
+    # aditiva; no se recalcula nada del impacto)
+    "QUANTITY_MISMATCH": "HIGH",
+    "MISSING_SECURITY_MOVEMENT": "HIGH",
+    "UNEXPECTED_SECURITY_MOVEMENT": "MEDIUM",
     "INDETERMINATE": "LOW",
 }
 PRIORITY_RANK = {"HIGH": 0, "MEDIUM": 1, "LOW": 2}
@@ -100,6 +106,11 @@ _FACTUAL_FIELDS = (
     "linked_movement_ids",
     "evidence",
     "priority",
+    # P6.5: campos factuales del recon de valores
+    "direction",
+    "expected_quantity",
+    "actual_quantity",
+    "expected_ref",
 )
 
 
@@ -132,17 +143,27 @@ def _money_norm(value) -> Decimal | None:
         return None
 
 
-def _case_key(item: dict, canonical_event_id: str) -> str:
+def _case_key(item: dict, canonical_event_id: str,
+              security: bool = False) -> str:
     """Clave estable: evento + sujeto. NUNCA incluye factual_status.
 
-    El sujeto es el movimiento concreto para UNEXPECTED_CASH (el caso
-    va sobre ESE cash); para el resto es la expectativa
-    (account+currency), de modo que sustituir un movement_id por otro
-    o evolucionar MISSING_CASH -> AMOUNT_MISMATCH no fragmenta la
-    historia del caso.
+    El sujeto es el movimiento concreto para UNEXPECTED_* (el caso
+    va sobre ESE movimiento); para el resto es la expectativa
+    (account+currency en cash; account+isin+direction en valores),
+    de modo que sustituir un movement_id por otro o evolucionar
+    MISSING -> MISMATCH no fragmenta la historia del caso.
     """
     account = item.get("account_id") or "-"
-    if item.get("status") == "UNEXPECTED_CASH":
+    if security:
+        if item.get("status") == "UNEXPECTED_SECURITY_MOVEMENT":
+            mids = item.get("movement_ids") or ["-"]
+            subject = f"movement:{account}:{mids[0]}"
+        else:
+            subject = (
+                f"expected:{account}:{item.get('isin') or '-'}"
+                f":{item.get('direction') or '-'}"
+            )
+    elif item.get("status") == "UNEXPECTED_CASH":
         mids = item.get("movement_ids") or ["-"]
         subject = f"movement:{account}:{mids[0]}"
     else:
@@ -154,12 +175,45 @@ def _case_key(item: dict, canonical_event_id: str) -> str:
     return "|".join([canonical_event_id or "-", subject])
 
 
+def _security_snapshot(item: dict, event_id: str,
+                       priority: str) -> dict:
+    """Snapshot factual de un item CA_ES_SECURITY_RECON_V1. Los campos
+    cash quedan ausentes; direction/quantities viajan verbatim."""
+    status = item.get("status")
+    return {
+        "case_key": _case_key(item, event_id, security=True),
+        "canonical_event_id": event_id,
+        "account_id": item.get("account_id"),
+        "isin": item.get("isin"),
+        "direction": item.get("direction"),
+        "factual_status": status,
+        "reason_codes": list(item.get("reasons") or []),
+        "entitlement_status": None,
+        "amount_basis": None,
+        "expected_amount": None,
+        "actual_amount": None,
+        "expected_quantity": item.get("expected_quantity"),
+        "actual_quantity": item.get("actual_quantity"),
+        "expected_ref": item.get("expected_ref"),
+        "delta": item.get("delta"),
+        "currency": None,
+        "value_date": None,
+        "movement_ids": list(item.get("movement_ids") or []),
+        "linked_movement_ids": [],
+        "evidence": item.get("evidence"),
+        "priority": priority,
+    }
+
+
 def classify_cases(recon_doc: dict) -> list[dict]:
     """recon result -> snapshots factuales observados (sin workflow).
 
     Funcion pura: no muta recon_doc. MATCH no produce caso.
+    Acepta CA_ES_CASH_RECON_V1 y CA_ES_SECURITY_RECON_V1 (P6.5);
+    el motor consume resultados ya adjudicados, nunca recalcula.
     """
     event_id = recon_doc.get("canonical_event_id")
+    security = recon_doc.get("schema") == SECURITY_RECON_SCHEMA
     observed = []
     for item in recon_doc.get("items", []):
         status = item.get("status")
@@ -171,6 +225,10 @@ def classify_cases(recon_doc: dict) -> list[dict]:
             priority = "LOW"
         else:
             priority = PRIORITY[status]
+        if security:
+            observed.append(
+                _security_snapshot(item, event_id, priority))
+            continue
         expected = item.get("expected_gross_cash")
         observed.append(
             {
@@ -350,7 +408,9 @@ def _queue_magnitude(case: dict) -> Decimal:
     """Magnitud comparable para ordenar: delta si existe, si no el
     importe observado, si no el esperado. Cero si nada es parseable."""
     for value in (case.get("delta"), case.get("actual_amount"),
-                  case.get("expected_amount")):
+                  case.get("expected_amount"),
+                  case.get("actual_quantity"),
+                  case.get("expected_quantity")):
         norm = _money_norm(value)
         if norm is not None:
             return abs(norm)
