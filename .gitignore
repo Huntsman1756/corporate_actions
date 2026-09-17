@@ -95,3 +95,12 @@ g1r2/results/*.json
 # P4.0 JVM adapter: build outputs (sources y wrapper se commitean)
 adapters/iso-adapter-jvm/build/
 adapters/iso-adapter-jvm/.gradle/
+
+# herramientas locales del desarrollador (contienen credenciales/modelos
+# especificos de la maquina; no forman parte del proyecto)
+opencode.json
+.claude/
+.cursor/
+.codeium/
+.windsurf/
+*.local.json
