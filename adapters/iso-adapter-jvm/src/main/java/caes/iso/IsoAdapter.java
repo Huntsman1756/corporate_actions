@@ -77,6 +77,25 @@ public final class IsoAdapter {
     }
 
     public static void main(String[] args) {
+        // Prowide loguea fallos de parseo via JUL a stderr; el
+        // contrato exige stderr sin contenido del mensaje -> off.
+        java.util.logging.LogManager.getLogManager().reset();
+        if (args.length > 0 && "mxfacts".equals(args[0])) {
+            Result r;
+            try {
+                r = MxFactsAdapter.mainResult();
+            } catch (Throwable t) {
+                r = new Result(EXIT_ADAPTER_ERROR,
+                        new LinkedHashMap<>());
+                r.doc().put("schema_version",
+                        MxFactsAdapter.SCHEMA_VERSION);
+                r.doc().put("parse_status", "ADAPTER_ERROR");
+                r.doc().put("detail", t.getClass().getSimpleName());
+                r.doc().put("facts", List.of());
+            }
+            emit(r);
+            return;
+        }
         if (args.length > 0 && "mt565".equals(args[0])) {
             Result w;
             try {

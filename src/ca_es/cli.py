@@ -543,6 +543,25 @@ def cmd_swift_facts(args: argparse.Namespace) -> int:
     return code
 
 
+def cmd_mx_facts(args: argparse.Namespace) -> int:
+    from .mx_facts import parse_mx
+    from .swift_mt import AdapterUnavailable
+
+    try:
+        xml = Path(args.mx).read_bytes()
+    except OSError as exc:
+        print(json.dumps({"status": "INVALID_INPUT", "detail": str(exc)}))
+        return 2
+    try:
+        doc, code = parse_mx(xml)
+    except AdapterUnavailable as exc:
+        print(json.dumps({"status": "ADAPTER_UNAVAILABLE",
+                          "detail": str(exc)}))
+        return 2
+    _emit(doc)
+    return code
+
+
 def _facts_doc(args: argparse.Namespace):
     """CA_ES_SWIFT_MT_FACTS_V1 desde --facts o via adapter (--fin).
     Devuelve (doc, exit_code)."""
@@ -1039,6 +1058,13 @@ def build_parser() -> argparse.ArgumentParser:
                                   "(MT564/MT566); viaja al adapter JVM "
                                   "solo por stdin")
     swift_facts.set_defaults(func=cmd_swift_facts)
+
+    mx_facts = sub.add_parser("mx-facts")
+    mx_facts.add_argument("--mx", required=True,
+                          help="fichero con el mensaje XML ISO 20022 "
+                               "(seev.031/033/034/036); viaja al adapter "
+                               "JVM solo por stdin")
+    mx_facts.set_defaults(func=cmd_mx_facts)
 
     project = sub.add_parser("swift-project")
     project.add_argument("--fin", default=None)
