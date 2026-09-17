@@ -117,6 +117,12 @@ python -m ca_es.cli mt565-project \
 python -m ca_es.cli mt565-write \
     --projection <CA_ES_MT565_PROJECTION_V1.json>
                                      # -> CA_ES_MT565_FIN_V1 (fin+sha)
+
+# P5.6 MT567 status/advice -> binding a instruccion por PREV explícito
+python -m ca_es.cli instruction-status \
+    (--fin <mt567.fin> | --facts <CA_ES_SWIFT_MT_FACTS_V1.json>) \
+    --instruction <CA_ES_ELECTION_INSTRUCTION_V1.json> [--now <iso>]
+                                     # -> CA_ES_ELECTION_INSTRUCTION_STATUS_V1
 ```
 
 Ruff está configurado en `pyproject.toml`; ejecutar

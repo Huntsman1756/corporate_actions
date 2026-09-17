@@ -63,6 +63,29 @@ class IsoAdapterTest {
     }
 
     @Test
+    void mt567ValidProducesLinkAndStatFacts() throws Exception {
+        IsoAdapter.Result r = IsoAdapter.run(fixture("mt567-inst.fin"));
+        assertEquals(IsoAdapter.EXIT_OK, r.exitCode());
+        assertEquals("MT567", r.doc().get("message_identifier"));
+        List<Map<String, Object>> facts = facts(r.doc());
+        boolean prev = facts.stream().anyMatch(f ->
+                "20C".equals(f.get("source_tag"))
+                        && "PREV".equals(f.get("source_qualifier"))
+                        && "INS-0001".equals(f.get("value"))
+                        && "GENL/LINK".equals(f.get("sequence")));
+        boolean iprc = facts.stream().anyMatch(f ->
+                "25D".equals(f.get("source_tag"))
+                        && "IPRC".equals(f.get("source_qualifier"))
+                        && "PACK".equals(f.get("value"))
+                        && "GENL/STAT".equals(f.get("sequence")));
+        boolean reas = facts.stream().anyMatch(f ->
+                "GENL/STAT/REAS".equals(f.get("sequence")));
+        assertTrue(prev, "esperaba fact LINK 20C::PREV//INS-0001");
+        assertTrue(iprc, "esperaba fact STAT 25D::IPRC//PACK");
+        assertTrue(reas, "esperaba facts en GENL/STAT/REAS");
+    }
+
+    @Test
     void mt566ValidProducesFacts() throws Exception {
         IsoAdapter.Result r = IsoAdapter.run(fixture("mt566-valid.fin"));
         assertEquals(IsoAdapter.EXIT_OK, r.exitCode());

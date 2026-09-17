@@ -164,7 +164,15 @@ P5  Elections / deadlines
           adapter JVM modo "mt565" -> CA_ES_MT565_FIN_V1;
           envelope de transporte explicito, sin defaults;
           solo SERIALIZABLE llega al writer)
-    P5.6 MT567 status/advice ingest + binding           PENDING
+    P5.6 MT567 status/advice ingest + binding           DONE
+         (docs/p5/p56-scope.md; adapter SUPPORTED +=567
+          (extractor generico, sin parser nuevo);
+          ca-es instruction-status ->
+          CA_ES_ELECTION_INSTRUCTION_STATUS_V1; binding
+          solo por LINK 20C::PREV (=SEME=instruction_id),
+          BOUND/AMBIGUOUS/NO_MATCH/INSUFFICIENT_IDENTITY;
+          whitelist IPRC PACK/REJT/PEND/DFLA; raw siempre
+          preservado; instruccion nunca mutada)
 
 P6  Positions / impact
 

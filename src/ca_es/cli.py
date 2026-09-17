@@ -782,6 +782,25 @@ def cmd_mt565_write(args: argparse.Namespace) -> int:
     return write_code
 
 
+def cmd_instruction_status(args: argparse.Namespace) -> int:
+    from .instruction_status import bind_instruction_status
+
+    facts_doc, code = _facts_doc(args)
+    if facts_doc is None:
+        return code
+    instruction, code = _load_json(args.instruction, "instruction")
+    if instruction is None:
+        return code
+    try:
+        doc = bind_instruction_status(
+            facts_doc, instruction, now=args.now
+        )
+    except ValueError as exc:
+        print(json.dumps({"status": str(exc)}))
+        return 2
+    return _emit(doc)
+
+
 def build_parser() -> argparse.ArgumentParser:
     parser = argparse.ArgumentParser(prog="ca-es", description=__doc__)
     parser.add_argument("--repo-root", default=None)
@@ -1008,6 +1027,16 @@ def build_parser() -> argparse.ArgumentParser:
     write565.add_argument("--projection", required=True,
                           help="doc CA_ES_MT565_PROJECTION_V1")
     write565.set_defaults(func=cmd_mt565_write)
+
+    istat = sub.add_parser("instruction-status")
+    istat.add_argument("--fin", default=None,
+                       help="FIN MT567 (via adapter)")
+    istat.add_argument("--facts", default=None,
+                       help="doc CA_ES_SWIFT_MT_FACTS_V1 (MT567)")
+    istat.add_argument("--instruction", required=True,
+                       help="doc CA_ES_ELECTION_INSTRUCTION_V1")
+    istat.add_argument("--now", default=None)
+    istat.set_defaults(func=cmd_instruction_status)
 
     return parser
 
