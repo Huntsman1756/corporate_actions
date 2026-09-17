@@ -107,3 +107,12 @@ Reglas:
   canonical binding.
 - Docling completo (pipeline ML): innecesario; basta `docling-parse`.
 - Cualquier modelo ML no determinista en el camino crítico.
+- `hroptatyr/cattle` (evaluado 2026-09-17, RECHAZADO para integración):
+  librería C de backadjustment de series de precios a partir de eventos
+  CA ya resueltos (incluye parser MT564). Fuera de alcance: ca-es no
+  calcula factores de ajuste de precios; BSD-3c contaminada con código
+  GPLv2; runtime C incompatible con el core stdlib-only; sin modelo de
+  provenance (no emite spans ni facts canónicos). Se conserva solo como
+  referencia semántica (fórmulas de ajuste por split/dividendo/rights,
+  mapping de campos MT564) para una hipotética fase futura
+  preregistrada de aplicación a series; no se vendoriza ni se enlaza.
