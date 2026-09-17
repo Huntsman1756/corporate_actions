@@ -1051,6 +1051,25 @@ def cmd_instruction_status(args: argparse.Namespace) -> int:
     return _emit(doc)
 
 
+def cmd_mx_instruction_status(args: argparse.Namespace) -> int:
+    from .mx_status import bind_mx_instruction_status
+
+    facts_doc, code = _mx_facts_doc(args)
+    if facts_doc is None:
+        return code
+    instruction, code = _load_json(args.instruction, "instruction")
+    if instruction is None:
+        return code
+    try:
+        doc = bind_mx_instruction_status(
+            facts_doc, instruction, now=args.now
+        )
+    except ValueError as exc:
+        print(json.dumps({"status": str(exc)}))
+        return 2
+    return _emit(doc)
+
+
 def build_parser() -> argparse.ArgumentParser:
     parser = argparse.ArgumentParser(prog="ca-es", description=__doc__)
     parser.add_argument("--repo-root", default=None)
@@ -1338,6 +1357,16 @@ def build_parser() -> argparse.ArgumentParser:
                        help="doc CA_ES_ELECTION_INSTRUCTION_V1")
     istat.add_argument("--now", default=None)
     istat.set_defaults(func=cmd_instruction_status)
+
+    mistat = sub.add_parser("mx-status")
+    mistat.add_argument("--mx", default=None,
+                        help="XML seev.034 (via adapter)")
+    mistat.add_argument("--facts", default=None,
+                        help="doc CA_ES_SWIFT_MX_FACTS_V1 (seev.034)")
+    mistat.add_argument("--instruction", required=True,
+                        help="doc CA_ES_ELECTION_INSTRUCTION_V1")
+    mistat.add_argument("--now", default=None)
+    mistat.set_defaults(func=cmd_mx_instruction_status)
 
     impact = sub.add_parser("position-impact")
     impact.add_argument("--canon", required=True)

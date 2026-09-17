@@ -1,0 +1,29 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Document xmlns="urn:iso:std:iso:20022:tech:xsd:seev.034.002.15">
+  <CorpActnInstrStsAdvc>
+    <InstrId>
+      <Id>INS-0001</Id>
+    </InstrId>
+    <CorpActnGnlInf>
+      <CorpActnEvtId>CORP-REF-42</CorpActnEvtId>
+      <EvtTp>
+        <Cd>DVCA</Cd>
+      </EvtTp>
+      <UndrlygScty>
+        <FinInstrmId>
+          <ISIN>ES0113900J37</ISIN>
+        </FinInstrmId>
+      </UndrlygScty>
+      <SfkpgAcct>
+        <Id>SAFE-001</Id>
+      </SfkpgAcct>
+    </CorpActnGnlInf>
+    <InstrPrcgSts>
+      <AccptdForFrthrPrcg>
+        <AccptdRsn>
+          <NoSpcfdRsn>NORE</NoSpcfdRsn>
+        </AccptdRsn>
+      </AccptdForFrthrPrcg>
+    </InstrPrcgSts>
+  </CorpActnInstrStsAdvc>
+</Document>
