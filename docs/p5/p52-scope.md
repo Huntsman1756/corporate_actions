@@ -1,6 +1,6 @@
 # P5.2 — Election Opportunity
 
-Status: **FROZEN — PENDING IMPLEMENTATION**.
+Status: **DONE** (`e5111db`).
 Parent: P5.1.1 CLOSED (`526dd02`).
 
 Pregunta única: ¿qué opciones ha comunicado explícitamente la fuente

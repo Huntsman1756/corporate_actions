@@ -1,7 +1,7 @@
 # P5.3 — Election Eligibility
 
-Status: **FROZEN — PENDING IMPLEMENTATION**.
-Parent: P5.2 Election Opportunity DONE.
+Status: **DONE** (`f6a288d`).
+Parent: P5.2 Election Opportunity DONE (`e5111db`).
 
 Pregunta única:
 
