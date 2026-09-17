@@ -1,0 +1,38 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Document xmlns="urn:iso:std:iso:20022:tech:xsd:seev.036.002.16">
+  <CorpActnMvmntConf>
+    <MvmntConfId>REFCASH001</MvmntConfId>
+    <CorpActnGnlInf>
+      <CorpActnEvtId>BME-DVCA-0001</CorpActnEvtId>
+      <EvtTp>
+        <Cd>DVCA</Cd>
+      </EvtTp>
+      <EvtPrcgTp>
+        <Cd>MAND</Cd>
+      </EvtPrcgTp>
+      <FinInstrmId>
+        <ISIN>ES0113900J37</ISIN>
+      </FinInstrmId>
+    </CorpActnGnlInf>
+    <AcctDtls>
+      <SfkpgAcct>A001</SfkpgAcct>
+    </AcctDtls>
+    <CorpActnConfDtls>
+      <OptnNb>
+        <Nb>001</Nb>
+      </OptnNb>
+      <OptnTp>
+        <Cd>CASH</Cd>
+      </OptnTp>
+      <CshMvmntDtls>
+        <CdtDbtInd>CRDT</CdtDbtInd>
+        <AmtDtls>
+          <GrssAmt Ccy="EUR">125.00</GrssAmt>
+        </AmtDtls>
+        <DtDtls>
+          <PmtDt>2026-07-20</PmtDt>
+        </DtDtls>
+      </CshMvmntDtls>
+    </CorpActnConfDtls>
+  </CorpActnMvmntConf>
+</Document>

@@ -84,8 +84,13 @@ def _field(facts: list[dict], normalize=None) -> dict:
             "raw": raw, "provenance": provenance}
 
 
-def project_mx_message(facts_doc: dict, now: str | None = None) -> dict:
-    """CA_ES_SWIFT_MX_FACTS_V1 (seev.031) -> CA_ES_SWIFT_CA_MESSAGE_V1."""
+def project_mx_message(facts_doc: dict, now: str | None = None,
+                       supported_mids: set | None = None) -> dict:
+    """CA_ES_SWIFT_MX_FACTS_V1 -> CA_ES_SWIFT_CA_MESSAGE_V1.
+
+    ``supported_mids`` fija el gate de tipo de mensaje (default
+    SUPPORTED_031); P4.7 lo usa para seev.036.
+    """
     if facts_doc.get("schema_version") != MX_FACTS_SCHEMA:
         raise ValueError(
             f"facts schema debe ser {MX_FACTS_SCHEMA}, "
@@ -103,7 +108,7 @@ def project_mx_message(facts_doc: dict, now: str | None = None) -> dict:
     caev_val = caev["value"]
     event_type = CAEV_MAP.get(caev_val) if caev_val else None
 
-    if mid not in SUPPORTED_031:
+    if mid not in (supported_mids or SUPPORTED_031):
         status = "UNSUPPORTED_MESSAGE_TYPE"
     elif facts_doc.get("parse_status") != "PARSE_OK":
         status = "PARSE_NOT_OK"
@@ -119,7 +124,9 @@ def project_mx_message(facts_doc: dict, now: str | None = None) -> dict:
         "caev": caev,
         "isin": _field(
             _mf(doc_facts,
-                "/CorpActnGnlInf/UndrlygScty/FinInstrmId/ISIN")),
+                "/CorpActnGnlInf/UndrlygScty/FinInstrmId/ISIN")
+            + _mf(doc_facts,
+                  "/CorpActnGnlInf/FinInstrmId/ISIN")),
         "ex_date": _field(
             _mf(doc_facts, "/CorpActnDtls/DtDtls/ExDvddDt/Dt"),
             normalize=_norm_date),

@@ -997,6 +997,41 @@ def cmd_swift_security_candidate(args: argparse.Namespace) -> int:
     return _emit(doc)
 
 
+def cmd_mx_cash_candidate(args: argparse.Namespace) -> int:
+    from .mx_movement import mx_cash_candidate
+
+    facts_doc, code = _mx_facts_doc(args)
+    if facts_doc is None:
+        return code
+    canon, code = _load_json(args.canon, "canon")
+    if canon is None:
+        return code
+    try:
+        doc = mx_cash_candidate(facts_doc, canon, now=args.now)
+    except ValueError as exc:
+        print(json.dumps({"status": "INVALID_FACTS", "detail": str(exc)}))
+        return 2
+    return _emit(doc)
+
+
+def cmd_mx_security_candidate(args: argparse.Namespace) -> int:
+    from .mx_movement import mx_security_movement_candidate
+
+    facts_doc, code = _mx_facts_doc(args)
+    if facts_doc is None:
+        return code
+    canon, code = _load_json(args.canon, "canon")
+    if canon is None:
+        return code
+    try:
+        doc = mx_security_movement_candidate(
+            facts_doc, canon, now=args.now)
+    except ValueError as exc:
+        print(json.dumps({"status": str(exc)}))
+        return 2
+    return _emit(doc)
+
+
 def cmd_security_reconcile(args: argparse.Namespace) -> int:
     from .security_recon import reconcile_security_movements
 
@@ -1367,6 +1402,24 @@ def build_parser() -> argparse.ArgumentParser:
                         help="doc CA_ES_ELECTION_INSTRUCTION_V1")
     mistat.add_argument("--now", default=None)
     mistat.set_defaults(func=cmd_mx_instruction_status)
+
+    mcash = sub.add_parser("mx-cash-candidate")
+    mcash.add_argument("--mx", default=None,
+                       help="XML seev.036 (via adapter)")
+    mcash.add_argument("--facts", default=None,
+                       help="doc CA_ES_SWIFT_MX_FACTS_V1 (seev.036)")
+    mcash.add_argument("--canon", required=True)
+    mcash.add_argument("--now", default=None)
+    mcash.set_defaults(func=cmd_mx_cash_candidate)
+
+    msec = sub.add_parser("mx-security-candidate")
+    msec.add_argument("--mx", default=None,
+                      help="XML seev.036 (via adapter)")
+    msec.add_argument("--facts", default=None,
+                      help="doc CA_ES_SWIFT_MX_FACTS_V1 (seev.036)")
+    msec.add_argument("--canon", required=True)
+    msec.add_argument("--now", default=None)
+    msec.set_defaults(func=cmd_mx_security_candidate)
 
     impact = sub.add_parser("position-impact")
     impact.add_argument("--canon", required=True)
