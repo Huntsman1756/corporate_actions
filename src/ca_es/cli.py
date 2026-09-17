@@ -721,6 +721,28 @@ def cmd_election_eligibility(args: argparse.Namespace) -> int:
     return _emit(doc)
 
 
+def cmd_election_instruction(args: argparse.Namespace) -> int:
+    from .election_instruction import build_instruction
+
+    eligibility, code = _load_json(args.eligibility, "eligibility")
+    if eligibility is None:
+        return code
+    opportunity, code = _load_json(args.opportunity, "opportunity")
+    if opportunity is None:
+        return code
+    request, code = _load_json(args.request, "request")
+    if request is None:
+        return code
+    try:
+        doc = build_instruction(
+            eligibility, opportunity, request, now=args.now
+        )
+    except ValueError as exc:
+        print(json.dumps({"status": str(exc)}))
+        return 2
+    return _emit(doc)
+
+
 def build_parser() -> argparse.ArgumentParser:
     parser = argparse.ArgumentParser(prog="ca-es", description=__doc__)
     parser.add_argument("--repo-root", default=None)
@@ -918,6 +940,18 @@ def build_parser() -> argparse.ArgumentParser:
                       help="doc CA_ES_ELECTION_ELIGIBILITY_RULES_V1")
     elig.add_argument("--now", default=None)
     elig.set_defaults(func=cmd_election_eligibility)
+
+    instr = sub.add_parser("election-instruction")
+    instr.add_argument("--eligibility", required=True,
+                       help="doc CA_ES_ELECTION_ELIGIBILITY_V1")
+    instr.add_argument("--opportunity", required=True,
+                       help="doc CA_ES_ELECTION_OPPORTUNITY_V1")
+    instr.add_argument("--request", required=True,
+                       help="request JSON: instruction_id, account_id, "
+                            "option_key, requested_quantity, actor, "
+                            "instructed_at")
+    instr.add_argument("--now", default=None)
+    instr.set_defaults(func=cmd_election_instruction)
 
     return parser
 

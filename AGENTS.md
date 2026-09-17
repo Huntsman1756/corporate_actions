@@ -100,6 +100,13 @@ python -m ca_es.cli election-eligibility \
     --canon g3/input/canon.json \
     --positions p1/smoke/positions.json \
     --rules <CA_ES_ELECTION_ELIGIBILITY_RULES_V1.json> [--now <iso>]
+
+# P5.4 election instruction intent (artefacto interno; no MT565;
+# requested == eligible unicamente)
+python -m ca_es.cli election-instruction \
+    --eligibility <CA_ES_ELECTION_ELIGIBILITY_V1.json> \
+    --opportunity <CA_ES_ELECTION_OPPORTUNITY_V1.json> \
+    --request <instruction-request.json> [--now <iso>]
 ```
 
 Ruff está configurado en `pyproject.toml`; ejecutar

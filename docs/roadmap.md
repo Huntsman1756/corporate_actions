@@ -148,6 +148,14 @@ P5  Elections / deadlines
           snapshot antes/despues nunca prueba titularidad;
           opportunity bind fail-closed al canon; sin
           eleccion del cliente ni MT565)
+    P5.4 Election Instruction Intent                    DONE
+         (docs/p5/p54-scope.md; ca-es election-instruction
+          -> CA_ES_ELECTION_INSTRUCTION_V1; request
+          explicita con instruction_id del caller;
+          requested == eligible unicamente (parcial
+          UNSUPPORTED, nunca inferido); binding
+          fail-closed eligibility<->opportunity; sin
+          workflow ni MT565)
 
 P6  Positions / impact
 
