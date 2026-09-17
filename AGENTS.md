@@ -93,6 +93,24 @@ python -m ca_es.cli swift-election --fin <fichero.fin> \
     [--queue <CA_ES_ACTION_QUEUE_V1.json> --deadline-type <T>] \
     [--now <iso>]
 
+# ISO 20022 / seev (P4.3-P4.8): mismo adapter JVM, modo mxfacts.
+# XML crudo solo por stdin; stdout = CA_ES_SWIFT_MX_FACTS_V1.
+python -m ca_es.cli mx-facts --mx <fichero.xml>
+# seev.031 -> CA_ES_SWIFT_CA_MESSAGE_V1 / binding / election (P4.4)
+python -m ca_es.cli mx-project --mx <seev031.xml> [--now <iso>]
+python -m ca_es.cli mx-bind --mx <seev031.xml> --canon <canon.json>
+python -m ca_es.cli mx-election --mx <seev031.xml> --canon <canon.json>
+# seev.033 writer (P4.5): intent + facts + CA_ES_SWIFT_MX_ENVELOPE_V1
+python -m ca_es.cli seev033-project --instruction <inst.json> \
+    [--mx <seev031.xml> | --fin <mt564.fin> | --facts <facts.json>] \
+    --envelope <CA_ES_SWIFT_MX_ENVELOPE_V1.json>
+python -m ca_es.cli seev033-write --projection <CA_ES_SEEV033_PROJECTION_V1.json>
+# seev.034 status -> CA_ES_ELECTION_INSTRUCTION_STATUS_V1 (P4.6)
+python -m ca_es.cli mx-status --mx <seev034.xml> --instruction <inst.json>
+# seev.036 -> candidates cash/security (P4.7, mismos contratos P4.2/P6.3)
+python -m ca_es.cli mx-cash-candidate --mx <seev036.xml> --canon <canon.json>
+python -m ca_es.cli mx-security-candidate --mx <seev036.xml> --canon <canon.json>
+
 # P5.3 election eligibility (positions x options; opportunity bind
 # fail-closed al canon via source_canon_logical_sha256)
 python -m ca_es.cli election-eligibility \

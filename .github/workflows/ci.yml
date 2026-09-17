@@ -155,6 +155,7 @@ jobs:
               "tests/unit/test_p45_seev033.py",
               "tests/unit/test_p46_seev034.py",
               "tests/unit/test_p47_seev036.py",
+              "tests/unit/test_p48_conformance.py",
               "tests/unit/test_p52_election.py",
               "tests/unit/test_p55_mt565.py",
               "tests/unit/test_p56_instruction_status.py",
