@@ -156,6 +156,15 @@ P5  Elections / deadlines
           UNSUPPORTED, nunca inferido); binding
           fail-closed eligibility<->opportunity; sin
           workflow ni MT565)
+    P5.5 MT565 Projection / Serialization               DONE
+         (docs/p5/p55-scope.md; ca-es mt565-project ->
+          CA_ES_MT565_PROJECTION_V1 con mapping preregistrado
+          (SEME=instruction_id, CORP/CAEV/SEME desde facts
+          MT564, 13A::CAON + 22F::CAOP + 36B::QINS en CAINST);
+          adapter JVM modo "mt565" -> CA_ES_MT565_FIN_V1;
+          envelope de transporte explicito, sin defaults;
+          solo SERIALIZABLE llega al writer)
+    P5.6 MT567 status/advice ingest + binding           PENDING
 
 P6  Positions / impact
 

@@ -76,6 +76,20 @@ public final class IsoAdapter {
     }
 
     public static void main(String[] args) {
+        if (args.length > 0 && "mt565".equals(args[0])) {
+            Result w;
+            try {
+                w = Mt565Writer.mainResult();
+            } catch (Throwable t) {
+                w = new Result(Mt565Writer.EXIT_ADAPTER_ERROR,
+                        new LinkedHashMap<>());
+                w.doc().put("schema_version", Mt565Writer.SCHEMA_VERSION);
+                w.doc().put("write_status", "ADAPTER_ERROR");
+                w.doc().put("detail", t.getClass().getSimpleName());
+            }
+            emit(w);
+            return;
+        }
         Result r;
         try {
             r = run(System.in.readAllBytes());
@@ -85,6 +99,10 @@ public final class IsoAdapter {
                     envelope(null, null, "ADAPTER_ERROR",
                              t.getClass().getSimpleName(), List.of()));
         }
+        emit(r);
+    }
+
+    static void emit(Result r) {
         try {
             String json = new ObjectMapper()
                     .enable(SerializationFeature.ORDER_MAP_ENTRIES_BY_KEYS)

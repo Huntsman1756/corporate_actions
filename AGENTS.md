@@ -107,6 +107,16 @@ python -m ca_es.cli election-instruction \
     --eligibility <CA_ES_ELECTION_ELIGIBILITY_V1.json> \
     --opportunity <CA_ES_ELECTION_OPPORTUNITY_V1.json> \
     --request <instruction-request.json> [--now <iso>]
+
+# P5.5 MT565: projection en core -> FIN via adapter JVM (ADR-010)
+python -m ca_es.cli mt565-project \
+    --instruction <CA_ES_ELECTION_INSTRUCTION_V1.json> \
+    --envelope <CA_ES_SWIFT_MT565_ENVELOPE_V1.json> \
+    (--fin <mt564.fin> | --facts <CA_ES_SWIFT_MT_FACTS_V1.json>) \
+    [--now <iso>]                    # -> CA_ES_MT565_PROJECTION_V1
+python -m ca_es.cli mt565-write \
+    --projection <CA_ES_MT565_PROJECTION_V1.json>
+                                     # -> CA_ES_MT565_FIN_V1 (fin+sha)
 ```
 
 Ruff está configurado en `pyproject.toml`; ejecutar

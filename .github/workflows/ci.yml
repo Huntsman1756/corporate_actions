@@ -152,5 +152,6 @@ jobs:
               "tests/unit/test_p41_swift_ca.py",
               "tests/unit/test_p42_swift_cash.py",
               "tests/unit/test_p52_election.py",
+              "tests/unit/test_p55_mt565.py",
               "--no-private-corpus", "-ra",
           ], plugins=[NoSkips()]))

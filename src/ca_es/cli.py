@@ -743,6 +743,45 @@ def cmd_election_instruction(args: argparse.Namespace) -> int:
     return _emit(doc)
 
 
+def cmd_mt565_project(args: argparse.Namespace) -> int:
+    from .mt565 import mt565_project
+
+    instruction, code = _load_json(args.instruction, "instruction")
+    if instruction is None:
+        return code
+    facts_doc, code = _facts_doc(args)
+    if facts_doc is None:
+        return code
+    envelope, code = _load_json(args.envelope, "envelope")
+    if envelope is None:
+        return code
+    try:
+        doc = mt565_project(
+            instruction, facts_doc, envelope, now=args.now
+        )
+    except ValueError as exc:
+        print(json.dumps({"status": str(exc)}))
+        return 2
+    return _emit(doc)
+
+
+def cmd_mt565_write(args: argparse.Namespace) -> int:
+    from .mt565 import write_mt565
+    from .swift_mt import AdapterUnavailable
+
+    projection, code = _load_json(args.projection, "projection")
+    if projection is None:
+        return code
+    try:
+        doc, write_code = write_mt565(projection)
+    except AdapterUnavailable as exc:
+        print(json.dumps({"status": "ADAPTER_UNAVAILABLE",
+                          "detail": str(exc)}))
+        return 2
+    _emit(doc)
+    return write_code
+
+
 def build_parser() -> argparse.ArgumentParser:
     parser = argparse.ArgumentParser(prog="ca-es", description=__doc__)
     parser.add_argument("--repo-root", default=None)
@@ -952,6 +991,23 @@ def build_parser() -> argparse.ArgumentParser:
                             "instructed_at")
     instr.add_argument("--now", default=None)
     instr.set_defaults(func=cmd_election_instruction)
+
+    proj565 = sub.add_parser("mt565-project")
+    proj565.add_argument("--instruction", required=True,
+                         help="doc CA_ES_ELECTION_INSTRUCTION_V1")
+    proj565.add_argument("--fin", default=None,
+                         help="FIN MT564 fuente (via adapter)")
+    proj565.add_argument("--facts", default=None,
+                         help="doc CA_ES_SWIFT_MT_FACTS_V1 ya calculado")
+    proj565.add_argument("--envelope", required=True,
+                         help="doc CA_ES_SWIFT_MT565_ENVELOPE_V1")
+    proj565.add_argument("--now", default=None)
+    proj565.set_defaults(func=cmd_mt565_project)
+
+    write565 = sub.add_parser("mt565-write")
+    write565.add_argument("--projection", required=True,
+                          help="doc CA_ES_MT565_PROJECTION_V1")
+    write565.set_defaults(func=cmd_mt565_write)
 
     return parser
 
