@@ -96,6 +96,21 @@ public final class IsoAdapter {
             emit(r);
             return;
         }
+        if (args.length > 0 && "seev033".equals(args[0])) {
+            Result w;
+            try {
+                w = Seev033Writer.mainResult();
+            } catch (Throwable t) {
+                w = new Result(Seev033Writer.EXIT_ADAPTER_ERROR,
+                        new LinkedHashMap<>());
+                w.doc().put("schema_version",
+                        Seev033Writer.SCHEMA_VERSION);
+                w.doc().put("write_status", "ADAPTER_ERROR");
+                w.doc().put("detail", t.getClass().getSimpleName());
+            }
+            emit(w);
+            return;
+        }
         if (args.length > 0 && "mt565".equals(args[0])) {
             Result w;
             try {

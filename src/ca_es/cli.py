@@ -883,6 +883,52 @@ def cmd_mt565_write(args: argparse.Namespace) -> int:
     return write_code
 
 
+def _source_facts_doc(args: argparse.Namespace):
+    """Facts de la notificacion fuente: MX (--mx) o MT (--fin/--facts)."""
+    if getattr(args, "mx", None):
+        return _mx_facts_doc(args)
+    return _facts_doc(args)
+
+
+def cmd_seev033_project(args: argparse.Namespace) -> int:
+    from .seev033 import seev033_project
+
+    instruction, code = _load_json(args.instruction, "instruction")
+    if instruction is None:
+        return code
+    facts_doc, code = _source_facts_doc(args)
+    if facts_doc is None:
+        return code
+    envelope, code = _load_json(args.envelope, "envelope")
+    if envelope is None:
+        return code
+    try:
+        doc = seev033_project(
+            instruction, facts_doc, envelope, now=args.now
+        )
+    except ValueError as exc:
+        print(json.dumps({"status": str(exc)}))
+        return 2
+    return _emit(doc)
+
+
+def cmd_seev033_write(args: argparse.Namespace) -> int:
+    from .seev033 import write_seev033
+    from .swift_mt import AdapterUnavailable
+
+    projection, code = _load_json(args.projection, "projection")
+    if projection is None:
+        return code
+    try:
+        doc, write_code = write_seev033(projection)
+    except AdapterUnavailable as exc:
+        print(json.dumps({"status": "ADAPTER_UNAVAILABLE",
+                          "detail": str(exc)}))
+        return 2
+    _emit(doc)
+    return write_code
+
+
 def cmd_position_impact(args: argparse.Namespace) -> int:
     from .entitlement_engine import load_positions
     from .position_impact import compute_position_impact
@@ -1263,6 +1309,25 @@ def build_parser() -> argparse.ArgumentParser:
     write565.add_argument("--projection", required=True,
                           help="doc CA_ES_MT565_PROJECTION_V1")
     write565.set_defaults(func=cmd_mt565_write)
+
+    proj033 = sub.add_parser("seev033-project")
+    proj033.add_argument("--instruction", required=True,
+                         help="doc CA_ES_ELECTION_INSTRUCTION_V1")
+    proj033.add_argument("--mx", default=None,
+                         help="XML seev.031 fuente (via adapter)")
+    proj033.add_argument("--fin", default=None,
+                         help="FIN MT564 fuente (via adapter)")
+    proj033.add_argument("--facts", default=None,
+                         help="doc facts (MX o MT) ya calculado")
+    proj033.add_argument("--envelope", required=True,
+                         help="doc CA_ES_SWIFT_MX_ENVELOPE_V1")
+    proj033.add_argument("--now", default=None)
+    proj033.set_defaults(func=cmd_seev033_project)
+
+    write033 = sub.add_parser("seev033-write")
+    write033.add_argument("--projection", required=True,
+                          help="doc CA_ES_SEEV033_PROJECTION_V1")
+    write033.set_defaults(func=cmd_seev033_write)
 
     istat = sub.add_parser("instruction-status")
     istat.add_argument("--fin", default=None,
