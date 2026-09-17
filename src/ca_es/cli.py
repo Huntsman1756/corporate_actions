@@ -871,6 +871,20 @@ def cmd_security_reconcile(args: argparse.Namespace) -> int:
     return _emit(doc)
 
 
+def cmd_portfolio_impact(args: argparse.Namespace) -> int:
+    from .portfolio_impact import aggregate_portfolio_impact
+
+    impact, code = _load_json(args.impact, "impact")
+    if impact is None:
+        return code
+    try:
+        doc = aggregate_portfolio_impact(impact, now=args.now)
+    except ValueError as exc:
+        print(json.dumps({"status": str(exc)}))
+        return 2
+    return _emit(doc)
+
+
 def cmd_instruction_status(args: argparse.Namespace) -> int:
     from .instruction_status import bind_instruction_status
 
@@ -1165,6 +1179,12 @@ def build_parser() -> argparse.ArgumentParser:
                         "CA_ES_SWIFT_SECURITY_MOVEMENT_CANDIDATE_V1")
     srecon.add_argument("--now", default=None)
     srecon.set_defaults(func=cmd_security_reconcile)
+
+    portfolio = sub.add_parser("portfolio-impact")
+    portfolio.add_argument("--impact", required=True,
+                           help="doc CA_ES_POSITION_IMPACT_V1")
+    portfolio.add_argument("--now", default=None)
+    portfolio.set_defaults(func=cmd_portfolio_impact)
 
     return parser
 
