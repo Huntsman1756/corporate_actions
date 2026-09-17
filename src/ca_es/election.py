@@ -205,26 +205,33 @@ def project_election(facts_doc: dict, canon_doc: dict,
         base["source_response_deadline"] = next(iter(rddts))
 
     # --- binding con queue operativa (sin recalcular) ------------
-    if queue_doc is not None:
-        if not deadline_types:
-            raise ValueError("MISSING_DEADLINE_TYPE_CONFIG")
-        if queue_doc.get("source_canon_logical_sha256") != canon_sha:
-            raise ValueError("QUEUE_CANON_MISMATCH")
-        applicable = [
-            i for i in queue_doc.get("items", [])
-            if i.get("canonical_event_id") == eid
-            and i.get("deadline_type") in deadline_types
-        ]
-        base["operational_deadlines"] = applicable
-        if len(applicable) == 1:
-            base["deadline_binding_status"] = "BOUND"
-        elif not applicable:
-            base["deadline_binding_status"] = "MISSING"
-        else:
-            base["deadline_binding_status"] = "AMBIGUOUS"
+    _bind_queue(base, queue_doc, canon_sha, eid, deadline_types)
 
     base["reasons"] = sorted(set(reasons))
     base["projection_status"] = (
         INDETERMINATE if reasons else PROJECTED
     )
     return base
+
+
+def _bind_queue(base: dict, queue_doc: dict | None, canon_sha,
+                eid, deadline_types: tuple) -> None:
+    """Binding con CA_ES_ACTION_QUEUE_V1 (transport-neutral)."""
+    if queue_doc is None:
+        return
+    if not deadline_types:
+        raise ValueError("MISSING_DEADLINE_TYPE_CONFIG")
+    if queue_doc.get("source_canon_logical_sha256") != canon_sha:
+        raise ValueError("QUEUE_CANON_MISMATCH")
+    applicable = [
+        i for i in queue_doc.get("items", [])
+        if i.get("canonical_event_id") == eid
+        and i.get("deadline_type") in deadline_types
+    ]
+    base["operational_deadlines"] = applicable
+    if len(applicable) == 1:
+        base["deadline_binding_status"] = "BOUND"
+    elif not applicable:
+        base["deadline_binding_status"] = "MISSING"
+    else:
+        base["deadline_binding_status"] = "AMBIGUOUS"

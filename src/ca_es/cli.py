@@ -583,6 +583,88 @@ def _facts_doc(args: argparse.Namespace):
     return doc, 0
 
 
+def _mx_facts_doc(args: argparse.Namespace):
+    """CA_ES_SWIFT_MX_FACTS_V1 desde --facts o via adapter (--mx)."""
+    from .mx_facts import parse_mx
+    from .swift_mt import AdapterUnavailable
+
+    if getattr(args, "facts", None):
+        return _load_json(args.facts, "facts")
+    try:
+        xml = Path(args.mx).read_bytes()
+    except OSError as exc:
+        print(json.dumps({"status": "INVALID_INPUT", "detail": str(exc)}))
+        return None, 2
+    try:
+        return parse_mx(xml)
+    except AdapterUnavailable as exc:
+        print(json.dumps({"status": "ADAPTER_UNAVAILABLE",
+                          "detail": str(exc)}))
+        return None, 2
+
+
+def cmd_mx_project(args: argparse.Namespace) -> int:
+    from .mx_ca import project_mx_message
+
+    facts_doc, code = _mx_facts_doc(args)
+    if facts_doc is None:
+        return code
+    try:
+        doc = project_mx_message(facts_doc, now=args.now)
+    except ValueError as exc:
+        print(json.dumps({"status": "INVALID_FACTS", "detail": str(exc)}))
+        return 2
+    return _emit(doc)
+
+
+def cmd_mx_bind(args: argparse.Namespace) -> int:
+    from .mx_ca import project_mx_message
+    from .swift_ca import bind_event
+
+    facts_doc, code = _mx_facts_doc(args)
+    if facts_doc is None:
+        return code
+    try:
+        msg = project_mx_message(facts_doc, now=args.now)
+    except ValueError as exc:
+        print(json.dumps({"status": "INVALID_FACTS", "detail": str(exc)}))
+        return 2
+    canon, code = _load_json(args.canon, "canon")
+    if canon is None:
+        return code
+    doc = bind_event(msg, canon, now=args.now)
+    doc["ca_message"] = msg
+    return _emit(doc)
+
+
+def cmd_mx_election(args: argparse.Namespace) -> int:
+    from .mx_ca import project_mx_election
+
+    facts_doc, code = _mx_facts_doc(args)
+    if facts_doc is None:
+        return code
+    canon, code = _load_json(args.canon, "canon")
+    if canon is None:
+        return code
+    queue = None
+    if args.queue:
+        queue, code = _load_json(args.queue, "queue")
+        if queue is None:
+            return code
+        if not args.deadline_type:
+            print(json.dumps({"status": "MISSING_DEADLINE_TYPE_CONFIG"}))
+            return 2
+    try:
+        doc = project_mx_election(
+            facts_doc, canon, queue_doc=queue,
+            deadline_types=tuple(args.deadline_type or ()),
+            now=args.now)
+    except ValueError as exc:
+        print(json.dumps({"status": str(exc)}))
+        return 2
+    return _emit(doc)
+
+
 def cmd_swift_project(args: argparse.Namespace) -> int:
     from .swift_ca import project_ca_message
 
@@ -1065,6 +1147,31 @@ def build_parser() -> argparse.ArgumentParser:
                                "(seev.031/033/034/036); viaja al adapter "
                                "JVM solo por stdin")
     mx_facts.set_defaults(func=cmd_mx_facts)
+
+    mx_project = sub.add_parser("mx-project")
+    mx_project.add_argument("--mx", default=None)
+    mx_project.add_argument("--facts", default=None,
+                            help="doc CA_ES_SWIFT_MX_FACTS_V1 ya "
+                                 "calculado")
+    mx_project.add_argument("--now", default=None)
+    mx_project.set_defaults(func=cmd_mx_project)
+
+    mx_bind = sub.add_parser("mx-bind")
+    mx_bind.add_argument("--mx", default=None)
+    mx_bind.add_argument("--facts", default=None)
+    mx_bind.add_argument("--canon", required=True)
+    mx_bind.add_argument("--now", default=None)
+    mx_bind.set_defaults(func=cmd_mx_bind)
+
+    mx_election = sub.add_parser("mx-election")
+    mx_election.add_argument("--mx", default=None)
+    mx_election.add_argument("--facts", default=None)
+    mx_election.add_argument("--canon", required=True)
+    mx_election.add_argument("--queue", default=None)
+    mx_election.add_argument("--deadline-type", action="append",
+                             default=None)
+    mx_election.add_argument("--now", default=None)
+    mx_election.set_defaults(func=cmd_mx_election)
 
     project = sub.add_parser("swift-project")
     project.add_argument("--fin", default=None)

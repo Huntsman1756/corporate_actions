@@ -1,0 +1,42 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Document xmlns="urn:iso:std:iso:20022:tech:xsd:seev.031.002.15">
+  <CorpActnNtfctn>
+    <NtfctnGnlInf>
+      <NtfctnTp>NEWM</NtfctnTp>
+    </NtfctnGnlInf>
+    <CorpActnGnlInf>
+      <CorpActnEvtId>SAN-DIV-2026</CorpActnEvtId>
+      <EvtTp>
+        <Cd>DVCA</Cd>
+      </EvtTp>
+      <MndtryVlntryEvtTp>
+        <Cd>MAND</Cd>
+      </MndtryVlntryEvtTp>
+      <UndrlygScty>
+        <FinInstrmId>
+          <ISIN>ES0113900J37</ISIN>
+        </FinInstrmId>
+      </UndrlygScty>
+    </CorpActnGnlInf>
+    <CorpActnDtls>
+      <DtDtls>
+        <ExDvddDt><Dt>2026-07-16</Dt></ExDvddDt>
+        <RcrdDt><Dt>2026-07-15</Dt></RcrdDt>
+        <PmtDt><Dt>2026-07-20</Dt></PmtDt>
+      </DtDtls>
+    </CorpActnDtls>
+    <CorpActnOptnDtls>
+      <OptnNb>001</OptnNb>
+      <OptnTp><Cd>CASH</Cd></OptnTp>
+      <DfltPrcgOrStgInstr>
+        <DfltOptnInd>true</DfltOptnInd>
+      </DfltPrcgOrStgInstr>
+      <DtDtls>
+        <RspnDdln><Dt><Dt>2026-07-18</Dt></Dt></RspnDdln>
+      </DtDtls>
+      <RateAndAmtDtls>
+        <GrssDstrbtnRate><Amt Ccy="EUR">0.125</Amt></GrssDstrbtnRate>
+      </RateAndAmtDtls>
+    </CorpActnOptnDtls>
+  </CorpActnNtfctn>
+</Document>
