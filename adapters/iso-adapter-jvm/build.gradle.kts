@@ -17,6 +17,7 @@ repositories {
 
 dependencies {
     implementation("com.prowidesoftware:pw-swift-core:SRU2025-10.3.19")
+    implementation("com.prowidesoftware:pw-iso20022:SRU2025-10.3.10")
     implementation("com.fasterxml.jackson.core:jackson-databind:2.18.2")
     testImplementation("org.junit.jupiter:junit-jupiter:5.11.4")
     testRuntimeOnly("org.junit.platform:junit-platform-launcher")
