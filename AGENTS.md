@@ -5,11 +5,19 @@ Guía para agentes que trabajen en este repositorio.
 ## Comandos
 
 ```bash
-# entorno (stdlib-only en runtime)
-export PYTHONPATH=src        # Windows: $env:PYTHONPATH='src'
+python -m venv .venv
+```
 
-# tests (offline, sin red, sin credenciales)
-python -m pytest
+Python >= 3.11; core stdlib-only. Activar con
+`source .venv/bin/activate` (POSIX) o
+`.\.venv\Scripts\Activate.ps1` (PowerShell), desde la raíz del checkout.
+Extras opcionales: `pdf` (pypdf), `desk` (textual); JVM/Prowide aparte.
+
+```bash
+python -m pip install -e ".[dev,tooling]"
+python -m pytest --no-private-corpus
+ruff check src tests scripts
+python -m build
 
 # pipeline canario con enriquecimiento FIRDS
 python -m ca_es.cli run --firds-listings g0/corpus/reference/esma-firds-listings.json
@@ -86,7 +94,17 @@ python -m ca_es.cli swift-election --fin <fichero.fin> \
     [--now <iso>]
 ```
 
-No hay linter/formatter configurado; el estilo es PEP 8 + stdlib.
+Ruff está configurado en `pyproject.toml`; ejecutar
+`ruff check src tests scripts`. Estilo PEP 8 + stdlib; no hay formatter
+ni typechecker configurados.
+
+Los ejemplos con fixtures son relativos al checkout. Fuera de él,
+la CLI instalada requiere inputs propios: para comandos de superficie,
+usar `ca-es events --canon <canon.json> --policy <source-policy.json>`.
+`--policy` es opcional en el parser, pero su valor por defecto busca
+`docs/sources/source-policy.json` en el checkout; el wheel no incluye
+esa política ni los corpus. Consultar `ca-es <subcomando> --help` para
+los argumentos de cada comando.
 
 ## Reglas no negociables
 
