@@ -1,0 +1,29 @@
+# Codigo y documentacion: LF reproducible entre plataformas.
+* text=auto eol=lf
+
+# Artefactos cuya identidad depende de sus bytes exactos (corpus,
+# manifests, resultados congelados, adjudicaciones): los documentos
+# fuente son "bytes congelados, sha256". -text = git no transforma
+# contenido en checkout ni checkin, con cualquier core.autocrlf.
+# Se usa -text (no binary) para preservar bytes sin renunciar a
+# inspeccionarlos como texto.
+g0/**   -text
+g1/**   -text
+g1r/**  -text
+g1r2/** -text
+g2/**   -text
+g3/**   -text
+p1/**   -text
+
+# Fixtures SWIFT FIN: input_sha256 debe sobrevivir al checkout.
+*.fin -text
+
+# Batch Windows: LF en repo, CRLF en checkout.
+*.bat text eol=crlf
+
+# Formatos realmente binarios.
+*.jar binary
+*.pdf binary
+*.png binary
+*.jpg binary
+*.zip binary
