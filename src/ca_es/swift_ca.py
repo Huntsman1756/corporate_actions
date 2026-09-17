@@ -29,7 +29,7 @@ CA_MESSAGE_SCHEMA = "CA_ES_SWIFT_CA_MESSAGE_V1"
 BINDING_SCHEMA = "CA_ES_SWIFT_EVENT_BINDING_V1"
 FACTS_SCHEMA = "CA_ES_SWIFT_MT_FACTS_V1"
 
-CAEV_MAP = {"DVCA": "CASH_DIVIDEND"}
+CAEV_MAP = {"DVCA": "CASH_DIVIDEND", "SPLF": "SPLIT"}
 
 PRESENT = "PRESENT"
 ABSENT = "ABSENT"
@@ -158,7 +158,12 @@ def project_ca_message(facts_doc: dict, now: str | None = None) -> dict:
             _find(genl, "20C", "RELA", label_suffix=".reference")),
         "caev": caev,
         "isin": _field(
-            _find(facts, "35B", label_suffix=".isin")),
+            # el ISIN de binding es el underlying (USECU; USEQ en
+            # fixtures informales): un SECMOVE/CASHMOVE puede mover
+            # un instrumento distinto sin contaminar la identidad
+            _find(facts, "35B", seq="USECU", label_suffix=".isin")
+            or _find(facts, "35B", seq="USEQ", label_suffix=".isin")
+            or _find(facts, "35B", label_suffix=".isin")),
         "ex_date": _field(
             _find(facts, "98A", "XDTE", label_suffix=".date")
             + _find(facts, "98C", "XDTE", label_suffix=".date"),

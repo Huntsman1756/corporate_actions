@@ -94,6 +94,35 @@ class IsoAdapterTest {
     }
 
     @Test
+    void mt566SecmoveProducesSequencedMovementFacts() throws Exception {
+        // estructura oficial: CACONF > SECMOVE (repetitivo)
+        IsoAdapter.Result r = IsoAdapter.run(
+                fixture("mt566-secmove.fin"));
+        assertEquals(IsoAdapter.EXIT_OK, r.exitCode());
+        assertEquals("MT566", r.doc().get("message_identifier"));
+        List<Map<String, Object>> facts = facts(r.doc());
+        long secmoves = facts.stream().filter(f ->
+                "CACONF/SECMOVE".equals(f.get("sequence"))
+                        && "22H".equals(f.get("source_tag"))
+                        && "CRDB".equals(f.get("source_qualifier")))
+                .count();
+        assertEquals(2, secmoves, "esperaba 2 SECMOVE con 22H::CRDB");
+        boolean debt = facts.stream().anyMatch(f ->
+                "CACONF/SECMOVE".equals(f.get("sequence"))
+                        && "DEBT".equals(f.get("value")));
+        boolean cred = facts.stream().anyMatch(f ->
+                "CACONF/SECMOVE".equals(f.get("sequence"))
+                        && "CRED".equals(f.get("value")));
+        assertTrue(debt && cred, "esperaba CRDB//DEBT y CRDB//CRED");
+        boolean psta = facts.stream().anyMatch(f ->
+                "CACONF/SECMOVE".equals(f.get("sequence"))
+                        && "36B".equals(f.get("source_tag"))
+                        && "PSTA".equals(f.get("source_qualifier"))
+                        && "125000,".equals(f.get("value")));
+        assertTrue(psta, "esperaba 36B::PSTA//UNIT/125000,");
+    }
+
+    @Test
     void malformedIsParseErrorWithoutFinLeak() throws Exception {
         IsoAdapter.Result r = IsoAdapter.run(fixture("malformed.fin"));
         assertEquals(IsoAdapter.EXIT_PARSE_ERROR, r.exitCode());
