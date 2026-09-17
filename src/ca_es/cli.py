@@ -689,6 +689,38 @@ def cmd_swift_election(args: argparse.Namespace) -> int:
     return _emit(doc)
 
 
+def cmd_election_eligibility(args: argparse.Namespace) -> int:
+    from .election_eligibility import compute_election_eligibility
+    from .entitlement_engine import load_positions
+
+    opportunity, code = _load_json(args.opportunity, "opportunity")
+    if opportunity is None:
+        return code
+    canon, code = _load_json(args.canon, "canon")
+    if canon is None:
+        return code
+    try:
+        positions = load_positions(Path(args.positions))
+    except (ValueError, OSError) as exc:
+        print(
+            json.dumps(
+                {"status": "INVALID_POSITIONS", "detail": str(exc)}
+            )
+        )
+        return 2
+    rules, code = _load_json(args.rules, "rules")
+    if rules is None:
+        return code
+    try:
+        doc = compute_election_eligibility(
+            opportunity, canon, positions, rules, now=args.now
+        )
+    except ValueError as exc:
+        print(json.dumps({"status": str(exc)}))
+        return 2
+    return _emit(doc)
+
+
 def build_parser() -> argparse.ArgumentParser:
     parser = argparse.ArgumentParser(prog="ca-es", description=__doc__)
     parser.add_argument("--repo-root", default=None)
@@ -875,6 +907,17 @@ def build_parser() -> argparse.ArgumentParser:
                                "con --queue")
     election.add_argument("--now", default=None)
     election.set_defaults(func=cmd_swift_election)
+
+    elig = sub.add_parser("election-eligibility")
+    elig.add_argument("--opportunity", required=True,
+                      help="doc CA_ES_ELECTION_OPPORTUNITY_V1")
+    elig.add_argument("--canon", required=True)
+    elig.add_argument("--positions", required=True,
+                      help="doc CA_ES_POSITIONS_V1")
+    elig.add_argument("--rules", required=True,
+                      help="doc CA_ES_ELECTION_ELIGIBILITY_RULES_V1")
+    elig.add_argument("--now", default=None)
+    elig.set_defaults(func=cmd_election_eligibility)
 
     return parser
 

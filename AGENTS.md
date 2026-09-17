@@ -92,6 +92,14 @@ python -m ca_es.cli swift-election --fin <fichero.fin> \
     --canon g3/input/canon.json \
     [--queue <CA_ES_ACTION_QUEUE_V1.json> --deadline-type <T>] \
     [--now <iso>]
+
+# P5.3 election eligibility (positions x options; opportunity bind
+# fail-closed al canon via source_canon_logical_sha256)
+python -m ca_es.cli election-eligibility \
+    --opportunity <CA_ES_ELECTION_OPPORTUNITY_V1.json> \
+    --canon g3/input/canon.json \
+    --positions p1/smoke/positions.json \
+    --rules <CA_ES_ELECTION_ELIGIBILITY_RULES_V1.json> [--now <iso>]
 ```
 
 Ruff está configurado en `pyproject.toml`; ejecutar

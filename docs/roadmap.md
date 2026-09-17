@@ -140,6 +140,14 @@ P5  Elections / deadlines
           CASH/SECU; deadline operativo via queue,
           nunca el mas temprano; sin positions ni
           instrucciones)
+    P5.3 Election Eligibility (positions x options)     DONE
+         (docs/p5/p53-scope.md; ca-es election-eligibility
+          -> CA_ES_ELECTION_ELIGIBILITY_V1; reglas
+          explicitas CA_ES_ELECTION_ELIGIBILITY_RULES_V1;
+          solo POSITION_AT_DATE_FIELD + FULL_POSITION;
+          snapshot antes/despues nunca prueba titularidad;
+          opportunity bind fail-closed al canon; sin
+          eleccion del cliente ni MT565)
 
 P6  Positions / impact
 
