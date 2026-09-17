@@ -1,5 +1,9 @@
 from __future__ import annotations
 
+import pytest
+
+pytestmark = pytest.mark.private_corpus("g0")
+
 
 def _san_event(result: dict) -> dict:
     for event in result["body"]["events"]:

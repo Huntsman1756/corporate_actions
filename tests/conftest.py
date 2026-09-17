@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import importlib.util
+import json
 from pathlib import Path
 
 import pytest
@@ -11,22 +12,71 @@ from ca_es.source_policy import load_source_policy
 
 REPO_ROOT = Path(__file__).resolve().parents[1]
 
-REAL_RAW_REQUIRED = (
-    "g0/corpus/raw/parlem/borme-c-2026-4914.html",
-    "g0/corpus/raw/cnmv/almirall/ip-1884.pdf",
-    "g0/corpus/raw/cnmv/almirall/ip-1885.pdf",
-    "g0/corpus/raw/mfe/oir-40280.pdf",
-    "g0/corpus/raw/mfe/oir-40319.pdf",
-    "g0/corpus/raw/san/cnmv-dividend.pdf",
-    "g0/corpus/raw/san/ir-remuneration.html",
-    "g0/corpus/raw/portfolio/p3-dividend-4733.pdf",
-)
+PRIVATE_MANIFESTS = {
+    "g0": "g0/manifests/real-corpus.json",
+    "g2": "g2/manifests/qualification-corpus.json",
+}
 
 
-def _real_corpus_available() -> bool:
-    if importlib.util.find_spec("pypdf") is None:
-        return False
-    return all((REPO_ROOT / rel).exists() for rel in REAL_RAW_REQUIRED)
+def pytest_addoption(parser):
+    group = parser.getgroup("private corpus")
+    group.addoption(
+        "--run-private-corpus", action="store_true", default=False,
+        dest="run_private_corpus",
+        help="Opt in to LOCAL_ONLY and qualification corpus tests; requires authorization.",
+    )
+    group.addoption(
+        "--no-private-corpus", action="store_false", dest="run_private_corpus",
+        help="Disable private corpus tests even when local raw files are available.",
+    )
+
+
+def pytest_collection_modifyitems(config, items):
+    disabled = not config.getoption("run_private_corpus")
+    for item in items:
+        if "real_run" in item.fixturenames and not item.get_closest_marker("private_corpus"):
+            item.add_marker(pytest.mark.private_corpus("g0"))
+        if disabled and item.get_closest_marker("private_corpus"):
+            item.add_marker(pytest.mark.skip(reason="requires --run-private-corpus"))
+
+
+@pytest.fixture(scope="session")
+def private_corpus(request):
+    if not request.config.getoption("run_private_corpus"):
+        pytest.skip("requires --run-private-corpus")
+    checked = set()
+
+    def require(name):
+        if name in checked:
+            return
+        if name not in PRIVATE_MANIFESTS:
+            pytest.fail(f"unknown private corpus: {name}", pytrace=False)
+        manifest_path = REPO_ROOT / PRIVATE_MANIFESTS[name]
+        if not manifest_path.is_file():
+            pytest.fail(f"private corpus manifest unavailable: {manifest_path}", pytrace=False)
+        manifest = json.loads(manifest_path.read_text(encoding="utf-8"))
+        paths = [
+            REPO_ROOT / document["raw_relpath"]
+            for document in manifest["documents"]
+            if document.get("raw_relpath")
+        ]
+        missing = [str(path.relative_to(REPO_ROOT)) for path in paths if not path.is_file()]
+        if any(path.suffix.lower() == ".pdf" for path in paths):
+            if importlib.util.find_spec("pypdf") is None:
+                missing.append("pypdf (install ca-es[pdf])")
+        if missing:
+            pytest.fail("private corpus prerequisites unavailable: " + ", ".join(missing), pytrace=False)
+        checked.add(name)
+
+    return require
+
+
+@pytest.fixture(autouse=True)
+def _private_corpus_guard(request):
+    marker = request.node.get_closest_marker("private_corpus")
+    if marker is not None:
+        require = request.getfixturevalue("private_corpus")
+        require(marker.args[0] if marker.args else "g0")
 
 
 @pytest.fixture(scope="session")
@@ -59,9 +109,8 @@ def run_result(repo_root: Path, resolver):
 
 
 @pytest.fixture(scope="session")
-def real_run(repo_root: Path, real_resolver):
-    if not _real_corpus_available():
-        pytest.skip("corpus real LOCAL_ONLY o pypdf no disponibles")
+def real_run(repo_root: Path, private_corpus, real_resolver):
+    private_corpus("g0")
     return run_pipeline(
         repo_root,
         manifest_relpath="g0/manifests/real-corpus.json",

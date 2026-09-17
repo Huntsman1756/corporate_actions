@@ -52,12 +52,16 @@ def build_action_queue(deadlines_doc: dict, as_of: str,
     window_days y due_soon_days son obligatorios y explicitos.
     read-only: no muta deadlines_doc.
     """
+    for name, value in (("window_days", window_days),
+                        ("due_soon_days", due_soon_days)):
+        if type(value) is not int or value < 0:
+            raise ValueError(f"INVALID_{name.upper()}: {value!r}")
     start = date.fromisoformat(as_of)
 
     items = []
     indeterminate = []
     for d in deadlines_doc.get("deadlines", []):
-        if d.get("derivation_status") == "INDETERMINATE":
+        if d.get("derivation_status") not in ("SOURCE", "DERIVED"):
             indeterminate.append(d)
             continue
         day = _parse_iso(d.get("deadline_date"))

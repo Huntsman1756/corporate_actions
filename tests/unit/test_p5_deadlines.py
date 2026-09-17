@@ -7,6 +7,8 @@ nunca Mon-Fri por defecto. Canon read-only.
 import copy
 import json
 
+import pytest
+
 from ca_es.deadlines import (
     DEADLINE_SCHEMA,
     DERIVED,
@@ -92,6 +94,153 @@ def test_offset_zero_returns_source_date():
     d = _one(doc)[0]
     assert d["derivation_status"] == DERIVED
     assert d["deadline_date"] == "2026-07-10"
+
+
+@pytest.mark.parametrize("offset", [0.5, -1.5, 1.0, True, False, "-1", None])
+def test_invalid_offset_rejected_without_mutation(offset):
+    canon = _canon(_event(facts=[
+        _fact("date.payment_date", "2026-07-10")]))
+    rules = {"rules": [_rule(offset=offset)]}
+    before = copy.deepcopy((canon, rules, CALS))
+    with pytest.raises(ValueError, match="INVALID_BUSINESS_DAYS_OFFSET"):
+        compute_deadlines(canon, rules, CALS, now=NOW)
+    assert (canon, rules, CALS) == before
+
+
+def test_missing_offset_rejected_even_without_events():
+    rule = _rule()
+    del rule["business_days_offset"]
+    with pytest.raises(ValueError, match="INVALID_BUSINESS_DAYS_OFFSET"):
+        compute_deadlines(_canon(), {"rules": [rule]}, CALS, now=NOW)
+
+
+def test_positive_offset_uses_declared_calendar():
+    canon = _canon(_event(facts=[
+        _fact("date.payment_date", "2026-07-08")]))
+    doc = compute_deadlines(canon, {"rules": [_rule(offset=2)]}, CALS,
+                            now=NOW)
+    d = _one(doc)[0]
+    assert d["derivation_status"] == DERIVED
+    assert d["business_days_offset"] == 2
+    assert d["deadline_date"] == "2026-07-13"
+
+
+@pytest.mark.parametrize("offset", [0.5, True, False, "-1", None])
+@pytest.mark.parametrize("event_id", [None, "OTHER"])
+def test_invalid_offset_rejected_before_event_filters(offset, event_id):
+    rules = {"rules": [_rule(offset=offset, etypes=["RIGHTS_ISSUE"])]}
+    with pytest.raises(ValueError, match="INVALID_BUSINESS_DAYS_OFFSET"):
+        compute_deadlines(_canon(_event()), rules, CALS,
+                          event_id=event_id, now=NOW)
+
+
+@pytest.mark.parametrize("week", [
+    None, [], [7], [-1], [True], [False], [1.0], ["0"], [0, 7], "01234",
+])
+@pytest.mark.parametrize("with_event", [False, True])
+def test_invalid_business_week_rejected_before_derivation(week, with_event):
+    calendars = copy.deepcopy(CALS)
+    calendars["calendars"][0]["business_week"] = week
+    canon = _canon(_event()) if with_event else _canon()
+    before = copy.deepcopy((canon, calendars))
+    with pytest.raises(ValueError, match="INVALID_BUSINESS_WEEK"):
+        compute_deadlines(canon, RULES, calendars, now=NOW)
+    assert (canon, calendars) == before
+
+
+@pytest.mark.parametrize("field, reason", [
+    ("business_week", "INVALID_BUSINESS_WEEK"),
+    ("holidays", "INVALID_HOLIDAYS"),
+    ("calendar_id", "INVALID_CALENDAR_ID"),
+])
+def test_missing_calendar_fields_rejected(field, reason):
+    calendars = copy.deepcopy(CALS)
+    del calendars["calendars"][0][field]
+    with pytest.raises(ValueError, match=reason):
+        compute_deadlines(_canon(), RULES, calendars, now=NOW)
+
+
+@pytest.mark.parametrize("cal_id", [None, "", "   ", 1, True, []])
+@pytest.mark.parametrize("in_rule", [False, True])
+def test_invalid_calendar_id_rejected(cal_id, in_rule):
+    rules, calendars = copy.deepcopy((RULES, CALS))
+    entry = rules["rules"][0] if in_rule else calendars["calendars"][0]
+    entry["calendar_id"] = cal_id
+    with pytest.raises(ValueError, match="INVALID_CALENDAR_ID"):
+        compute_deadlines(_canon(), rules, calendars, now=NOW)
+
+
+@pytest.mark.parametrize("reverse", [False, True])
+def test_duplicate_calendar_ids_rejected_without_mutation(reverse):
+    calendars = copy.deepcopy(CALS)
+    duplicate = copy.deepcopy(calendars["calendars"][0])
+    duplicate["holidays"] = []
+    calendars["calendars"].append(duplicate)
+    if reverse:
+        calendars["calendars"].reverse()
+    before = copy.deepcopy(calendars)
+    with pytest.raises(ValueError, match="DUPLICATE_CALENDAR_ID"):
+        compute_deadlines(_canon(), RULES, calendars, now=NOW)
+    assert calendars == before
+
+
+@pytest.mark.parametrize("holiday", [
+    None, True, 20260709, "", "2026-02-29", "2026-13-01", "20260709",
+    "2026-W28-4", "2026-07-09T00:00:00", [], {},
+])
+def test_invalid_holiday_date_rejected(holiday):
+    calendars = copy.deepcopy(CALS)
+    calendars["calendars"][0]["holidays"] = [holiday]
+    with pytest.raises(ValueError, match="INVALID_HOLIDAY_DATE"):
+        compute_deadlines(_canon(), RULES, calendars, now=NOW)
+
+
+@pytest.mark.parametrize("holidays", [None, "2026-07-09", {}])
+def test_invalid_holidays_collection_rejected(holidays):
+    calendars = copy.deepcopy(CALS)
+    calendars["calendars"][0]["holidays"] = holidays
+    with pytest.raises(ValueError, match="INVALID_HOLIDAYS"):
+        compute_deadlines(_canon(), RULES, calendars, now=NOW)
+
+
+@pytest.mark.parametrize("source, offset, week, holidays", [
+    ("0001-01-01", -1, [0, 1, 2, 3, 4], []),
+    ("9999-12-31", 1, [0, 1, 2, 3, 4], []),
+    ("9999-12-30", 1, [0], []),
+    ("0001-01-02", -1, [0], ["0001-01-01"]),
+    ("2026-07-10", 10 ** 100, [0, 1, 2, 3, 4], []),
+    ("2026-07-10", -(10 ** 100), [0, 1, 2, 3, 4], []),
+])
+def test_date_overflow_is_controlled_value_error(source, offset, week,
+                                                 holidays):
+    canon = _canon(_event(facts=[_fact("date.payment_date", source)]))
+    rules = {"rules": [_rule(offset=offset)]}
+    calendars = {"calendars": [{"calendar_id": "TARGET2",
+                                "business_week": week,
+                                "holidays": holidays}]}
+    before = copy.deepcopy((canon, rules, calendars))
+    with pytest.raises(ValueError, match="DEADLINE_DATE_OVERFLOW"):
+        compute_deadlines(canon, rules, calendars, now=NOW)
+    assert (canon, rules, calendars) == before
+
+
+@pytest.mark.parametrize("source", ["0001-01-01", "9999-12-31"])
+def test_zero_offset_valid_at_date_boundaries(source):
+    canon = _canon(_event(facts=[_fact("date.payment_date", source)]))
+    doc = compute_deadlines(canon, {"rules": [_rule(offset=0)]}, CALS,
+                            now=NOW)
+    assert _one(doc)[0]["deadline_date"] == source
+
+
+def test_nonstandard_business_week_and_leap_day_holiday():
+    calendars = {"calendars": [{"calendar_id": "CUSTOM",
+                                "business_week": [3, 6],
+                                "holidays": ["2024-02-29"]}]}
+    canon = _canon(_event(facts=[
+        _fact("date.payment_date", "2024-02-28")]))
+    doc = compute_deadlines(canon, {"rules": [_rule(offset=1, cal="CUSTOM")]},
+                            calendars, now=NOW)
+    assert _one(doc)[0]["deadline_date"] == "2024-03-03"
 
 
 def test_unknown_calendar_indeterminate_never_default():

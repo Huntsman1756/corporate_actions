@@ -21,6 +21,7 @@ from __future__ import annotations
 
 import hashlib
 import json
+from pathlib import Path
 
 _PROFILE = "CA_ES_CANONICAL_JSON_V1"
 _MAX_SAFE_INT = 2**53 - 1
@@ -73,6 +74,15 @@ def strict_json_loads(text: str) -> object:
         parse_float=_reject_float,
         parse_constant=_reject_constant,
     )
+
+
+def load_strict_json_object(path: str | Path) -> dict:
+    obj = strict_json_loads(Path(path).read_text(encoding="utf-8"))
+    if not isinstance(obj, dict):
+        raise ValueError(
+            f"se requiere un objeto JSON como raiz, no {type(obj).__name__}"
+        )
+    return obj
 
 
 def _assert_allowed_types(obj: object) -> None:

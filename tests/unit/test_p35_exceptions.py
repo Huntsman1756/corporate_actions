@@ -4,6 +4,7 @@ Los recon docs se construyen con reconcile() real sobre entitlements
 sinteticos; los casos de lifecycle usan build_cases_doc + merge.
 """
 
+import copy
 import json
 
 import pytest
@@ -13,6 +14,7 @@ from ca_es.exceptions import (
     apply_transition,
     build_cases_doc,
     classify_cases,
+    merge_cases,
     queue,
 )
 from ca_es.reconciliation import reconcile
@@ -170,6 +172,75 @@ def test_disappearance_registered_not_deleted():
         "CREATED", "NOT_OBSERVED"
     ]
     assert second["queue"] == []  # fuera de la cola
+
+
+@pytest.mark.parametrize("has_exception", [False, True])
+@pytest.mark.parametrize("mixed_previous", [False, True])
+def test_previous_cases_reject_unrelated_event_without_mutation(
+        has_exception, mixed_previous):
+    previous = _doc(_ent())["cases"]
+    if mixed_previous:
+        previous.append(copy.deepcopy(previous[0]))
+    previous[-1]["canonical_event_id"] = "evt-other"
+    previous[-1]["case_key"] = "evt-other|expected:A001:EUR"
+    movements = [] if has_exception else [_mov()]
+    recon = _recon(_ent(), movements=movements)
+    before = copy.deepcopy((recon, previous))
+    with pytest.raises(ValueError, match="CASES_EVENT_MISMATCH"):
+        build_cases_doc(recon, previous, now=T1)
+    assert (recon, previous) == before
+
+
+@pytest.mark.parametrize("observed_empty", [False, True])
+def test_merge_rejects_mixed_event_scope(observed_empty):
+    previous = _doc(_ent())["cases"]
+    other = copy.deepcopy(previous[0])
+    other["canonical_event_id"] = "evt-other"
+    other["case_key"] = "evt-other|expected:A001:EUR"
+    if observed_empty:
+        previous.append(other)
+        observed = []
+    else:
+        observed = [other]
+    before = copy.deepcopy((previous, observed))
+    with pytest.raises(ValueError, match="CASES_EVENT_MISMATCH"):
+        merge_cases(previous, observed, T1)
+    assert (previous, observed) == before
+
+
+@pytest.mark.parametrize("has_exception", [False, True])
+@pytest.mark.parametrize("reverse", [False, True])
+@pytest.mark.parametrize("direct_merge", [False, True])
+def test_duplicate_previous_keys_rejected_without_losing_history(
+        has_exception, reverse, direct_merge):
+    previous = _doc(_ent())["cases"]
+    duplicate = copy.deepcopy(previous[0])
+    apply_transition(duplicate, "IN_REVIEW", actor="ops", at=T1)
+    previous.append(duplicate)
+    if reverse:
+        previous.reverse()
+    recon = _recon(_ent(), movements=[] if has_exception else [_mov()])
+    before = copy.deepcopy((recon, previous))
+    with pytest.raises(ValueError, match="DUPLICATE_PREVIOUS_CASE_KEY"):
+        if direct_merge:
+            merge_cases(previous, classify_cases(recon), T2)
+        else:
+            build_cases_doc(recon, previous, now=T2)
+    assert (recon, previous) == before
+
+
+def test_same_event_empty_recon_marks_case_unobserved_once():
+    previous = _doc(_ent())["cases"]
+    before = copy.deepcopy(previous)
+    recon = {"canonical_event_id": EV, "items": []}
+    result = build_cases_doc(recon, previous, now=T1)
+    again = build_cases_doc(recon, result["cases"], now=T2)
+    assert previous == before
+    assert result["canonical_event_id"] == EV
+    assert result["cases"][0]["observed"] is False
+    assert [h["type"] for h in again["cases"][0]["history"]] == [
+        "CREATED", "NOT_OBSERVED",
+    ]
 
 
 def test_resolved_reappears_reopens_same_case():

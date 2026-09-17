@@ -36,6 +36,42 @@ def test_input_seals():
     assert hashlib.sha256(canon_bytes(payload)).hexdigest() == sha
 
 
+@pytest.mark.parametrize("artifact", ["canon", "policy"])
+@pytest.mark.parametrize("invalid_json", [
+    '{"events": [], "sources": {}, "metadata": {"value": 1, "value": 2}}',
+    '{"events": [], "sources": {}, "metadata": {"value": 0.5}}',
+    '{"events": [], "sources": {}, "metadata": {"value": NaN}}',
+    '{"events": [], "sources": {}, "metadata": {"value": Infinity}}',
+    '{"events": [], "sources": {}, "metadata": {"value": -Infinity}}',
+    '[]',
+    'null',
+])
+def test_load_surface_rejects_invalid_artifact_json(
+    tmp_path, artifact, invalid_json
+):
+    canon_path = tmp_path / "canon.json"
+    policy_path = tmp_path / "policy.json"
+    canon_path.write_text('{"events": []}', encoding="utf-8")
+    policy_path.write_text('{"sources": {}}', encoding="utf-8")
+    target = canon_path if artifact == "canon" else policy_path
+    target.write_text(invalid_json, encoding="utf-8")
+    with pytest.raises(ValueError):
+        load_surface(canon_path, policy_path)
+
+
+def test_load_surface_accepts_canonical_json_types(tmp_path):
+    canon = {"events": [], "metadata": {
+        "amount": "0.50", "count": 1, "enabled": True, "absent": None}}
+    policy = {"sources": {}}
+    canon_path = tmp_path / "canon.json"
+    policy_path = tmp_path / "policy.json"
+    canon_path.write_text(json.dumps(canon), encoding="utf-8")
+    policy_path.write_text(json.dumps(policy), encoding="utf-8")
+    loaded = load_surface(canon_path, policy_path)
+    assert loaded.canon == canon
+    assert loaded.policy == policy
+
+
 def test_search_isin_exact(surface):
     found = surface.search(isin="ES0105448007")
     assert [e["canonical_event_id"] for e in found] == [BMEG_DIV]

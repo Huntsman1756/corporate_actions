@@ -50,11 +50,17 @@ def _shift_business_days(source: date, offset: int,
         return source
     step = 1 if offset > 0 else -1
     remaining = abs(offset)
+    boundary = date.max if offset > 0 else date.min
+    if remaining > abs((boundary - source).days):
+        raise ValueError("DEADLINE_DATE_OVERFLOW")
     d = source
-    while remaining:
-        d += timedelta(days=step)
-        if d.weekday() in business_week and d.isoformat() not in holidays:
-            remaining -= 1
+    try:
+        while remaining:
+            d += timedelta(days=step)
+            if d.weekday() in business_week and d.isoformat() not in holidays:
+                remaining -= 1
+    except OverflowError as exc:
+        raise ValueError("DEADLINE_DATE_OVERFLOW") from exc
     return d
 
 
@@ -106,7 +112,7 @@ def _source_deadlines(event_id, current):
 def _derived_deadline(event_id, event_type, rule, current, calendars):
     dtype = rule["deadline_type"]
     source_field = rule["source_field"]
-    offset = int(rule["business_days_offset"])
+    offset = rule["business_days_offset"]
     cal_id = rule["calendar_id"]
 
     base = {
@@ -161,11 +167,36 @@ def compute_deadlines(canon_doc: dict, rules_doc: dict,
 
     read-only: no muta canon, reglas ni calendarios.
     """
-    calendars = {
-        c["calendar_id"]: c
-        for c in (calendars_doc or {}).get("calendars", [])
-    }
     rules = (rules_doc or {}).get("rules", [])
+    for rule in rules:
+        if type(rule.get("business_days_offset")) is not int:
+            raise ValueError("INVALID_BUSINESS_DAYS_OFFSET")
+        cal_id = rule.get("calendar_id")
+        if not isinstance(cal_id, str) or not cal_id.strip():
+            raise ValueError("INVALID_CALENDAR_ID")
+
+    calendars = {}
+    for cal in (calendars_doc or {}).get("calendars", []):
+        cal_id = cal.get("calendar_id")
+        if not isinstance(cal_id, str) or not cal_id.strip():
+            raise ValueError("INVALID_CALENDAR_ID")
+        if cal_id in calendars:
+            raise ValueError(f"DUPLICATE_CALENDAR_ID: {cal_id}")
+        week = cal.get("business_week")
+        if (not isinstance(week, list) or not week
+                or any(type(day) is not int or not 0 <= day <= 6
+                       for day in week)):
+            raise ValueError(f"INVALID_BUSINESS_WEEK: {cal_id}")
+        holidays = cal.get("holidays")
+        if not isinstance(holidays, list):
+            raise ValueError(f"INVALID_HOLIDAYS: {cal_id}")
+        for holiday in holidays:
+            parsed = _parse_iso(holiday)
+            if not isinstance(holiday, str) or parsed is None:
+                raise ValueError(f"INVALID_HOLIDAY_DATE: {cal_id}")
+            if parsed.isoformat() != holiday:
+                raise ValueError(f"INVALID_HOLIDAY_DATE: {cal_id}")
+        calendars[cal_id] = cal
 
     deadlines = []
     for event in sorted(canon_doc.get("events", []),

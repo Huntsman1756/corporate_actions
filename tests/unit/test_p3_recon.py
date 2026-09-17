@@ -3,7 +3,7 @@
 tolerancias, sin sumas silenciosas, INDETERMINATE nunca excepcion
 falsa."""
 import json
-from decimal import Decimal
+from decimal import Decimal, Inexact, InvalidOperation, Rounded, localcontext
 from pathlib import Path
 
 import pytest
@@ -109,6 +109,110 @@ def test_amount_mismatch_exact_delta(surface):
     # delta exacto: actual - expected = 1500.00 - 1562.500 = -62.5
     assert Decimal(item["delta"]["normalized"]) == Decimal("-62.5")
     assert item["delta"]["currency"] == "EUR"
+
+
+@pytest.mark.parametrize("precision", [1, 6, 28])
+@pytest.mark.parametrize(
+    "actual,expected,delta",
+    [
+        ("1", "1E-80", "0." + "9" * 80),
+        ("1E-80", "1", "-0." + "9" * 80),
+        ("1", "-1E-80", "1." + "0" * 79 + "1"),
+        ("1E+40", "1E-40", "9" * 40 + "." + "9" * 40),
+        ("123456789012345678901234567890.01",
+         "123456789012345678901234567890.00", "0.01"),
+        ("1562.50", "1562.500", "0.000"),
+        ("0", "0.00000", "0.00000"),
+    ],
+)
+def test_subtraction_independent_of_precision(
+    surface, precision, actual, expected, delta,
+):
+    ent = _entitlements(surface, _pos())
+    ent["entitlements"][0]["gross_cash"].update(
+        normalized=expected, scale=-Decimal(expected).as_tuple().exponent,
+    )
+    with localcontext() as context:
+        context.prec = precision
+        context.traps[Inexact] = True
+        context.traps[Rounded] = True
+        context.clear_flags()
+        recon = reconcile(ent, _movements(_mov(amount=actual)))
+        assert context.prec == precision
+        assert not any(context.flags.values())
+    item = recon["items"][0]
+    assert item["status"] == (
+        "MATCH" if Decimal(actual) == Decimal(expected) else "AMOUNT_MISMATCH"
+    )
+    assert item["delta"] == {
+        "normalized": delta,
+        "currency": "EUR",
+        "scale": -Decimal(delta).as_tuple().exponent,
+    }
+
+
+@pytest.mark.parametrize("trap", [True, False])
+@pytest.mark.parametrize("amount", ["NaN", "sNaN", "Infinity", "-Infinity"])
+def test_nonfinite_movements_never_match(surface, amount, trap):
+    ent = _entitlements(surface, _pos())
+    with localcontext() as context:
+        context.traps[InvalidOperation] = trap
+        recon = reconcile(ent, _movements(_mov(amount=amount)))
+    assert recon["items"][0]["status"] == "MISSING_CASH"
+    assert recon["summary"]["invalid_movements"] == 1
+    assert recon["summary"]["unexpected_cash"] == 0
+    assert recon["invalid_movements"][0]["reasons"] == ["amount(parseable)"]
+
+
+@pytest.mark.parametrize("trap", [True, False])
+@pytest.mark.parametrize("mode", ["matched", "missing", "duplicate", "net"])
+@pytest.mark.parametrize(
+    "expected", ["NaN", "sNaN", "Infinity", "-Infinity", "abc", None, 1.25],
+)
+def test_invalid_expected_fails_predictably(surface, expected, mode, trap):
+    ent = _entitlements(surface, _pos())
+    ent["entitlements"][0]["gross_cash"]["normalized"] = expected
+    if mode == "duplicate":
+        ent["entitlements"].append(ent["entitlements"][0])
+    movements = _movements() if mode == "missing" else _movements(
+        _mov(basis="NET" if mode == "net" else "GROSS")
+    )
+    with localcontext() as context:
+        context.traps[InvalidOperation] = trap
+        with pytest.raises(ValueError, match="expected gross_cash must be"):
+            reconcile(ent, movements)
+
+
+@pytest.mark.parametrize("event_id", ["another-event", ""])
+@pytest.mark.parametrize("mode", ["entitled", "indeterminate", "duplicate"])
+def test_explicit_event_id_prevents_isin_fallback(surface, event_id, mode):
+    ent = _entitlements(
+        surface, _pos(as_of="2026-05-03" if mode == "indeterminate" else SAN_RECORD)
+    )
+    if mode == "duplicate":
+        ent["entitlements"].append(ent["entitlements"][0])
+    recon = reconcile(ent, _movements(_mov(event_id=event_id, isin=SAN_ISIN)))
+    assert recon["summary"]["match"] == 0
+    assert recon["summary"]["unexpected_cash"] == 1
+    for item in recon["items"]:
+        if item["status"] != "UNEXPECTED_CASH":
+            assert item["movement_ids"] == []
+            assert item.get("linked_movement_ids", []) == []
+    if mode == "entitled":
+        assert recon["summary"]["missing_cash"] == 1
+
+
+def test_null_event_id_preserves_isin_compatibility(surface):
+    ent = _entitlements(surface, _pos())
+    movement = _mov(isin=SAN_ISIN)
+    movement["event_id"] = None
+    assert reconcile(ent, _movements(movement))["items"][0]["status"] == "MATCH"
+
+
+def test_explicit_matching_event_id_remains_authoritative(surface):
+    ent = _entitlements(surface, _pos())
+    recon = reconcile(ent, _movements(_mov(isin="OTHER-ISIN")))
+    assert recon["items"][0]["status"] == "MATCH"
 
 
 def test_missing_cash(surface):

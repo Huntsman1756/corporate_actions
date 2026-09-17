@@ -5,15 +5,31 @@ import argparse
 import json
 from pathlib import Path
 
-from .canonical import canonical_json
+from .canonical import canonical_json, load_strict_json_object
 from .gates import evaluate_gates
 from .pipeline import run_pipeline
 from .reference.esma_firds import load_firds_listings
 from .source_policy import load_source_policy
-from .surface import load_surface
+from .surface import Surface
 
 DEFAULT_RESULTS = Path("g0/results")
 DEFAULT_POLICY = Path("docs/sources/source-policy.json")
+
+
+class _InputError(Exception):
+    pass
+
+
+def _read_json(path: str | Path, label: str) -> dict:
+    try:
+        return load_strict_json_object(path)
+    except (OSError, ValueError) as exc:
+        raise _InputError(f"{label}: {exc}") from exc
+
+
+def _input_error(exc: _InputError) -> int:
+    print(json.dumps({"status": "INVALID_INPUT", "detail": str(exc)}))
+    return 2
 
 
 def _repo_root(explicit: str | None) -> Path:
@@ -208,7 +224,9 @@ def cmd_isin(args: argparse.Namespace) -> int:
 def _surface(args: argparse.Namespace):
     repo_root = _repo_root(args.repo_root)
     policy = Path(args.policy) if args.policy else repo_root / DEFAULT_POLICY
-    return load_surface(Path(args.canon), policy)
+    return Surface(
+        _read_json(args.canon, "canon"), _read_json(policy, "policy")
+    )
 
 
 def _emit(payload: object) -> int:
@@ -258,7 +276,10 @@ def _load_previous(args: argparse.Namespace):
         return None
     repo_root = _repo_root(args.repo_root)
     policy = Path(args.policy) if args.policy else repo_root / DEFAULT_POLICY
-    return load_surface(Path(args.previous_canon), policy)
+    return Surface(
+        _read_json(args.previous_canon, "previous-canon"),
+        _read_json(policy, "policy"),
+    )
 
 
 def cmd_brief(args: argparse.Namespace) -> int:
@@ -349,14 +370,11 @@ def _recon_doc(args: argparse.Namespace):
     from .reconciliation import load_movements, reconcile
 
     if getattr(args, "recon", None):
-        return (
-            json.loads(Path(args.recon).read_text(encoding="utf-8")),
-            0,
-        )
+        return _load_json(args.recon, "recon")
     if args.entitlements:
-        entitlement_doc = json.loads(
-            Path(args.entitlements).read_text(encoding="utf-8")
-        )
+        entitlement_doc, code = _load_json(args.entitlements, "entitlements")
+        if entitlement_doc is None:
+            return None, code
     elif args.canon and args.event and args.positions:
         surface = _surface(args)
         try:
@@ -403,7 +421,12 @@ def _recon_doc(args: argparse.Namespace):
             json.dumps({"status": "INVALID_MOVEMENTS", "detail": str(exc)})
         )
         return None, 2
-    return reconcile(entitlement_doc, movements), 0
+    try:
+        doc = reconcile(entitlement_doc, movements)
+    except ValueError as exc:
+        print(json.dumps({"status": "INVALID_INPUT", "detail": str(exc)}))
+        return None, 2
+    return doc, 0
 
 
 def cmd_reconcile(args: argparse.Namespace) -> int:
@@ -422,15 +445,26 @@ def cmd_exceptions(args: argparse.Namespace) -> int:
     previous = None
     if args.cases:
         try:
-            previous = load_cases(Path(args.cases))["cases"]
-        except (ValueError, OSError, KeyError) as exc:
+            store = load_cases(Path(args.cases))
+            event_id = store.get("canonical_event_id")
+            if not isinstance(event_id, str) or not event_id.strip():
+                raise ValueError("INVALID_CASES_EVENT_ID")
+            if event_id != recon_doc.get("canonical_event_id"):
+                raise ValueError("CASES_EVENT_MISMATCH")
+            previous = store["cases"]
+        except (ValueError, OSError) as exc:
             print(
                 json.dumps(
                     {"status": "INVALID_CASES", "detail": str(exc)}
                 )
             )
             return 2
-    return _emit(build_cases_doc(recon_doc, previous, now=args.now))
+    try:
+        doc = build_cases_doc(recon_doc, previous, now=args.now)
+    except ValueError as exc:
+        print(json.dumps({"status": "INVALID_INPUT", "detail": str(exc)}))
+        return 2
+    return _emit(doc)
 
 
 def cmd_case_transition(args: argparse.Namespace) -> int:
@@ -515,7 +549,7 @@ def _facts_doc(args: argparse.Namespace):
     from .swift_mt import AdapterUnavailable, parse_mt
 
     if getattr(args, "facts", None):
-        return json.loads(Path(args.facts).read_text(encoding="utf-8")), 0
+        return _load_json(args.facts, "facts")
     try:
         fin = Path(args.fin).read_bytes().decode("utf-8")
     except OSError as exc:
@@ -555,11 +589,9 @@ def cmd_swift_bind(args: argparse.Namespace) -> int:
     except ValueError as exc:
         print(json.dumps({"status": "INVALID_FACTS", "detail": str(exc)}))
         return 2
-    try:
-        canon = json.loads(Path(args.canon).read_text(encoding="utf-8"))
-    except OSError as exc:
-        print(json.dumps({"status": "INVALID_INPUT", "detail": str(exc)}))
-        return 2
+    canon, code = _load_json(args.canon, "canon")
+    if canon is None:
+        return code
     doc = bind_event(msg, canon, now=args.now)
     doc["ca_message"] = msg
     return _emit(doc)
@@ -571,11 +603,9 @@ def cmd_swift_cash_candidate(args: argparse.Namespace) -> int:
     facts_doc, code = _facts_doc(args)
     if facts_doc is None:
         return code
-    try:
-        canon = json.loads(Path(args.canon).read_text(encoding="utf-8"))
-    except OSError as exc:
-        print(json.dumps({"status": "INVALID_INPUT", "detail": str(exc)}))
-        return 2
+    canon, code = _load_json(args.canon, "canon")
+    if canon is None:
+        return code
     try:
         doc = cash_candidate(facts_doc, canon, now=args.now)
     except ValueError as exc:
@@ -586,11 +616,9 @@ def cmd_swift_cash_candidate(args: argparse.Namespace) -> int:
 
 def _load_json(path: str, label: str):
     try:
-        return json.loads(Path(path).read_text(encoding="utf-8")), 0
-    except (OSError, json.JSONDecodeError) as exc:
-        print(json.dumps({"status": "INVALID_INPUT",
-                          "detail": f"{label}: {exc}"}))
-        return None, 2
+        return _read_json(path, label), 0
+    except _InputError as exc:
+        return None, _input_error(exc)
 
 
 def cmd_deadlines(args: argparse.Namespace) -> int:
@@ -605,8 +633,12 @@ def cmd_deadlines(args: argparse.Namespace) -> int:
     calendars, code = _load_json(args.calendars, "calendars")
     if calendars is None:
         return code
-    doc = compute_deadlines(
-        canon, rules, calendars, event_id=args.event, now=args.now)
+    try:
+        doc = compute_deadlines(
+            canon, rules, calendars, event_id=args.event, now=args.now)
+    except ValueError as exc:
+        print(json.dumps({"status": "INVALID_INPUT", "detail": str(exc)}))
+        return 2
     return _emit(doc)
 
 
@@ -850,7 +882,10 @@ def build_parser() -> argparse.ArgumentParser:
 def main(argv: list[str] | None = None) -> int:
     parser = build_parser()
     args = parser.parse_args(argv)
-    return args.func(args)
+    try:
+        return args.func(args)
+    except _InputError as exc:
+        return _input_error(exc)
 
 
 if __name__ == "__main__":  # pragma: no cover

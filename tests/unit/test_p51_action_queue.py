@@ -5,6 +5,7 @@ proximidad. Umbrales explicitos; INDETERMINATE aparte; SOURCE y
 DERIVED coexisten. Brief V1 intacto.
 """
 
+import copy
 import json
 from pathlib import Path
 
@@ -92,6 +93,66 @@ def test_indeterminate_preserved_apart():
     assert q["items"] == []
     assert len(q["indeterminate"]) == 1
     assert q["indeterminate"][0]["reasons"] == ["UNKNOWN_CALENDAR"]
+
+
+@pytest.mark.parametrize("status", [
+    "INDETERMINATE", "UNKNOWN", "source", "", None, True, [], {},
+])
+def test_non_actionable_status_preserved_even_with_valid_date(status):
+    deadline = _dl("E1", "T", AS_OF, status=status)
+    before = copy.deepcopy(deadline)
+    result = _queue(deadline)
+    assert result["items"] == []
+    assert result["indeterminate"] == [before]
+    assert deadline == before
+
+
+def test_missing_derivation_status_preserved_apart():
+    deadline = _dl("E1", "T", AS_OF)
+    del deadline["derivation_status"]
+    result = _queue(deadline)
+    assert result["items"] == []
+    assert result["indeterminate"] == [deadline]
+
+
+@pytest.mark.parametrize("status", ["SOURCE", "DERIVED"])
+@pytest.mark.parametrize("day", [None, "not-a-date", "2026-02-29"])
+def test_actionable_status_requires_valid_date(status, day):
+    deadline = _dl("E1", "T", day, status=status)
+    result = _queue(deadline)
+    assert result["items"] == []
+    assert result["indeterminate"] == [deadline]
+
+
+@pytest.mark.parametrize("field", ["window_days", "due_soon_days"])
+@pytest.mark.parametrize("value", [-1, 0.5, 1.0, True, False, "2", None])
+@pytest.mark.parametrize("with_deadline", [False, True])
+def test_invalid_threshold_rejected_without_mutation(field, value,
+                                                     with_deadline):
+    doc = {"deadlines": [_dl("E1", "T", AS_OF)] if with_deadline else []}
+    thresholds = {"window_days": 7, "due_soon_days": 2}
+    thresholds[field] = value
+    before = copy.deepcopy((doc, thresholds))
+    with pytest.raises(ValueError, match=f"INVALID_{field.upper()}"):
+        build_action_queue(doc, AS_OF, **thresholds, now=NOW)
+    assert (doc, thresholds) == before
+
+
+def test_zero_thresholds_keep_overdue_and_today_only():
+    result = _queue(
+        _dl("E1", "T", "2026-07-05"),
+        _dl("E2", "T", AS_OF),
+        _dl("E3", "T", "2026-07-07"),
+        window=0, soon=0,
+    )
+    assert [item["action_status"] for item in result["items"]] == [
+        OVERDUE, DUE_TODAY,
+    ]
+
+
+def test_due_soon_threshold_independent_of_upcoming_window():
+    result = _queue(_dl("E1", "T", "2026-07-08"), window=0, soon=2)
+    assert result["items"][0]["action_status"] == DUE_SOON
 
 
 def test_source_and_derived_same_type_coexist():

@@ -4,6 +4,8 @@ import hashlib
 import json
 from pathlib import Path
 
+import pytest
+
 from ca_es.export import (
     canon_bytes,
     canon_payload,
@@ -143,6 +145,7 @@ def test_canon_bytes_deterministic():
     ).hexdigest()
 
 
+@pytest.mark.private_corpus("g2")
 def test_manifest_seals_full_sha256():
     manifest = json.loads((REPO / MANIFEST).read_text(encoding="utf-8"))
     for doc in manifest["documents"]:
@@ -165,6 +168,7 @@ def test_manifest_matches_preregistration():
         assert doc["content_sha256"] == expected[doc["official_document_id"]]
 
 
+@pytest.mark.private_corpus("g2")
 def test_san_no_merge_without_adjudication():
     body = _run()["body"]
     san_a = candidate_event_id("CNMV", "CNMV-SAN-DIV-2026")
@@ -180,6 +184,7 @@ def test_san_no_merge_without_adjudication():
     )
 
 
+@pytest.mark.private_corpus("g2")
 def test_san_manual_merge_with_adjudication():
     body = _run(ADJUDICATIONS)["body"]
     san_a = candidate_event_id("CNMV", "CNMV-SAN-DIV-2026")
@@ -196,6 +201,7 @@ def test_san_manual_merge_with_adjudication():
     )
 
 
+@pytest.mark.private_corpus("g2")
 def test_portfolio_quarantine_in_corpus():
     body = _run(ADJUDICATIONS)["body"]
     canon = operational_canon(body, CORPUS_ID)

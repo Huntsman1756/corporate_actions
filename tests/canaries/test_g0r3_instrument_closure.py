@@ -2,8 +2,12 @@ from __future__ import annotations
 
 from datetime import date
 
+import pytest
+
 from ca_es.reference.esma_firds import load_firds_listings
 from ca_es.reference.instrument_binding import load_instrument_bindings
+
+pytestmark = pytest.mark.private_corpus("g0")
 
 
 def _p3_event(result: dict) -> dict:

@@ -38,9 +38,10 @@ automatica, TUI.
 from __future__ import annotations
 
 import copy
-import json
 from decimal import Decimal, InvalidOperation
 from pathlib import Path
+
+from .canonical import load_strict_json_object
 
 CASES_SCHEMA = "CA_ES_EXCEPTION_CASES_V1"
 
@@ -103,12 +104,17 @@ _FACTUAL_FIELDS = (
 
 
 def load_cases(path: Path) -> dict:
-    doc = json.loads(path.read_text(encoding="utf-8"))
+    doc = load_strict_json_object(path)
     if doc.get("schema") != CASES_SCHEMA:
         raise ValueError(
             f"cases schema debe ser {CASES_SCHEMA}, "
             f"recibido {doc.get('schema')!r}"
         )
+    cases = doc.get("cases")
+    if not isinstance(cases, list) or any(
+        not isinstance(case, dict) for case in cases
+    ):
+        raise ValueError("cases debe ser una lista de objetos")
     return doc
 
 
@@ -231,9 +237,17 @@ def merge_cases(previous_cases: list[dict] | None,
     - caso no observado    -> observed=false + NOT_OBSERVED
                               (nunca se borra, workflow intacto)
     """
-    prev = {
-        c["case_key"]: copy.deepcopy(c) for c in (previous_cases or [])
-    }
+    previous_cases = previous_cases or []
+    event_ids = {c.get("canonical_event_id")
+                 for c in previous_cases + observed}
+    if len(event_ids) > 1:
+        raise ValueError("CASES_EVENT_MISMATCH")
+    prev = {}
+    for case in previous_cases:
+        key = case["case_key"]
+        if key in prev:
+            raise ValueError(f"DUPLICATE_PREVIOUS_CASE_KEY: {key}")
+        prev[key] = copy.deepcopy(case)
     merged = []
     for obs in observed:
         key = obs["case_key"]
@@ -379,6 +393,10 @@ def build_cases_doc(recon_doc: dict,
                     previous_cases: list[dict] | None = None,
                     now: str = "") -> dict:
     """recon result + casos previos -> CA_ES_EXCEPTION_CASES_V1."""
+    event_id = recon_doc.get("canonical_event_id")
+    if any(c.get("canonical_event_id") != event_id
+           for c in (previous_cases or [])):
+        raise ValueError("CASES_EVENT_MISMATCH")
     observed = classify_cases(recon_doc)
     cases = merge_cases(previous_cases, observed, now)
     by_workflow: dict[str, int] = {}

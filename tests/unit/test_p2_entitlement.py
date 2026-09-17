@@ -2,7 +2,7 @@
 """Tests P2.0: cash dividend entitlement — derecho monetario
 determinista, Decimal-only, INDETERMINATE nunca estimacion."""
 import json
-from decimal import Decimal
+from decimal import Decimal, Inexact, InvalidOperation, Rounded, localcontext
 from pathlib import Path
 
 import pytest
@@ -100,6 +100,83 @@ def test_fractional_quantity_decimal_exact(surface):
     # 0.125 x 333.5 = 41.6875 exacto, sin artefactos float
     assert ent["gross_cash"]["normalized"] == "41.6875"
     assert ent["status"] == "ENTITLED"
+
+
+@pytest.mark.parametrize("precision", [1, 6, 28])
+@pytest.mark.parametrize(
+    "gross,quantity,expected",
+    [
+        ("0.125", "123456789012345678901234567890",
+         "15432098626543209862654320986.250"),
+        ("1.0000000000000000000000000000000000000001", "9",
+         "9.0000000000000000000000000000000000000009"),
+        ("1E-80", "1E-80", "0." + "0" * 159 + "1"),
+        ("1E+40", "9", "9" + "0" * 40),
+    ],
+)
+def test_multiplication_independent_of_precision(
+    precision, gross, quantity, expected,
+):
+    canon = _canon_copy()
+    san = next(e for e in canon["events"] if e["canonical_event_id"] == SAN)
+    for fact in san["facts"]:
+        if fact["field_path"] == "amount.gross_per_share":
+            fact["value"].update(
+                normalized=gross, raw_lexeme=gross,
+                scale=-Decimal(gross).as_tuple().exponent,
+            )
+    surface = _surface_of(canon)
+    with localcontext() as context:
+        context.prec = precision
+        context.traps[Inexact] = True
+        context.traps[Rounded] = True
+        context.clear_flags()
+        ent = compute_entitlements(
+            surface, SAN, _positions(_pos(quantity=quantity))
+        )["entitlements"][0]
+        assert context.prec == precision
+        assert not any(context.flags.values())
+    assert ent["status"] == "ENTITLED"
+    assert ent["gross_cash"]["normalized"] == expected
+    assert ent["gross_cash"]["scale"] == (
+        -Decimal(gross).as_tuple().exponent
+        - Decimal(quantity).as_tuple().exponent
+    )
+
+
+@pytest.mark.parametrize("trap", [True, False])
+@pytest.mark.parametrize("quantity", ["NaN", "sNaN", "Infinity", "-Infinity"])
+def test_nonfinite_quantity_indeterminate(surface, quantity, trap):
+    with localcontext() as context:
+        context.traps[InvalidOperation] = trap
+        ent = compute_entitlements(
+            surface, SAN, _positions(_pos(quantity=quantity))
+        )["entitlements"][0]
+    assert ent["status"] == "INDETERMINATE"
+    assert ent["reasons"] == ["INVALID_QUANTITY"]
+    assert ent["position_quantity"] is None
+    assert "gross_cash" not in ent
+
+
+@pytest.mark.parametrize("trap", [True, False])
+@pytest.mark.parametrize(
+    "gross", ["NaN", "sNaN", "Infinity", "-Infinity", "abc", None, 0.125],
+)
+def test_invalid_gross_indeterminate(surface, monkeypatch, gross, trap):
+    from copy import deepcopy
+
+    state = deepcopy(surface._current_state(surface._find(SAN)))
+    for entry in state["amount.gross_per_share"]["values"]:
+        entry["value"]["normalized"] = gross
+    monkeypatch.setattr(surface, "_current_state", lambda event: state)
+    with localcontext() as context:
+        context.traps[InvalidOperation] = trap
+        ent = compute_entitlements(
+            surface, SAN, _positions(_pos())
+        )["entitlements"][0]
+    assert ent["status"] == "INDETERMINATE"
+    assert ent["reasons"] == ["INVALID_GROSS_AMOUNT"]
+    assert "gross_cash" not in ent
 
 
 def test_multiple_positions_summary(surface):

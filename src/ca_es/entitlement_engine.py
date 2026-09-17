@@ -32,9 +32,10 @@ Statuses: ENTITLED / NOT_ENTITLED / INDETERMINATE / UNSUPPORTED.
 """
 from __future__ import annotations
 
-import json
-from decimal import Decimal, InvalidOperation
+from decimal import Decimal, InvalidOperation, localcontext
 from pathlib import Path
+
+from .canonical import load_strict_json_object
 
 ENTITLEMENT_VERSION = "CA_ES_ENTITLEMENT_V1"
 POSITIONS_SCHEMA = "CA_ES_POSITIONS_V1"
@@ -62,12 +63,17 @@ def _money(normalized: Decimal, currency: str) -> dict:
 def load_positions(path: Path) -> dict:
     """Carga un documento CA_ES_POSITIONS_V1 (input separado del
     canon; la validacion de campos es por posicion, en compute)."""
-    doc = json.loads(path.read_text(encoding="utf-8"))
+    doc = load_strict_json_object(path)
     if doc.get("schema") != POSITIONS_SCHEMA:
         raise ValueError(
             f"positions schema debe ser {POSITIONS_SCHEMA}, "
             f"recibido {doc.get('schema')!r}"
         )
+    positions = doc.get("positions")
+    if not isinstance(positions, list) or any(
+        not isinstance(position, dict) for position in positions
+    ):
+        raise ValueError("positions debe ser una lista de objetos")
     return doc
 
 
@@ -86,9 +92,12 @@ def _position_quantity(position: dict) -> Decimal | None:
     if isinstance(raw, float):  # nunca float en el contrato
         return None
     try:
-        return Decimal(str(raw))
+        quantity = Decimal(str(raw))
     except (InvalidOperation, ValueError):
         return None
+    if not quantity.is_finite():
+        return None
+    return quantity
 
 
 def _entitlement(
@@ -167,9 +176,21 @@ def _entitlement(
         )
 
     gross_value = gross_entries[0]["value"]
-    per_share = Decimal(gross_value["normalized"])
+    raw = gross_value.get("normalized")
+    if isinstance(raw, float):
+        return fail(INDETERMINATE, "INVALID_GROSS_AMOUNT")
+    try:
+        per_share = Decimal(str(raw))
+    except (InvalidOperation, ValueError):
+        return fail(INDETERMINATE, "INVALID_GROSS_AMOUNT")
+    if not per_share.is_finite():
+        return fail(INDETERMINATE, "INVALID_GROSS_AMOUNT")
     currency = gross_value["currency"]
-    gross_cash = per_share * quantity
+    with localcontext() as context:
+        context.prec = (
+            len(per_share.as_tuple().digits) + len(quantity.as_tuple().digits)
+        )
+        gross_cash = per_share * quantity
 
     for entry in (*gross_entries, *record_entries):
         base["evidence"]["assertion_ids"].append(entry["assertion_id"])

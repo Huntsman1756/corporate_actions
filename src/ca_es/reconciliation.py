@@ -40,9 +40,10 @@ Surface; la provenance viaja dentro del documento de entitlements.
 """
 from __future__ import annotations
 
-import json
-from decimal import Decimal, InvalidOperation
+from decimal import Decimal, InvalidOperation, localcontext
 from pathlib import Path
+
+from .canonical import load_strict_json_object
 
 RECON_VERSION = "CA_ES_CASH_RECON_V1"
 MOVEMENTS_SCHEMA_V1 = "CA_ES_CASH_MOVEMENTS_V1"
@@ -72,12 +73,18 @@ MOVEMENT_REQUIRED = ("movement_id", "account_id", "currency", "amount")
 
 
 def load_movements(path: Path) -> dict:
-    doc = json.loads(path.read_text(encoding="utf-8"))
-    if doc.get("schema") not in MOVEMENTS_SCHEMAS:
+    doc = load_strict_json_object(path)
+    schema = doc.get("schema")
+    if not isinstance(schema, str) or schema not in MOVEMENTS_SCHEMAS:
         raise ValueError(
             f"movements schema debe ser {sorted(MOVEMENTS_SCHEMAS)}, "
             f"recibido {doc.get('schema')!r}"
         )
+    movements = doc.get("movements")
+    if not isinstance(movements, list) or any(
+        not isinstance(movement, dict) for movement in movements
+    ):
+        raise ValueError("movements debe ser una lista de objetos")
     return doc
 
 
@@ -86,9 +93,12 @@ def _movement_amount(movement: dict) -> Decimal | None:
     if isinstance(raw, float):
         return None
     try:
-        return Decimal(str(raw))
+        amount = Decimal(str(raw))
     except (InvalidOperation, ValueError):
         return None
+    if not amount.is_finite():
+        return None
+    return amount
 
 
 def _money(normalized: Decimal, currency: str) -> dict:
@@ -100,8 +110,8 @@ def _money(normalized: Decimal, currency: str) -> dict:
 
 
 def _references_event(movement: dict, canonical_event_id: str, isin) -> bool:
-    if movement.get("event_id") == canonical_event_id:
-        return True
+    if movement.get("event_id") is not None:
+        return movement["event_id"] == canonical_event_id
     return bool(isin) and movement.get("isin") == isin
 
 
@@ -206,6 +216,18 @@ def reconcile(entitlement_doc: dict, movements_doc: dict) -> dict:
             )
             continue
 
+        raw = (ent.get("gross_cash") or {}).get("normalized")
+        if isinstance(raw, float):
+            raise ValueError("expected gross_cash must be a finite Decimal")
+        try:
+            expected = Decimal(str(raw))
+        except (InvalidOperation, ValueError) as exc:
+            raise ValueError(
+                "expected gross_cash must be a finite Decimal"
+            ) from exc
+        if not expected.is_finite():
+            raise ValueError("expected gross_cash must be a finite Decimal")
+
         key = (
             ent["account_id"],
             canonical_event_id,
@@ -239,7 +261,6 @@ def reconcile(entitlement_doc: dict, movements_doc: dict) -> dict:
             if id(m) not in used
             and _movement_key_match(m, canonical_event_id, ent)
         ]
-        expected = Decimal(ent["gross_cash"]["normalized"])
         currency = ent["gross_cash"]["currency"]
 
         if len(matched) > 1:
@@ -299,7 +320,18 @@ def reconcile(entitlement_doc: dict, movements_doc: dict) -> dict:
                     }
                 )
             else:
-                delta = actual - expected
+                with localcontext() as context:
+                    exponent = min(
+                        actual.as_tuple().exponent,
+                        expected.as_tuple().exponent,
+                    )
+                    context.prec = max(
+                        len(actual.as_tuple().digits)
+                        + actual.as_tuple().exponent - exponent,
+                        len(expected.as_tuple().digits)
+                        + expected.as_tuple().exponent - exponent,
+                    ) + 1
+                    delta = actual - expected
                 items.append(
                     {
                         **common,

@@ -1,20 +1,12 @@
 from __future__ import annotations
 
-import importlib.util
-from pathlib import Path
-
 import pytest
 
 from ca_es.pipeline import run_pipeline
 
-REPO = Path(__file__).resolve().parents[2]
-RAW = REPO / "g0/corpus/raw/cnmv/almirall/ip-1885.pdf"
 REAL_MANIFEST = "g0/manifests/real-corpus.json"
 
-pytestmark = pytest.mark.skipif(
-    not RAW.exists() or importlib.util.find_spec("pypdf") is None,
-    reason="requiere PDF real LOCAL_ONLY y extraccion pypdf",
-)
+pytestmark = pytest.mark.private_corpus("g0")
 
 
 def _capital_increase(result: dict) -> tuple[dict, dict]:

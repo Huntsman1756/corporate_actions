@@ -1,22 +1,12 @@
 from __future__ import annotations
 
-from pathlib import Path
-
 import pytest
 
 from ca_es.pipeline import run_pipeline
 
-REAL_RAW = (
-    Path(__file__).resolve().parents[2]
-    / "g0/corpus/raw/parlem/borme-c-2026-4914.html"
-)
 REAL_MANIFEST = "g0/manifests/real-corpus.json"
 
-
-pytestmark = pytest.mark.skipif(
-    not REAL_RAW.exists(),
-    reason="corpus real LOCAL_ONLY no presente; ejecutar scripts/fetch_real_corpus.py",
-)
+pytestmark = pytest.mark.private_corpus("g0")
 
 
 def _facts(result: dict, event: dict) -> dict:

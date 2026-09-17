@@ -21,6 +21,8 @@ import json
 import unicodedata
 from pathlib import Path
 
+from .canonical import load_strict_json_object
+
 SURFACE_VERSION = "CA_ES_OPERATIONAL_SURFACE_V1"
 EVENT_SCOPE = "EVENT_SCOPE"
 
@@ -964,6 +966,6 @@ def render_brief(brief: dict) -> str:
 
 
 def load_surface(canon_path: Path, policy_path: Path) -> Surface:
-    canon = json.loads(canon_path.read_text(encoding="utf-8"))
-    policy = json.loads(policy_path.read_text(encoding="utf-8"))
+    canon = load_strict_json_object(canon_path)
+    policy = load_strict_json_object(policy_path)
     return Surface(canon, policy)
