@@ -50,7 +50,7 @@ jobs:
                   if not member.isfile():
                       continue
                   relative = PurePosixPath(*PurePosixPath(member.name).parts[1:])
-                  assert relative.as_posix() in {"pyproject.toml", "README.md", ".gitignore", "PKG-INFO"} or (
+                  assert relative.as_posix() in {"pyproject.toml", "README.md", ".gitignore", "LICENSE", "PKG-INFO"} or (
                       relative.parts[:2] == ("src", "ca_es") and relative.suffix == ".py"
                   ), member.name
           with zipfile.ZipFile(wheels[0]) as archive:
