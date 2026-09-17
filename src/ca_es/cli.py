@@ -782,6 +782,95 @@ def cmd_mt565_write(args: argparse.Namespace) -> int:
     return write_code
 
 
+def cmd_position_impact(args: argparse.Namespace) -> int:
+    from .entitlement_engine import load_positions
+    from .position_impact import compute_position_impact
+
+    canon, code = _load_json(args.canon, "canon")
+    if canon is None:
+        return code
+    try:
+        positions = load_positions(Path(args.positions))
+    except (ValueError, OSError) as exc:
+        print(
+            json.dumps(
+                {"status": "INVALID_POSITIONS", "detail": str(exc)}
+            )
+        )
+        return 2
+    rules, code = _load_json(args.rules, "impact rules")
+    if rules is None:
+        return code
+    entitlements = None
+    if args.entitlements:
+        entitlements, code = _load_json(args.entitlements, "entitlements")
+        if entitlements is None:
+            return code
+    try:
+        doc = compute_position_impact(
+            canon, args.event, positions, rules,
+            entitlements_doc=entitlements, now=args.now)
+    except ValueError as exc:
+        print(json.dumps({"status": str(exc)}))
+        return 2
+    return _emit(doc)
+
+
+def cmd_project_positions(args: argparse.Namespace) -> int:
+    from .projected_positions import project_positions
+
+    positions, code = _load_json(args.positions, "positions")
+    if positions is None:
+        return code
+    impact, code = _load_json(args.impact, "impact")
+    if impact is None:
+        return code
+    try:
+        doc = project_positions(positions, impact, now=args.now)
+    except ValueError as exc:
+        print(json.dumps({"status": str(exc)}))
+        return 2
+    return _emit(doc)
+
+
+def cmd_swift_security_candidate(args: argparse.Namespace) -> int:
+    from .swift_securities import security_movement_candidate
+
+    facts_doc, code = _facts_doc(args)
+    if facts_doc is None:
+        return code
+    canon, code = _load_json(args.canon, "canon")
+    if canon is None:
+        return code
+    try:
+        doc = security_movement_candidate(facts_doc, canon, now=args.now)
+    except ValueError as exc:
+        print(json.dumps({"status": str(exc)}))
+        return 2
+    return _emit(doc)
+
+
+def cmd_security_reconcile(args: argparse.Namespace) -> int:
+    from .security_recon import reconcile_security_movements
+
+    impact, code = _load_json(args.impact, "impact")
+    if impact is None:
+        return code
+    candidates = []
+    for path in args.candidates or []:
+        doc, code = _load_json(path, "security candidate")
+        if doc is None:
+            return code
+        candidates.append(doc)
+    try:
+        doc = reconcile_security_movements(impact, candidates,
+                                           now=args.now)
+    except ValueError as exc:
+        print(json.dumps({"status": str(exc)}))
+        return 2
+    return _emit(doc)
+
+
 def cmd_instruction_status(args: argparse.Namespace) -> int:
     from .instruction_status import bind_instruction_status
 
@@ -1037,6 +1126,45 @@ def build_parser() -> argparse.ArgumentParser:
                        help="doc CA_ES_ELECTION_INSTRUCTION_V1")
     istat.add_argument("--now", default=None)
     istat.set_defaults(func=cmd_instruction_status)
+
+    impact = sub.add_parser("position-impact")
+    impact.add_argument("--canon", required=True)
+    impact.add_argument("--event", required=True)
+    impact.add_argument("--positions", required=True,
+                        help="doc CA_ES_POSITIONS_V1")
+    impact.add_argument("--rules", required=True,
+                        help="doc CA_ES_IMPACT_RULES_V1")
+    impact.add_argument("--entitlements", default=None,
+                        help="doc CA_ES_ENTITLEMENT_V1 (requerido por "
+                             "reglas CASH_RECEIVABLE)")
+    impact.add_argument("--now", default=None)
+    impact.set_defaults(func=cmd_position_impact)
+
+    seccand = sub.add_parser("swift-security-candidate")
+    seccand.add_argument("--fin", default=None,
+                         help="FIN MT566 (via adapter)")
+    seccand.add_argument("--facts", default=None,
+                         help="doc CA_ES_SWIFT_MT_FACTS_V1 (MT566)")
+    seccand.add_argument("--canon", required=True)
+    seccand.add_argument("--now", default=None)
+    seccand.set_defaults(func=cmd_swift_security_candidate)
+
+    proj = sub.add_parser("project-positions")
+    proj.add_argument("--positions", required=True,
+                      help="doc CA_ES_POSITIONS_V1")
+    proj.add_argument("--impact", required=True,
+                      help="doc CA_ES_POSITION_IMPACT_V1")
+    proj.add_argument("--now", default=None)
+    proj.set_defaults(func=cmd_project_positions)
+
+    srecon = sub.add_parser("security-reconcile")
+    srecon.add_argument("--impact", required=True,
+                        help="doc CA_ES_POSITION_IMPACT_V1")
+    srecon.add_argument("--candidates", nargs="*", default=[],
+                        help="docs "
+                        "CA_ES_SWIFT_SECURITY_MOVEMENT_CANDIDATE_V1")
+    srecon.add_argument("--now", default=None)
+    srecon.set_defaults(func=cmd_security_reconcile)
 
     return parser
 

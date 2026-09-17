@@ -123,6 +123,31 @@ python -m ca_es.cli instruction-status \
     (--fin <mt567.fin> | --facts <CA_ES_SWIFT_MT_FACTS_V1.json>) \
     --instruction <CA_ES_ELECTION_INSTRUCTION_V1.json> [--now <iso>]
                                      # -> CA_ES_ELECTION_INSTRUCTION_STATUS_V1
+
+# P6 positions/impact (capacidad auditada en docs/p6/p60-capability.md:
+# solo CASH_DIVIDEND SUPPORTED -> CASH_RECEIVABLE; SPLIT UNSUPPORTED V1)
+python -m ca_es.cli position-impact --canon <canon.json> \
+    --event <id> --positions <CA_ES_POSITIONS_V1.json> \
+    --rules <CA_ES_IMPACT_RULES_V1.json> \
+    [--entitlements <CA_ES_ENTITLEMENT_V1.json>] [--now <iso>]
+                                     # -> CA_ES_POSITION_IMPACT_V1
+python -m ca_es.cli project-positions \
+    --positions <CA_ES_POSITIONS_V1.json> \
+    --impact <CA_ES_POSITION_IMPACT_V1.json> [--now <iso>]
+                                     # -> CA_ES_PROJECTED_POSITIONS_V1
+
+# P6.3 MT566 SECMOVE -> candidate (un candidato por SECMOVE; whitelist
+# 22H::CRDB CRED->RECEIPT DEBT->DELIVERY; qty solo 36B::PSTA//UNIT)
+python -m ca_es.cli swift-security-candidate \
+    (--fin <mt566.fin> | --facts <CA_ES_SWIFT_MT_FACTS_V1.json>) \
+    --canon <canon.json> [--now <iso>]
+                                     # -> CA_ES_SWIFT_SECURITY_MOVEMENT_CANDIDATE_V1
+# P6.4 recon valores: expected = doc de impacto, actual = candidates
+python -m ca_es.cli security-reconcile \
+    --impact <CA_ES_POSITION_IMPACT_V1.json> \
+    [--candidates <cand1.json> <cand2.json> ...] [--now <iso>]
+                                     # -> CA_ES_SECURITY_RECON_V1
+# P6.5: `exceptions` acepta también --recon CA_ES_SECURITY_RECON_V1
 ```
 
 Ruff está configurado en `pyproject.toml`; ejecutar

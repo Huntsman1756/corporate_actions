@@ -175,6 +175,41 @@ P5  Elections / deadlines
           preservado; instruccion nunca mutada)
 
 P6  Positions / impact
+    P6.0 Capability audit / semantic freeze             DONE
+         (docs/p6/p60-capability.md; matriz por familia:
+          solo CASH_DIVIDEND SUPPORTED; SPLIT UNSUPPORTED
+          V1 — factor direction probada en corpus real
+          (dividing/multiplying = posterior/anterior) pero
+          sin fecha canonica de posicion pre-evento)
+    P6.1 Expected position impact                       DONE
+         (docs/p6/p61-scope.md; ca-es position-impact ->
+          CA_ES_POSITION_IMPACT_V1; solo CASH_RECEIVABLE
+          por composicion de CA_ES_ENTITLEMENT_V1, sin
+          formula duplicada; reglas explicitas
+          CA_ES_IMPACT_RULES_V1; binding por celda)
+    P6.2 Projected post-event positions                 DONE
+         (docs/p6/p62-scope.md; ca-es project-positions ->
+          CA_ES_PROJECTED_POSITIONS_V1; aplicador generico
+          de deltas, en V1 solo delta=0; binding por hash
+          de positions; nunca fusiona instrumentos)
+    P6.3 MT566 security movement candidate              DONE
+         (docs/p6/p63-scope.md; ca-es swift-security-candidate
+          -> CA_ES_SWIFT_SECURITY_MOVEMENT_CANDIDATE_V1;
+          un candidato por SECMOVE (ventanas por 22H);
+          whitelist CRDB CRED->RECEIPT DEBT->DELIVERY;
+          cantidad solo 36B::PSTA//UNIT; CAEV_MAP +=SPLF;
+          ISIN de binding = underlying USECU/USEQ)
+    P6.4 Securities reconciliation                      DONE
+         (docs/p6/p64-scope.md; ca-es security-reconcile ->
+          CA_ES_SECURITY_RECON_V1; clave
+          (account,isin,direction); Decimal exacto sin
+          tolerancia; UNEXPECTED solo si expected set
+          authoritative)
+    P6.5 Security exceptions -> P3.5                    DONE
+         (classify_cases consume CA_ES_SECURITY_RECON_V1;
+          taxonomia aditiva QUANTITY_MISMATCH/
+          MISSING/UNEXPECTED_SECURITY_MOVEMENT; case_key
+          por sujeto nunca por factual_status)
 
 P7  Automation / alerts
     OpenLineage adapter, FDC3 interop
