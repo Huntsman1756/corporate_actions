@@ -250,20 +250,60 @@ P6  Positions / impact
           por sujeto nunca por factual_status)
 
 P7  Automation / operational runtime
-    Operational Run Engine (un `ca-es ops-run` determinista:
-     DAG explicito, checkpoints SQLite stdlib, idempotencia
-     material por hashes de inputs/config, outbox de alertas
-     deduplicado CA_ES_ALERT_OUTBOX_V1, health/stale-data,
-     resume sin recomputar; scheduler EXTERNO — systemd/cron/
-     GHA/Task Scheduler solo dispara; el core nunca hace side
-     effects; INDETERMINATE nunca se convierte en decision)
-    OpenLineage adapter, FDC3 interop
+    P7.0 Semantic hash policy                            DONE
+         (docs/p7/p70-runtime-model.md; canonical JSON;
+          timestamps execution-only excluidos —
+          generated_at/executed_at/started_at/completed_at/
+          run_id; timestamps de negocio semanticos)
+    P7.1 SQLite state store                              DONE
+         (docs/p7/p71-state-store.md; runs/run_steps/
+          artifacts content-addressed + inbox_messages/
+          outbox/run_lock; escritura atomica tmp+fsync+
+          replace; verificacion sha256 en lectura)
+    P7.2 DAG + cache + resume                            DONE
+         (docs/p7/p72-dag.md; ca-es ops-init/ops-run
+          [--resume]; cache key = step+version+inputs sem+
+          config seccion+schema[+as_of]; SKIPPED_UNCHANGED
+          solo pasos puros con artefacto re-verificado;
+          single-writer BEGIN IMMEDIATE + checkpoints)
+    P7.3 MT/MX inbox                                     DONE
+         (docs/p7/p73-inbox.md; ca-es ops-inbox;
+          detect_family por contenido; boundary JVM;
+          EXACT_DUPLICATE por byte sha256 nunca reprocesa;
+          DUPLICATE_SEMANTIC por fingerprint de facts
+          retenido+clasificado; blobs byte-exactos
+          <state>/blobs/; observaciones append-only)
+    P7.4 Alert outbox                                    DONE
+         (docs/p7/p74-alerts.md; CA_ES_ALERT_OUTBOX_V1;
+          alert_key determinista + dedup; PENDING_DELIVERY;
+          deadline/exception/inbox-failure/RUN_FAILED)
+    P7.5 Operational health                              DONE
+         (docs/p7/p75-health.md;
+          CA_ES_OPERATIONAL_HEALTH_V1; HEALTHY/DEGRADED/
+          FAILED; runtime no verdad de negocio; freshness
+          vs as_of del run actual)
+    P7.6 Scheduler adapters                              DONE
+         (docs/p7/p76-scheduling.md; deploy/systemd|cron|
+          windows + .github/workflows/ops-run-example.yml;
+          el scheduler externo solo dispara; GHA sintetico
+          manual, nunca sube el state store)
+    P7.7 OpenLineage export                              DONE
+         (docs/p7/p77-openlineage.md; JSONL determinista
+          stdlib; datasets artifact:<sha256>/
+          cachekey:<sha256>; sin contenido de negocio)
+    P7.8 Read surfaces + Desk                            DONE
+         (docs/p7/p78-desk-latest.md; ca-es ops-status/
+          ops-latest/ops-export-run + desk --latest;
+          read-only sobre ultimo run SUCCEEDED; export sin
+          inputs confidenciales por defecto)
+         — P7 CLOSED
+    FDC3 interop (read-only export aislado, opcional)
 ```
 
 ## Prioridad actual
 
-P1–P6 cerrados (incl. P4 MT + ISO 20022 seev.* con conformance
-MT<->MX verificada). Siguiente: P7 Operational Run Engine. Sin
+P1–P7 cerrados (incl. P4 MT + ISO 20022 seev.* con conformance
+MT<->MX verificada y P7 daily operations end-to-end). Sin
 nuevos gates formales (G4+ no existen); cada fase con tests y
 preregistro de scope.
 

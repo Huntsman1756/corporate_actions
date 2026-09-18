@@ -325,10 +325,11 @@ def cmd_desk(args: argparse.Namespace) -> int:
         return 2
     if getattr(args, "latest", False):
         return _cmd_desk_latest(args, OpsDesk, build_desk_model)
-    if not args.canon:
+    if not args.canon or not args.as_of:
         print(json.dumps({
             "status": "INVALID_INPUT",
-            "detail": "--canon requerido (o usa --latest --state)",
+            "detail": "--canon y --as-of requeridos "
+                      "(o usa --latest --state)",
         }))
         return 2
     surface = _surface(args)

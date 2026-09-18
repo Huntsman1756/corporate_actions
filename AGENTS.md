@@ -87,6 +87,21 @@ python -m ca_es.cli brief --canon <canon.json> --as-of <fecha> \
 python -m ca_es.cli desk --canon <canon.json> --as-of <fecha> \
     --queue <CA_ES_ACTION_QUEUE_V1.json>
 
+# P7 runtime operativo (state store SQLite; scheduler externo)
+python -m ca_es.cli ops-init --state <dir>
+python -m ca_es.cli ops-run --state <dir> --config <ops.json> \
+    --as-of <YYYY-MM-DD>          # exit 0 SUCCEEDED/PARTIAL,
+                                  # 2 FAILED/input, 3 writer activo
+python -m ca_es.cli ops-run --state <dir> --config <ops.json> \
+    --resume <RUN_ID>             # as_of recuperado del run
+python -m ca_es.cli ops-inbox --state <dir> [--path <dir>]
+python -m ca_es.cli ops-status --state <dir>          # read-only
+python -m ca_es.cli ops-latest --state <dir>          # read-only
+python -m ca_es.cli ops-export-run --state <dir> --run-id <id> \
+    --output <dir> [--include-inputs]
+python -m ca_es.cli desk --state <dir> --latest       # requiere
+                                  # extra [desk]; ultimo run OK
+
 # P5.2 election opportunity (MT564 CAOPTN; --queue requiere --deadline-type)
 python -m ca_es.cli swift-election --fin <fichero.fin> \
     --canon g3/input/canon.json \
