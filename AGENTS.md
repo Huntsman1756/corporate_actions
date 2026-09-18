@@ -102,6 +102,14 @@ python -m ca_es.cli ops-export-run --state <dir> --run-id <id> \
 python -m ca_es.cli desk --state <dir> --latest       # requiere
                                   # extra [desk]; ultimo run OK
 
+# P8: el step `securities_events` del DAG procesa facts MT564/MT566
+# del inbox (SPLIT/REVERSE_SPLIT, RIGHTS_ISSUE RHDI+EXRI,
+# STOCK_DIVIDEND, SCRIP_DIVIDEND, CAPITAL_INCREASE=BONU) ->
+# terms/entitlement/impact/security recon/cases por evento.
+# Input opcional `elections` en ops config:
+#   {"<canonical_event_id>": {"<account_id>": <qty> | "CASH"|"SECU"}}
+# — explícito, nunca DFLT; sin elección -> PENDING_ELECTION.
+
 # P5.2 election opportunity (MT564 CAOPTN; --queue requiere --deadline-type)
 python -m ca_es.cli swift-election --fin <fichero.fin> \
     --canon g3/input/canon.json \

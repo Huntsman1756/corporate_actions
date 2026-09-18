@@ -61,7 +61,7 @@ P2  Entitlements
          (ca-es entitlement --event <id> --positions p.json
           CA_ES_POSITIONS_V1 / CA_ES_ENTITLEMENT_V1;
           POSITION_AT_RECORD_DATE; INDETERMINATE nunca estima)
-    split / stock dividend / rights issue
+    split / stock dividend / rights issue             -> P8
     Decimal-only; fórmulas portadas y testeadas desde vn-corporate-actions
 
 P3  Reconciliation / Exceptions
@@ -298,12 +298,61 @@ P7  Automation / operational runtime
           inputs confidenciales por defecto)
          — P7 CLOSED
     FDC3 interop (read-only export aislado, opcional)
+
+P8  Economic coverage expansion
+    P8.0 Capability audit V2                            DONE
+         (docs/p8/p80-capability.md; desbloqueo via
+          transporte MT564/MX — el extractor JVM genérico
+          ya emite RDTE/NEWO/35B destino/DISF/PRPP;
+          canon intacto; familias ENABLED/CONDITIONAL/
+          UNSUPPORTED por evidencia)
+    P8.1 SPLIT / REVERSE_SPLIT                          DONE
+         (docs/p8/p81-split.md; SPLF+SPLR; basis
+          RECORD_DATE via 98A::RDTE; ratio 92D::NEWO;
+          DISF RDDN/RDUP/STAN/SECU/DIST/BUYU/CINL/UKNW;
+          target ISIN via SECMOVE 35B; impact
+          SECURITY_DELIVERY+RECEIPT+CASH_IN_LIEU;
+          MT566 real MATCH + mismatch -> P3.5;
+          CHOS splits fuera de V1)
+    P8.2 RIGHTS_ISSUE staged                            DONE
+         (docs/p8/p82-rights.md; RHDI MAND =
+          distribución de derechos receipt-only;
+          EXRI CHOS/VOLU = ejercicio gated por elección
+          explícita; subscription_price 90B::PRPP/OFFR;
+          nuevas acciones = electos x NEWO; cash payable;
+          RELA enlaza etapas; sin elección ->
+          PENDING_ELECTION)
+    P8.3 CAPITAL_INCREASE (parcial)                     DONE
+         (docs/p8/p83-capital-increase.md; solo BONU
+          bonus issue receipt-only con instrumento
+          destino evidenciado; CAPI/CAPG/PRIO quedan
+          UNSUPPORTED_CA_EVENT)
+    P8.4 STOCK_DIVIDEND                                 DONE
+         (docs/p8/p84-stock-dividend.md; DVSE MAND
+          receipt-only position x NEWO, destino explicito)
+    P8.5 SCRIP_DIVIDEND                                 DONE
+         (docs/p8/p85-scrip-dividend.md; DVOP solo
+          CHOS/VOLU; ambas piernas demostrables (cash
+          gross_per_share + securities NEWO/destino) o
+          INCOMPLETE; elección explicita CASH/SECU;
+          MAND no admisible en V1)
+    P8.6 DAG integration                                DONE
+         (docs/p8/p86-dag-integration.md; step
+          securities_events tras process_inbox: dos
+          pasadas MT566-candidates -> MT564-cadena;
+          solo BOUND reconcilia; elections input
+          explicito; casos mergeados con run previo;
+          alertas EXCEPTION_CASE desde valores)
+         — P8 CLOSED (V1; CAEV no demostrados quedan
+           explícitamente UNSUPPORTED)
 ```
 
 ## Prioridad actual
 
-P1–P7 cerrados (incl. P4 MT + ISO 20022 seev.* con conformance
-MT<->MX verificada y P7 daily operations end-to-end). Sin
+P1–P8 cerrados (incl. P4 MT + ISO 20022 seev.* con conformance
+MT<->MX verificada, P7 daily operations end-to-end y P8 economic
+coverage V1 para SPLIT/REVERSE_SPLIT, RIGHTS_ISSUE staged,
+STOCK_DIVIDEND, SCRIP_DIVIDEND y CAPITAL_INCREASE=BONU). Sin
 nuevos gates formales (G4+ no existen); cada fase con tests y
 preregistro de scope.
 
