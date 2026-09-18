@@ -1,0 +1,13 @@
+{
+ "schema": "CA_ES_CUSTODY_PROFILE_V1",
+ "profile_id": "demo-custodian",
+ "version": "1",
+ "account_map": {
+  "SAFE-ES-001": "A001",
+  "ES9121000418450200051332": "ACC-EUR-01"
+ },
+ "reference_map": {
+  "CA-EVT-001": {"event_id": "6443e2be-b70d-50c7-88d1-4a62f43789e9", "amount_basis": "GROSS"},
+  "REF-CA-EVT-001": {"event_id": "6443e2be-b70d-50c7-88d1-4a62f43789e9", "amount_basis": "GROSS"}
+ }
+}
