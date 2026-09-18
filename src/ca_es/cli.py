@@ -1105,6 +1105,61 @@ def cmd_mx_instruction_status(args: argparse.Namespace) -> int:
     return _emit(doc)
 
 
+# ------------------------------------------------------------------
+# P7 — runtime operativo
+# ------------------------------------------------------------------
+
+def _open_state(args) -> tuple:
+    """Abre el state store; exige ops-init previo."""
+    from .ops_state import OpsState
+
+    state = OpsState(args.state)
+    if not state.db_path.is_file():
+        print(json.dumps({
+            "status": "OPS_STATE_NOT_INITIALIZED",
+            "detail": f"{state.db_path} — ejecuta ops-init primero",
+        }))
+        return None, 2
+    return state, 0
+
+
+def cmd_ops_init(args: argparse.Namespace) -> int:
+    from .ops_state import OPS_STATE_SCHEMA_VERSION, OpsState
+
+    OpsState(args.state).init()
+    return _emit({
+        "status": "INITIALIZED",
+        "state": str(args.state),
+        "ops_state_schema_version": OPS_STATE_SCHEMA_VERSION,
+    })
+
+
+def cmd_ops_run(args: argparse.Namespace) -> int:
+    from .ops_dag import run_ops
+    from .ops_state import OpsRunAlreadyActive, OpsStateError
+
+    state, code = _open_state(args)
+    if state is None:
+        return code
+    config, code = _load_json(args.config, "config")
+    if config is None:
+        return code
+    try:
+        manifest = run_ops(
+            config, state, as_of=args.as_of,
+            resume_run_id=args.resume)
+    except OpsRunAlreadyActive:
+        print(json.dumps({"status": "OPS_RUN_ALREADY_ACTIVE"}))
+        return 3
+    except (OpsStateError, ValueError) as exc:
+        print(json.dumps({"status": str(exc)[:200]}))
+        return 2
+    _emit(manifest)
+    # exit code refleja el resultado del run, no solo "ejecuto"
+    return 0 if manifest["run_status"] in ("SUCCEEDED", "PARTIAL") \
+        else 2
+
+
 def build_parser() -> argparse.ArgumentParser:
     parser = argparse.ArgumentParser(prog="ca-es", description=__doc__)
     parser.add_argument("--repo-root", default=None)
@@ -1465,6 +1520,22 @@ def build_parser() -> argparse.ArgumentParser:
                            help="doc CA_ES_POSITION_IMPACT_V1")
     portfolio.add_argument("--now", default=None)
     portfolio.set_defaults(func=cmd_portfolio_impact)
+
+    # ---------------- P7 runtime operativo ----------------
+
+    oinit = sub.add_parser("ops-init")
+    oinit.add_argument("--state", required=True,
+                       help="directorio del state store operativo")
+    oinit.set_defaults(func=cmd_ops_init)
+
+    orun = sub.add_parser("ops-run")
+    orun.add_argument("--state", required=True)
+    orun.add_argument("--config", required=True,
+                    help="doc CA_ES_OPS_CONFIG_V1")
+    orun.add_argument("--as-of", default=None,
+                    help="YYYY-MM-DD (obligatorio en run nuevo)")
+    orun.add_argument("--resume", default=None, metavar="RUN_ID")
+    orun.set_defaults(func=cmd_ops_run)
 
     return parser
 

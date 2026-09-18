@@ -199,13 +199,16 @@ class OpsState:
 
     # ---------------- run lock (single writer) ----------------
 
-    def acquire_run_lock(self, run_id: str) -> None:
-        """Sostiene BEGIN IMMEDIATE en una conexion propia.
-
-        Si el proceso muere, la conexion muere y el lock desaparece.
+    def acquire_run_lock(self, run_id: str) -> sqlite3.Connection:
+        """Adquiere el mutex (BEGIN IMMEDIATE) y devuelve la
+        conexion del writer: el run escribe por esta misma
+        conexion. ``checkpoint()`` commitea y re-adquiere el
+        mutex por step; si el proceso muere, la conexion muere
+        y el lock desaparece.
         """
         conn = sqlite3.connect(self.db_path, timeout=1)
         conn.row_factory = sqlite3.Row
+        conn.execute("PRAGMA foreign_keys=ON")
         try:
             conn.execute("BEGIN IMMEDIATE")
             conn.execute("DELETE FROM run_lock")
@@ -219,6 +222,20 @@ class OpsState:
             raise OpsRunAlreadyActive("OPS_RUN_ALREADY_ACTIVE") from exc
         self._lock_conn = conn
         self._lock_run_id = run_id
+        return conn
+
+    def checkpoint(self) -> None:
+        """Commit del trabajo acumulado y re-adquisicion del mutex.
+
+        Entre COMMIT y BEGIN IMMEDIATE otro writer podria
+        interponerse; si ocurre, el BEGIN falla y el run aborta
+        (fail-closed, nunca dos writers).
+        """
+        self._lock_conn.commit()
+        try:
+            self._lock_conn.execute("BEGIN IMMEDIATE")
+        except sqlite3.OperationalError as exc:
+            raise OpsRunAlreadyActive("OPS_RUN_LOCK_LOST") from exc
 
     def release_run_lock(self) -> None:
         if self._lock_conn is not None:
@@ -327,13 +344,14 @@ class OpsState:
     def latest_successful_run(self, conn) -> dict | None:
         row = conn.execute(
             "SELECT * FROM runs WHERE run_status='SUCCEEDED'"
-            " ORDER BY started_at DESC LIMIT 1").fetchone()
+            " ORDER BY started_at DESC, rowid DESC LIMIT 1"
+        ).fetchone()
         return dict(row) if row else None
 
     def latest_run(self, conn) -> dict | None:
         row = conn.execute(
-            "SELECT * FROM runs ORDER BY started_at DESC LIMIT 1"
-        ).fetchone()
+            "SELECT * FROM runs ORDER BY started_at DESC, rowid DESC"
+            " LIMIT 1").fetchone()
         return dict(row) if row else None
 
     # ---------------- steps ----------------
@@ -367,18 +385,24 @@ class OpsState:
         return [dict(r) for r in rows]
 
     def find_cached_step(self, conn, step_id: str, step_version: str,
-                         cache_key: str) -> dict | None:
-        """Ultimo step SUCCEEDED de cualquier run con la misma
-        cache key (input_semantic_hashes_json) y misma version."""
+                         cache_key: str,
+                         current_run_id: str | None = None) -> dict | None:
+        """Ultimo step SUCCEEDED con la misma cache key y version.
+
+        Elegible si pertenece a un run SUCCEEDED/PARTIAL o al propio
+        run en curso (resume reutiliza sus propios pasos).
+        """
         row = conn.execute(
             "SELECT s.* FROM run_steps s"
             " JOIN runs r ON r.run_id = s.run_id"
             " WHERE s.step_id=? AND s.step_version=?"
             " AND s.input_semantic_hashes_json=?"
             " AND s.status='SUCCEEDED'"
-            " AND r.run_status IN ('SUCCEEDED','PARTIAL')"
-            " ORDER BY s.started_at DESC LIMIT 1",
-            (step_id, step_version, cache_key)).fetchone()
+            " AND (r.run_status IN ('SUCCEEDED','PARTIAL')"
+            "      OR s.run_id = ?)"
+            " ORDER BY s.started_at DESC, s.rowid DESC LIMIT 1",
+            (step_id, step_version, cache_key,
+             current_run_id or "")).fetchone()
         return dict(row) if row else None
 
     def interrupted_steps(self, conn, run_id: str) -> list[dict]:
