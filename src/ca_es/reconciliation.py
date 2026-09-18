@@ -141,8 +141,20 @@ def _movement_linked(
     )
 
 
-def reconcile(entitlement_doc: dict, movements_doc: dict) -> dict:
+def reconcile(entitlement_doc: dict, movements_doc: dict,
+              expected_cash_doc: dict | None = None) -> dict:
+    """P3 cash recon; P14.12: expected_cash_doc opcional
+    (CA_ES_EXPECTED_CASH_V1) habilita reconciliar movimientos NET
+    contra net_expected. Sin el documento se conserva el
+    comportamiento historico: NET -> INDETERMINATE /
+    NET_EXPECTED_NOT_AVAILABLE."""
     canonical_event_id = entitlement_doc["canonical_event_id"]
+
+    net_expected: dict[str, dict] = {}
+    for it in (expected_cash_doc or {}).get("items") or []:
+        if it.get("net_status") == "AVAILABLE" and it.get(
+                "net_expected"):
+            net_expected[it.get("account_id")] = it
 
     valid_movements = []
     invalid_movements = []
@@ -304,13 +316,60 @@ def reconcile(entitlement_doc: dict, movements_doc: dict) -> dict:
                 },
             }
             if basis == "NET":
-                items.append(
-                    {
+                expected_net_item = net_expected.get(
+                    ent.get("account_id"))
+                if expected_net_item is None:
+                    items.append(
+                        {
+                            **common,
+                            "status": INDETERMINATE,
+                            "reasons": ["NET_EXPECTED_NOT_AVAILABLE"],
+                        }
+                    )
+                else:
+                    net_raw = (expected_net_item.get(
+                        "net_expected") or {}).get("normalized")
+                    try:
+                        net_dec = Decimal(str(net_raw))
+                    except (InvalidOperation, ValueError):
+                        net_dec = None
+                    if net_dec is None or not net_dec.is_finite():
+                        items.append(
+                            {
+                                **common,
+                                "status": INDETERMINATE,
+                                "reasons": [
+                                    "NET_EXPECTED_NOT_AVAILABLE"],
+                            }
+                        )
+                        continue
+                    net_common = {
                         **common,
-                        "status": INDETERMINATE,
-                        "reasons": ["NET_EXPECTED_NOT_AVAILABLE"],
+                        "expected_net_cash": expected_net_item[
+                            "net_expected"],
                     }
-                )
+                    with localcontext() as context:
+                        exponent = min(
+                            actual.as_tuple().exponent,
+                            net_dec.as_tuple().exponent,
+                        )
+                        context.prec = max(
+                            len(actual.as_tuple().digits)
+                            + actual.as_tuple().exponent - exponent,
+                            len(net_dec.as_tuple().digits)
+                            + net_dec.as_tuple().exponent - exponent,
+                        ) + 1
+                        delta = actual - net_dec
+                    items.append(
+                        {
+                            **net_common,
+                            "status": (
+                                MATCH if actual == net_dec
+                                else AMOUNT_MISMATCH
+                            ),
+                            "delta": _money(delta, currency),
+                        }
+                    )
             elif basis != "GROSS":
                 items.append(
                     {

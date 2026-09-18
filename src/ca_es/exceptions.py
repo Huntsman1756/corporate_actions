@@ -47,6 +47,7 @@ CASES_SCHEMA = "CA_ES_EXCEPTION_CASES_V1"
 SECURITY_RECON_SCHEMA = "CA_ES_SECURITY_RECON_V1"
 CUSTODY_POSITION_RECON_SCHEMA = "CA_ES_POSITION_RECON_V1"
 CUSTODY_CASH_RECON_SCHEMA = "CA_ES_CASH_FEED_RECON_V1"
+TAX_RECON_SCHEMA = "CA_ES_TAX_RECON_V1"
 
 WORKFLOW_OPEN = "OPEN"
 WORKFLOW_IN_REVIEW = "IN_REVIEW"
@@ -94,6 +95,11 @@ PRIORITY = {
     "CASH_ACCOUNT_AMOUNT_MISMATCH": "HIGH",
     "CASH_MISSING_IN_ACCOUNT_FEED": "MEDIUM",
     "CASH_UNEXPECTED_ACCOUNT_ENTRY": "MEDIUM",
+    # P14: factual statuses del recon fiscal
+    "WITHHOLDING_AMOUNT_MISMATCH": "HIGH",
+    "WITHHOLDING_RATE_MISMATCH": "HIGH",
+    "MISSING_TAX_COMPONENT": "MEDIUM",
+    "UNEXPECTED_TAX_COMPONENT": "MEDIUM",
     "INDETERMINATE": "LOW",
 }
 PRIORITY_RANK = {"HIGH": 0, "MEDIUM": 1, "LOW": 2}
@@ -253,6 +259,40 @@ def _custody_snapshot(item: dict, scope: str, priority: str,
     }
 
 
+def _tax_snapshot(item: dict, event_id: str, priority: str) -> dict:
+    """Snapshot factual de un item CA_ES_TAX_RECON_V1 (P14).
+
+    Clave estable: event + account + component_type; nunca incluye
+    factual_status. INDETERMINATE (expected tax no calculable) no
+    genera caso: se filtra en classify_cases.
+    """
+    account = item.get("account_id") or "-"
+    subject = (f"tax:{account}:{item.get('component_type') or '-'}")
+    return {
+        "case_key": f"tax|{event_id or '-'}|{subject}",
+        "canonical_event_id": event_id,
+        "account_id": item.get("account_id"),
+        "isin": None,
+        "direction": None,
+        "factual_status": item.get("status"),
+        "reason_codes": [item["reason"]] if item.get("reason") else [],
+        "entitlement_status": None,
+        "amount_basis": None,
+        "expected_amount": item.get("expected_amount"),
+        "actual_amount": item.get("actual_amount"),
+        "expected_quantity": None,
+        "actual_quantity": None,
+        "expected_ref": None,
+        "delta": None,
+        "currency": item.get("currency"),
+        "value_date": None,
+        "movement_ids": [],
+        "linked_movement_ids": [],
+        "evidence": item.get("evidence_refs"),
+        "priority": priority,
+    }
+
+
 def classify_cases(recon_doc: dict) -> list[dict]:
     """recon result -> snapshots factuales observados (sin workflow).
 
@@ -268,10 +308,15 @@ def classify_cases(recon_doc: dict) -> list[dict]:
     custody_cash = recon_doc.get("schema") == CUSTODY_CASH_RECON_SCHEMA
     custody_scope = recon_doc.get("case_scope") or (
         "custody-positions" if custody_pos else "custody-cash")
+    tax = recon_doc.get("schema") == TAX_RECON_SCHEMA
     observed = []
     for item in recon_doc.get("items", []):
         status = item.get("status")
         if status == "MATCH":
+            continue
+        if tax and status == "INDETERMINATE":
+            # expected tax no calculable: atencion/indeterminado,
+            # no falso mismatch
             continue
         if status not in PRIORITY:
             # estado desconocido: no se silencia, pero tampoco se
@@ -279,6 +324,9 @@ def classify_cases(recon_doc: dict) -> list[dict]:
             priority = "LOW"
         else:
             priority = PRIORITY[status]
+        if tax:
+            observed.append(_tax_snapshot(item, event_id, priority))
+            continue
         if custody_pos or custody_cash:
             observed.append(_custody_snapshot(
                 item, custody_scope, priority, cash=custody_cash))

@@ -481,8 +481,15 @@ def _recon_doc(args: argparse.Namespace):
             json.dumps({"status": "INVALID_MOVEMENTS", "detail": str(exc)})
         )
         return None, 2
+    expected_cash = None
+    if getattr(args, "expected_cash", None):
+        expected_cash, code = _load_json(
+            args.expected_cash, "expected-cash")
+        if expected_cash is None:
+            return None, code
     try:
-        doc = reconcile(entitlement_doc, movements)
+        doc = reconcile(entitlement_doc, movements,
+                        expected_cash_doc=expected_cash)
     except ValueError as exc:
         print(json.dumps({"status": "INVALID_INPUT", "detail": str(exc)}))
         return None, 2
@@ -2066,6 +2073,103 @@ def cmd_custody_health(args: argparse.Namespace) -> int:
     return _emit(doc)
 
 
+def _tax_facts_doc(args: argparse.Namespace):
+    """facts doc desde --facts, --fin (MT) o --mx (ISO 20022)."""
+    if getattr(args, "facts", None):
+        return _load_json(args.facts, "facts")
+    if getattr(args, "mx", None):
+        return _mx_facts_doc(args)
+    return _facts_doc(args)
+
+
+def cmd_tax_evidence(args: argparse.Namespace) -> int:
+    from .tax_evidence import tax_evidence
+
+    facts_doc, code = _tax_facts_doc(args)
+    if facts_doc is None:
+        return code
+    return _emit(tax_evidence(
+        facts_doc, canonical_event_id=args.event, now=args.now))
+
+
+def _multi_load(paths, label):
+    docs = []
+    for path in paths or []:
+        doc, code = _load_json(path, label)
+        if doc is None:
+            return None, code
+        docs.append(doc)
+    return docs, 0
+
+
+def cmd_tax_entitlement(args: argparse.Namespace) -> int:
+    from .tax_entitlement import tax_entitlement
+
+    entitlement, code = _load_json(args.entitlement, "entitlement")
+    if entitlement is None:
+        return code
+    evidence, code = _multi_load(args.evidence, "evidence")
+    if evidence is None:
+        return code
+    profile = None
+    if args.profile:
+        profile, code = _load_json(args.profile, "tax-profile")
+        if profile is None:
+            return code
+    rules = None
+    if args.rules:
+        rules, code = _load_json(args.rules, "tax-rules")
+        if rules is None:
+            return code
+    option_scope = None
+    if args.option_number or args.option_type:
+        option_scope = {
+            "option_number": args.option_number,
+            "option_type": args.option_type,
+        }
+    doc = tax_entitlement(
+        entitlement, evidence, profile, rules,
+        jurisdiction=args.jurisdiction,
+        income_type=args.income_type,
+        calculation_date=args.calculation_date,
+        option_scope=option_scope,
+        requires_election=args.requires_election,
+        now=args.now)
+    return _emit(doc)
+
+
+def cmd_tax_expected_cash(args: argparse.Namespace) -> int:
+    from .tax_entitlement import expected_cash
+
+    doc, code = _load_json(args.tax_entitlement, "tax-entitlement")
+    if doc is None:
+        return code
+    return _emit(expected_cash(doc))
+
+
+def cmd_tax_recon(args: argparse.Namespace) -> int:
+    from .tax_recon import tax_recon
+
+    ent, code = _load_json(args.tax_entitlement, "tax-entitlement")
+    if ent is None:
+        return code
+    evidence, code = _multi_load(args.evidence, "evidence")
+    if evidence is None:
+        return code
+    return _emit(tax_recon(ent, evidence, now=args.now))
+
+
+def cmd_tax_rules_validate(args: argparse.Namespace) -> int:
+    from .tax_rules import validate_ruleset
+
+    doc, code = _load_json(args.rules, "tax-rules")
+    if doc is None:
+        return code
+    errors = validate_ruleset(doc)
+    return _emit({"schema": "CA_ES_TAX_RULES_VALIDATION_V1",
+                  "valid": not errors, "errors": errors})
+
+
 def build_parser() -> argparse.ArgumentParser:
     parser = argparse.ArgumentParser(prog="ca-es", description=__doc__)
     parser.add_argument("--repo-root", default=None)
@@ -2173,6 +2277,9 @@ def build_parser() -> argparse.ArgumentParser:
     reconcile.add_argument("--positions", default=None)
     reconcile.add_argument("--entitlements", default=None)
     reconcile.add_argument("--cash", required=True)
+    reconcile.add_argument(
+        "--expected-cash", default=None,
+        help="doc CA_ES_EXPECTED_CASH_V1 (P14): habilita recon NET")
     reconcile.set_defaults(func=cmd_reconcile)
 
     exceptions = sub.add_parser("exceptions")
@@ -2676,6 +2783,61 @@ def build_parser() -> argparse.ArgumentParser:
     chlth.add_argument("--max-age-days", type=int, default=7)
     chlth.add_argument("--now", default=None)
     chlth.set_defaults(func=cmd_custody_health)
+
+    # P14 — tax / withholding / net entitlement
+    tev = sub.add_parser(
+        "tax-evidence",
+        help="facts MT564/566 o seev.031/036 -> CA_ES_TAX_EVIDENCE_V1")
+    tev.add_argument("--fin", default=None)
+    tev.add_argument("--mx", default=None)
+    tev.add_argument("--facts", default=None)
+    tev.add_argument("--event", default=None,
+                   help="canonical_event_id ya adjudicado")
+    tev.add_argument("--now", default=None)
+    tev.set_defaults(func=cmd_tax_evidence)
+
+    tent = sub.add_parser(
+        "tax-entitlement",
+        help="entitlement+evidence+profile+rules -> "
+             "CA_ES_TAX_ENTITLEMENT_V1")
+    tent.add_argument("--entitlement", required=True)
+    tent.add_argument("--evidence", action="append", default=[],
+                      help="doc CA_ES_TAX_EVIDENCE_V1 (repetible)")
+    tent.add_argument("--profile", default=None,
+                      help="doc CA_ES_TAX_PROFILE_V1")
+    tent.add_argument("--rules", default=None,
+                      help="doc CA_ES_TAX_RULES_V1")
+    tent.add_argument("--jurisdiction", required=True)
+    tent.add_argument("--income-type", required=True)
+    tent.add_argument("--calculation-date", required=True,
+                      help="fecha fiscal (payment date) ISO")
+    tent.add_argument("--option-number", default=None)
+    tent.add_argument("--option-type", default=None)
+    tent.add_argument("--requires-election", action="store_true")
+    tent.add_argument("--now", default=None)
+    tent.set_defaults(func=cmd_tax_entitlement)
+
+    tec = sub.add_parser(
+        "tax-expected-cash",
+        help="CA_ES_TAX_ENTITLEMENT_V1 -> CA_ES_EXPECTED_CASH_V1")
+    tec.add_argument("--tax-entitlement", required=True)
+    tec.set_defaults(func=cmd_tax_expected_cash)
+
+    trc = sub.add_parser(
+        "tax-recon",
+        help="expected vs actual tax -> CA_ES_TAX_RECON_V1")
+    trc.add_argument("--tax-entitlement", required=True)
+    trc.add_argument("--evidence", action="append", default=[],
+                     help="CA_ES_TAX_EVIDENCE_V1 role=ACTUAL "
+                          "(repetible)")
+    trc.add_argument("--now", default=None)
+    trc.set_defaults(func=cmd_tax_recon)
+
+    trv = sub.add_parser(
+        "tax-rules-validate",
+        help="validacion estatica de CA_ES_TAX_RULES_V1")
+    trv.add_argument("--rules", required=True)
+    trv.set_defaults(func=cmd_tax_rules_validate)
 
     return parser
 
