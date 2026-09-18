@@ -611,12 +611,16 @@ def _record_receipt(conn, *, delivery_id: str, receipt_sha256: str,
          str(source_path), _truncate(quarantine_reason, 128), now))
 
 
-def _ingest_receipts_for_dest(conn, dest: dict, now: str) -> dict:
+def _ingest_receipts_for_dest(conn, dest: dict, now: str,
+                              source_map: dict | None = None) -> dict:
     """Escanea <spool>/receipts/*.ack.json|*.nak.json.
 
     Valido -> transicion SPOOLED -> GATEWAY_* + mover a
     receipts/processed/. Malformado/conflictivo -> quarantine/ +
     fila QUARANTINED. Nunca borra evidencia.
+
+    source_map: filename -> origen externo (p.ej. REMOTE_POLL:...)
+    registrado en source_path junto al path local.
     """
     from pathlib import Path
 
@@ -631,6 +635,10 @@ def _ingest_receipts_for_dest(conn, dest: dict, now: str) -> dict:
     if not receipts_dir.is_dir():
         return counts
 
+    def _src(path, local) -> str:
+        origin = (source_map or {}).get(path.name)
+        return f"{origin} -> {local}" if origin else str(local)
+
     def quarantine(path, delivery_id, sha256, reason):
         receipt_sha = hashlib.sha256(
             path.read_bytes()).hexdigest()
@@ -641,7 +649,7 @@ def _ingest_receipts_for_dest(conn, dest: dict, now: str) -> dict:
             receipt_sha256=receipt_sha, status="QUARANTINED",
             gateway_reference=None, received_at=None,
             reason=None,
-            source_path=str(moved or path),
+            source_path=_src(path, moved or path),
             quarantine_reason=reason, now=now)
         counts["quarantined"] += 1
 
@@ -729,7 +737,7 @@ def _ingest_receipts_for_dest(conn, dest: dict, now: str) -> dict:
                 gateway_reference=doc.get("gateway_reference"),
                 received_at=doc.get("received_at"),
                 reason=doc.get("reason"),
-                source_path=str(target), quarantine_reason=None,
+                source_path=_src(p, target), quarantine_reason=None,
                 now=now)
             _set_send_status(
                 conn, delivery_id, new_status, "send-dispatch", now,
@@ -928,8 +936,14 @@ def _ingest_sftp_receipts(conn, dest: dict, adapter: dict,
 
     from pathlib import Path
     staged = {p["remote_name"]: p for p in polled}
+    remote_dir = cfg.get("remote_receipts") or ""
+    source_map = {
+        name: f"REMOTE_POLL:sftp://{cfg.get('host')}"
+              f"{remote_dir.rstrip('/')}/{name}"
+        for name in staged}
     c = _ingest_receipts_for_dest(
-        conn, {"config": {"spool_directory": staging}}, now)
+        conn, {"config": {"spool_directory": staging}}, now,
+        source_map=source_map)
     counts["ingested"] += c["ingested"]
     counts["quarantined"] += c["quarantined"]
 
