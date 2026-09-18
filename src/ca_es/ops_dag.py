@@ -326,6 +326,21 @@ def _step_alert_outbox(ctx: RunContext) -> dict:
     }
 
 
+def _step_health_report(ctx: RunContext) -> dict:
+    """CA_ES_OPERATIONAL_HEALTH_V1 del run: runtime, nunca
+    negocio."""
+    from .ops_health import compute_health
+
+    return compute_health(
+        ctx.state, ctx.conn, ctx.config,
+        input_docs=ctx.input_docs,
+        inbox_index=ctx.docs.get("process_inbox"),
+        deadlines_doc=ctx.docs.get("compute_deadlines"),
+        current_run_id=ctx.run_id,
+        as_of=ctx.as_of,
+        now=ctx.now())
+
+
 def _dyn_prev_cases(ctx: RunContext) -> list:
     """Semantic hash del estado de casos previos (input efectivo
     del step exception_cases; un estado previo distinto invalida
@@ -420,6 +435,14 @@ def default_dag() -> list[OperationalStep]:
             expected_output_schema=OUTBOX_SCHEMA,
             expected_output_version="V1",
             fn=_step_alert_outbox),
+        # impuro: lee estado mutable del store; siempre fresco.
+        OperationalStep(
+            "health_report", "1",
+            dependencies=("alert_outbox",),
+            pure=False,
+            expected_output_schema="CA_ES_OPERATIONAL_HEALTH_V1",
+            expected_output_version="V1",
+            fn=_step_health_report),
     ]
 
 
