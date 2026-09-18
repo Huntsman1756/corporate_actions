@@ -251,6 +251,8 @@ def compute_security_impact(
                 "RIGHTS_DISTRIBUTION_POSITION_X_NEWO",
             "RIGHTS_EXERCISE":
                 "RIGHTS_EXERCISE_ELECTED_X_NEWO_X_PRICE",
+            "STOCK_DIVIDEND":
+                "STOCK_DIVIDEND_POSITION_X_NEWO",
         }.get(ent_doc.get("mechanism"),
               "SPLIT_POSITION_X_NEW_FOR_OLD_DISF"),
         "reasons": [],

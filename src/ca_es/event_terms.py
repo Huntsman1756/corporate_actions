@@ -26,14 +26,16 @@ INCOMPLETE = "INCOMPLETE"
 UNSUPPORTED = "UNSUPPORTED"
 
 # familias cuyo outcome se computa desde terms en V1
-SUPPORTED_FAMILIES = {"SPLIT", "RIGHTS_ISSUE"}
+SUPPORTED_FAMILIES = {"SPLIT", "RIGHTS_ISSUE", "STOCK_DIVIDEND"}
 
-# mechanism -> camv admisible: RHDI es MAND (como SPLIT); EXRI es
-# electivo por definicion (la eleccion la aporta la instruccion P5,
-# no el terms)
+# mechanism -> camv admisible: RHDI/DVSE son MAND (como SPLIT); EXRI
+# es electivo por definicion (la eleccion la aporta la instruccion
+# P5, no el terms). Un DVSE electivo es un scrip (P8.5), no un
+# stock dividend
 _MECHANISM_CAMV = {
     "RIGHTS_DISTRIBUTION": {"MAND"},
     "RIGHTS_EXERCISE": {"CHOS", "VOLU"},
+    "STOCK_DIVIDEND": {"MAND"},
 }
 
 

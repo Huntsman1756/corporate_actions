@@ -44,6 +44,7 @@ UNSUPPORTED = "UNSUPPORTED"
 RULE_SPLIT = "SPLIT_POSITION_X_NEW_FOR_OLD_DISF"
 RULE_RIGHTS_DIST = "RIGHTS_DISTRIBUTION_POSITION_X_NEWO"
 RULE_RIGHTS_EXER = "RIGHTS_EXERCISE_ELECTED_X_NEWO_X_PRICE"
+RULE_STOCK_DIV = "STOCK_DIVIDEND_POSITION_X_NEWO"
 
 _DISF_FLOOR = {"RDDN", "CINL"}
 _DISF_CEIL = {"RDUP", "BUYU"}
@@ -101,9 +102,10 @@ _RULE_BY_MECHANISM = {
     "REVERSE_SPLIT": RULE_SPLIT,
     "RIGHTS_DISTRIBUTION": RULE_RIGHTS_DIST,
     "RIGHTS_EXERCISE": RULE_RIGHTS_EXER,
+    "STOCK_DIVIDEND": RULE_STOCK_DIV,
 }
 
-_SUPPORTED_EVENT_TYPES = {"SPLIT", "RIGHTS_ISSUE"}
+_SUPPORTED_EVENT_TYPES = {"SPLIT", "RIGHTS_ISSUE", "STOCK_DIVIDEND"}
 
 
 def _entitlement(terms: dict, position: dict,
@@ -180,7 +182,7 @@ def _entitlement(terms: dict, position: dict,
         "base": base, "quantity": quantity, "ratio": (new_f, old_f),
         "disf": disf, "basis_value": basis_value, "fail": fail,
     }
-    if mechanism == "RIGHTS_DISTRIBUTION":
+    if mechanism in ("RIGHTS_DISTRIBUTION", "STOCK_DIVIDEND"):
         return _rights_distribution(terms, ctx)
     if mechanism == "RIGHTS_EXERCISE":
         return _rights_exercise(terms, ctx, account_id, election)
