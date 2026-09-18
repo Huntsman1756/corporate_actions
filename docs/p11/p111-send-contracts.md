@@ -33,6 +33,13 @@ last_attempt_at / next_attempt_after
 `message_text` se persiste en la fila (los bytes son la evidencia;
 la instrucción puede no estar en el state store).
 
+`delivery_id` es la identidad de la **entrega lógica** y la
+idempotency key — NO la identidad de cada intento físico. Los
+intentos físicos se distinguen por `attempt_id`
+(`SNA-<delivery_id>-<attempt_number>`, monotónico y append-only).
+`delivery_id` nunca debe documentarse como "send-attempt
+identity".
+
 ## CA_ES_TRANSPORT_RECEIPT_V1
 
 Esquema versionado para acknowledgements externos depositados en
@@ -66,6 +73,29 @@ Esquema versionado para acknowledgements externos depositados en
 - Un receipt local de test ejercita la máquina de estados pero
   nunca constituye evidencia de aceptación real: GATEWAY_* en
   producción requiere artefacto creado por consumidor externo.
+
+### Trust boundary del receipt
+
+El software demuestra: receipt válido + binding `delivery_id` +
+binding `content_sha256` + correlación correcta. **No** demuestra
+quién depositó el fichero. La confianza se estratifica así:
+
+```text
+Receipt local/de test
+    -> evidencia de máquina de estados únicamente
+
+Receipt en directorio de producción
+    + ACL del directorio / identidad de servicio separada /
+      consumidor externo operado
+    -> evidencia de gateway (GATEWAY_ACCEPTED/REJECTED)
+
+ACK/NAK FIN real ingerido
+    -> evidencia de red SWIFT (SWIFT_ACKED/NAKED)
+```
+
+`GATEWAY_*` es por tanto evidencia *a nivel de adapter*: su peso
+probatorio depende del trust boundary operacional desplegado
+(quién puede escribir en `receipts/`), no del software.
 
 ## CA_ES_SEND_ATTEMPT_V1 (ledger row)
 

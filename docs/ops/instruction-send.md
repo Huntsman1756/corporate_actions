@@ -72,6 +72,13 @@ Escritura transaccional: tmp en el mismo directorio →
 flush+fsync → `os.replace` atómico → `.msg` primero, `.meta`
 después (meta = commit) → fsync del directorio.
 
+**Precisión de "durable"**: en POSIX, `fsync(fichero)` + rename
+atómico + `fsync(dir)` persisten el rename ante fallo de sistema.
+En Windows el fsync de directorio no está expuesto (best-effort);
+la durabilidad del rename es la que el SO/filesystem garantice
+para `os.replace`. No se afirma más garantía de la que cada
+plataforma proporciona.
+
 La convención `receipts/*.ack.json|*.nak.json` es **protocolo de
 adapter ca-es**, no un estándar SWIFT. Un gateway real traduciría
 su respuesta nativa a `CA_ES_TRANSPORT_RECEIPT_V1`.
@@ -108,6 +115,23 @@ consumo idempotente sin transición.
 
 **Un receipt local de test ejercita la máquina de estados pero
 nunca constituye evidencia de aceptación SWIFT real.**
+
+### Trust boundary del receipt
+
+El software demuestra validez + binding `delivery_id` +
+`content_sha256` + correlación. No demuestra **quién** depositó
+el fichero — eso lo garantiza el trust boundary operacional:
+
+```text
+Receipt local/test        → evidencia de state machine
+Receipt en producción
+  + ACL / identidad de servicio separada / consumidor externo
+                          → evidencia de gateway
+ACK/NAK FIN real          → evidencia de red SWIFT
+```
+
+`GATEWAY_*` pesa como evidencia solo si el despliegue controla
+quién escribe en `receipts/` (ACL, servicio separado).
 
 ## Comandos
 

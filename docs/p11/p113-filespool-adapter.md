@@ -23,11 +23,23 @@ multiplataforma.
 ## Escritura transaccional
 
 1. `mkdir -p outbox/ receipts/ quarantine/` (error → permanente).
-2. tmp `.tmp-<pid>-<delivery_id>.msg` + `.meta.json` en `outbox/`
-   (mismo filesystem → rename atómico).
-3. `fsync` de ambos ficheros.
+2. tmp en `outbox/` vía `tempfile.mkstemp` (mismo filesystem →
+   rename atómico).
+3. `write` + `flush` + `fsync` del fichero.
 4. `os.replace` msg, luego meta (meta = commit marker).
-5. `fsync` del directorio.
+5. `fsync` del directorio `outbox/`.
+
+### Precisión de la garantía "durable"
+
+- **POSIX**: `fsync(fichero)` + rename atómico + `fsync(dir)`
+  hacen persistente el rename ante fallo de sistema.
+- **Windows**: el `fsync` de directorio no está expuesto por el
+  SO (`os.open` sobre directorio falla → best-effort no-op). La
+  durabilidad del rename queda entonces en lo que el
+  SO/filesystem garantice para `os.replace`; el contenido del
+  fichero sí está fsync'd antes del rename.
+- La garantía se describe exactamente como la proporciona cada
+  plataforma — no se afirma una durabilidad que el SO no expone.
 
 ## Idempotencia
 
@@ -42,12 +54,17 @@ Si `outbox/<delivery_id>.msg` ya existe:
 
 ```json
 {"schema": "CA_ES_SEND_META_V1",
- "delivery_id": "...", "message_schema": "...",
- "message_reference": "...", "instruction_id": "...",
- "content_sha256": "...", "bytes": N}
+ "delivery_id": "...", "instruction_id": "...",
+ "message_reference": "...", "message_schema": "...",
+ "content_sha256": "...", "destination_id": "...",
+ "adapter_type": "filespool", "generation": N}
 ```
 
 Sin timestamps ni campos volátiles: replay byte-idéntico.
+
+El replay idempotente exige que **los bytes del `.msg`** casen
+con `content_sha256` — no basta el meta declarado (meta válido +
+`.msg` sustituido → `DELIVERY_ID_COLLISION`, nunca SPOOLED).
 
 ## verify() — post-crash
 
@@ -72,9 +89,12 @@ El dispatcher (no el adapter de escritura) escanea `receipts/`:
 | condición | outcome |
 |---|---|
 | write+rename OK | SPOOLED |
-| replay idempotente | SPOOLED |
-| colisión | FAILED_PERMANENT DELIVERY_ID_COLLISION |
-| falta `spool_directory` | FAILED_PERMANENT SPOOL_NO_DIRECTORY |
-| mkdir/permiso falla | FAILED_PERMANENT SPOOL_MKDIR_FAILED |
-| IO en write/rename | FAILED_RETRYABLE SPOOL_IO_ERROR |
-| meta verification post-write | FAILED_PERMANENT META_MISMATCH |
+| replay idempotente (bytes verificados) | SPOOLED |
+| `message_text` no casa con `content_sha256` del ledger | FAILED_PERMANENT CONTENT_HASH_MISMATCH |
+| colisión id+sha distinto, o meta↔msg divergentes | FAILED_PERMANENT DELIVERY_ID_COLLISION |
+| falta `spool_directory` | FAILED_PERMANENT MISSING_SPOOL_DIRECTORY |
+| mkdir/permiso falla | FAILED_PERMANENT SPOOL_NOT_CREATABLE |
+| meta existente ilegible | FAILED_PERMANENT META_UNREADABLE |
+| IO en write/rename de `.msg` (pre-commit) | FAILED_RETRYABLE SPOOL_IO |
+| IO en write/rename de `.meta` (post-`.msg`) | UNKNOWN SPOOL_IO_POST_MSG → verify() resuelve |
+| IO en `.meta` tras `.msg` huérfano | FAILED_RETRYABLE SPOOL_IO |
