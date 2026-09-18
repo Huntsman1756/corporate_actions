@@ -8,5 +8,8 @@
 CA_ES_STATE=/var/lib/ca-es/state
 CA_ES_CONFIG=/etc/ca-es/ops.json
 
-# Diario 06:30 hora local del host.
-30 6 * * *  caops  ca-es ops-run --state "$CA_ES_STATE" --config "$CA_ES_CONFIG" --as-of "$(date +\%F)" >> /var/log/ca-es/ops.log 2>&1
+# Diario 06:30 hora local del host. P10: la entrega del outbox va
+# encadenada despues del run transaccional — si el run falla, no se
+# intenta entrega; si la entrega falla (exit 2), el job reporta
+# error aunque el run de negocio quedo SUCCEEDED.
+30 6 * * *  caops  ca-es ops-run --state "$CA_ES_STATE" --config "$CA_ES_CONFIG" --as-of "$(date +\%F)" >> /var/log/ca-es/ops.log 2>&1 && ca-es alert-deliver --state "$CA_ES_STATE" --config "$CA_ES_CONFIG" >> /var/log/ca-es/ops.log 2>&1

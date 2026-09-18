@@ -345,14 +345,71 @@ P8  Economic coverage expansion
           alertas EXCEPTION_CASE desde valores)
          — P8 CLOSED (V1; CAEV no demostrados quedan
            explícitamente UNSUPPORTED)
+
+P9  Live Source Refresh
+    P9.1/P9.2/P9.3 source state, live adapters, orchestrator DONE
+         (695ffef; source_documents/observations/parse_results
+          en schema v2; adapters BME/CNMV/Portfolio con fetch
+          byte-exacto + discovery; ausencia en snapshot !=
+          desaparición de evidencia previa)
+    P9.5/P9.6 canon refresh acumulado + DAG integration     DONE
+         (cb2228e; refresh UNCHANGED -> skips downstream;
+          doc nuevo -> +1 evento + invalidación selectiva)
+    P9.7 source health + availability alerts                DONE
+         (0de4956)
+    P9.8 backfill/replay + CLI de fuentes                   DONE
+         (d2f3ebb)
+    P9.9 live smoke opt-in + adapter hardening              DONE
+         (3d57bba; floats API -> lexemas sin debilitar la
+          regla no-float; shell SPA -> INDEX_NO_PRODUCTS)
+    P9.10 e2e demo + live hardening                         DONE
+         (f15a838; sanitización de path solo en el componente
+          físico, identidad documental intacta; LEG1 167
+          docs/eventos, LEG2 UNCHANGED mismo canon,
+          LEG3 +1 evento + invalidación selectiva;
+          CI run 35346315360 success sobre f15a838)
+         — P9 CLOSED
+
+P10 Alert Delivery Boundary
+    P10.0-P10.3 arquitectura + contratos + ledger + policy  DONE
+         (d018cf3; docs/p10/p100-p103; schema v3 aditivo:
+          deliveries + delivery_attempts +
+          delivery_transitions; payload_json persistido en
+          derivación)
+    P10.4-P10.6 FILE + WEBHOOK + SMTP adapters              DONE
+         (file atómico/idempotente con DELIVERY_KEY_COLLISION;
+          webhook HTTPS http.client con fase pre/post-send
+          distinguida, sin redirects por defecto, same-origin
+          only, Idempotency-Key; SMTP stdlib STARTTLS con
+          Message-ID determinista y transport inyectable)
+    P10.7-P10.13 dispatcher + retry + operator control      DONE
+         (run_alert_deliver con STARTED durable antes del
+          side effect; orphan STARTED -> UNKNOWN_OUTCOME sin
+          auto-retry; backoff scheduler-driven sin sleep;
+          delivery-status/show/retry/abandon con auditoría
+          append-only; agregado outbox.delivery_state sobre
+          generación vigente × destinos habilitados)
+    P10.11/P10.15 health + live smoke                       DONE
+         (bloque delivery en CA_ES_OPS_STATUS_V1 +
+          CA_ES_DELIVERY_STATUS_V1; tests/live opt-in file +
+          webhook con CA_ES_TEST_WEBHOOK_URL)
+    P10.14/P10.16 suite + cross-platform                    DONE
+         (tests nuevos: ledger, migración v1/v2->v3, config
+          fail-closed/secretish, file, webhook con servidor
+          HTTP local, SMTP con transport inyectado,
+          dispatcher, CLI; scripts/p10_e2e_demo.py con los
+          6 legs de aceptación)
+         — P10 CLOSED
 ```
 
 ## Prioridad actual
 
-P1–P8 cerrados (incl. P4 MT + ISO 20022 seev.* con conformance
-MT<->MX verificada, P7 daily operations end-to-end y P8 economic
+P1–P10 cerrados (incl. P4 MT + ISO 20022 seev.* con conformance
+MT<->MX verificada, P7 daily operations end-to-end, P8 economic
 coverage V1 para SPLIT/REVERSE_SPLIT, RIGHTS_ISSUE staged,
-STOCK_DIVIDEND, SCRIP_DIVIDEND y CAPITAL_INCREASE=BONU). Sin
+STOCK_DIVIDEND, SCRIP_DIVIDEND y CAPITAL_INCREASE=BONU, P9 live
+source refresh y P10 alert delivery boundary con FILE/WEBHOOK/
+SMTP). P11 financial messaging gateway queda diferido. Sin
 nuevos gates formales (G4+ no existen); cada fase con tests y
 preregistro de scope.
 

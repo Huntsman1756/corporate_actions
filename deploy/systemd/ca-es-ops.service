@@ -13,6 +13,11 @@ ExecStart=/bin/sh -c '\
   /usr/local/bin/ca-es ops-run \
     --state "$CA_ES_STATE" --config "$CA_ES_CONFIG" \
     --as-of "$ASOF"'
+# P10: entrega del outbox DESPUES del run transaccional. Si el run
+# falla, este ExecStart no se ejecuta; si la entrega falla, la
+# unidad falla pero el run ya quedo persistido como SUCCEEDED.
+ExecStart=/usr/local/bin/ca-es alert-deliver \
+  --state "${CA_ES_STATE}" --config "${CA_ES_CONFIG}"
 # exit 3 (OPS_RUN_ALREADY_ACTIVE) no es fallo del servicio: otro
 # writer activo; el siguiente tick del timer lo reintenta.
 SuccessExitStatus=0 3

@@ -10,10 +10,15 @@ param(
     [string]$At = "06:30"
 )
 
+# P10: alert-deliver encadenado tras ops-run solo si el run salio
+# bien; su exit code propio llega al historial de la tarea.
 $action = New-ScheduledTaskAction -Execute "powershell.exe" -Argument (
     "-NoProfile -Command " +
     "`"& '$CaEsExe' ops-run --state '$StateDir' " +
-    "--config '$ConfigPath' --as-of (Get-Date -Format yyyy-MM-dd)`"")
+    "--config '$ConfigPath' --as-of (Get-Date -Format yyyy-MM-dd); " +
+    "if (`$LASTEXITCODE -eq 0) { " +
+    "& '$CaEsExe' alert-deliver --state '$StateDir' " +
+    "--config '$ConfigPath' }`"")
 
 $trigger = New-ScheduledTaskTrigger -Daily -At $At
 
