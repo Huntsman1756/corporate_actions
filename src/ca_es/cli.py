@@ -1856,6 +1856,216 @@ def _utcnow_iso() -> str:
     ).replace("+00:00", "Z")
 
 
+# ------------------------------------------------------------------
+# P13 — custody feeds
+
+def _custody_facts(args):
+    """facts doc desde --fin/--mx via adapter, o --facts directo."""
+    if getattr(args, "facts", None):
+        return _load_json(args.facts, "facts")
+    if getattr(args, "mx", None):
+        return _mx_facts_doc(args)
+    return _facts_doc(args)
+
+
+def cmd_custody_observe(args: argparse.Namespace) -> int:
+    from .custody_cash import cash_observation
+    from .custody_position import position_observation
+    from .ops_custody import CASH_TYPES, POSITION_TYPES
+
+    facts, code = _custody_facts(args)
+    if facts is None:
+        return code
+    mid = facts.get("message_identifier")
+    if mid in POSITION_TYPES:
+        return _emit(position_observation(facts))
+    if mid in CASH_TYPES:
+        return _emit(cash_observation(facts))
+    print(json.dumps({
+        "status": "UNSUPPORTED_MESSAGE_TYPE",
+        "message_identifier": mid,
+        "detail": "no es un tipo custody (MT535/semt.002/"
+                  "MT940/MT950/camt.053/camt.054)",
+    }))
+    return 3
+
+
+def cmd_custody_snapshot(args: argparse.Namespace) -> int:
+    from .custody_profile import load_profile
+    from .custody_profile import account_map as _amap
+    from .custody_snapshot import build_snapshots, positions_doc
+
+    observations = []
+    for path in args.obs:
+        doc, code = _load_json(path, "obs")
+        if doc is None:
+            return code
+        if doc.get("schema") != "CA_ES_POSITION_OBSERVATION_V1":
+            print(json.dumps({
+                "status": "INVALID_INPUT",
+                "detail": f"{path} no es CA_ES_POSITION_OBSERVATION_V1",
+            }))
+            return 2
+        observations.append(doc)
+
+    profile = None
+    if args.profile:
+        try:
+            profile = load_profile(Path(args.profile))
+        except (ValueError, OSError) as exc:
+            print(json.dumps({"status": str(exc)[:200]}))
+            return 2
+    index = build_snapshots(observations, now=args.now)
+    amap = _amap(profile)
+    out = dict(index)
+    out["positions_docs"] = [
+        positions_doc(s, amap, now=args.now)
+        for s in index["snapshots"] if s["completeness"] == "COMPLETE"]
+    return _emit(out)
+
+
+def cmd_custody_bind(args: argparse.Namespace) -> int:
+    from .custody_bind import bind_cash, movements_doc
+    from .custody_profile import load_profile
+    from .custody_profile import account_map as _amap
+    from .custody_profile import reference_map as _rmap
+
+    obs, code = _load_json(args.obs, "obs")
+    if obs is None:
+        return code
+    if obs.get("schema") != "CA_ES_CASH_ACCOUNT_OBSERVATION_V1":
+        print(json.dumps({
+            "status": "INVALID_INPUT",
+            "detail": "obs debe ser CA_ES_CASH_ACCOUNT_OBSERVATION_V1",
+        }))
+        return 2
+
+    rmap, amap = {}, {}
+    if args.refs:
+        refs, code = _load_json(args.refs, "refs")
+        if refs is None:
+            return code
+        rmap = refs.get("reference_map", refs)
+    if args.profile:
+        try:
+            profile = load_profile(Path(args.profile))
+        except (ValueError, OSError) as exc:
+            print(json.dumps({"status": str(exc)[:200]}))
+            return 2
+        rmap = {**rmap, **_rmap(profile)}
+        amap = _amap(profile)
+
+    binding = bind_cash(obs, rmap, amap, now=args.now)
+    out = dict(binding)
+    out["movements_doc"] = movements_doc(binding, now=args.now)
+    return _emit(out)
+
+
+def cmd_custody_recon(args: argparse.Namespace) -> int:
+    from .custody_recon import cash_feed_recon, position_recon
+
+    if args.cash:
+        movements, code = _load_json(args.movements, "movements")
+        if movements is None:
+            return code
+        obs, code = _load_json(args.obs, "obs")
+        if obs is None:
+            return code
+        return _emit(cash_feed_recon(movements, obs, now=args.now))
+    expected, code = _load_json(args.expected, "expected")
+    if expected is None:
+        return code
+    snap, code = _load_json(args.snapshot, "snapshot")
+    if snap is None:
+        return code
+    return _emit(position_recon(expected, snap, now=args.now))
+
+
+def cmd_custody_inbox(args: argparse.Namespace) -> int:
+    import uuid
+
+    from .ops_custody import process_custody_inbox
+    from .ops_state import OpsRunAlreadyActive, OpsStateError
+
+    state, code = _open_state(args)
+    if state is None:
+        return code
+    inbox_dir = Path(args.path) if args.path else \
+        state.root / "custody_inbox"
+    run_id = f"custody-inbox-{uuid.uuid4().hex[:8]}"
+    try:
+        conn = state.acquire_run_lock(run_id)
+    except OpsRunAlreadyActive:
+        print(json.dumps({"status": "OPS_RUN_ALREADY_ACTIVE"}))
+        return 3
+    try:
+        doc = process_custody_inbox(
+            state, conn, inbox_dir, run_id=run_id)
+        state.checkpoint()
+    except OpsStateError as exc:
+        print(json.dumps({"status": str(exc)[:200]}))
+        return 2
+    finally:
+        state.release_run_lock()
+    return _emit(doc)
+
+
+def cmd_custody_build(args: argparse.Namespace) -> int:
+    import uuid
+
+    from .custody_profile import load_profile
+    from .ops_custody import build_custody_index
+    from .ops_state import OpsRunAlreadyActive, OpsStateError
+
+    state, code = _open_state(args)
+    if state is None:
+        return code
+    profile = None
+    if args.profile:
+        try:
+            profile = load_profile(Path(args.profile))
+        except (ValueError, OSError) as exc:
+            print(json.dumps({"status": str(exc)[:200]}))
+            return 2
+    run_id = f"custody-build-{uuid.uuid4().hex[:8]}"
+    try:
+        conn = state.acquire_run_lock(run_id)
+    except OpsRunAlreadyActive:
+        print(json.dumps({"status": "OPS_RUN_ALREADY_ACTIVE"}))
+        return 3
+    try:
+        doc = build_custody_index(state, conn, profile=profile)
+        state.checkpoint()
+    except OpsStateError as exc:
+        print(json.dumps({"status": str(exc)[:200]}))
+        return 2
+    finally:
+        state.release_run_lock()
+    return _emit(doc)
+
+
+def cmd_custody_health(args: argparse.Namespace) -> int:
+    from .custody_health import feed_health
+    from .ops_custody import latest_index
+    from .ops_state import OpsStateError
+
+    state, code = _open_state(args)
+    if state is None:
+        return code
+    try:
+        conn = state.open().__enter__()
+        index = latest_index(state, conn)
+        conn.close()
+    except OpsStateError as exc:
+        print(json.dumps({"status": str(exc)[:200]}))
+        return 2
+    doc = feed_health(
+        index, now=args.now or _utcnow_iso(),
+        required_accounts=args.required_account,
+        max_position_age_days=args.max_age_days)
+    return _emit(doc)
+
+
 def build_parser() -> argparse.ArgumentParser:
     parser = argparse.ArgumentParser(prog="ca-es", description=__doc__)
     parser.add_argument("--repo-root", default=None)
@@ -2384,6 +2594,88 @@ def build_parser() -> argparse.ArgumentParser:
     spoll.add_argument("--state", required=True)
     spoll.add_argument("--config", required=True)
     spoll.set_defaults(func=cmd_send_poll)
+
+    # P13 — custody feeds
+    cobs = sub.add_parser(
+        "custody-observe",
+        help="MT535/semt.002 -> CA_ES_POSITION_OBSERVATION_V1; "
+             "MT940/950/camt.053/054 -> CA_ES_CASH_ACCOUNT_OBSERVATION_V1")
+    cobs_src = cobs.add_mutually_exclusive_group(required=True)
+    cobs_src.add_argument("--fin", default=None)
+    cobs_src.add_argument("--mx", default=None)
+    cobs_src.add_argument("--facts", default=None,
+                          help="doc de facts ya generado")
+    cobs.set_defaults(func=cmd_custody_observe)
+
+    csnap = sub.add_parser(
+        "custody-snapshot",
+        help="observaciones -> CA_ES_POSITION_SNAPSHOT_V1 + "
+             "CA_ES_POSITIONS_V1 (solo COMPLETE)")
+    csnap.add_argument("--obs", required=True, nargs="+",
+                       help="uno o mas CA_ES_POSITION_OBSERVATION_V1")
+    csnap.add_argument("--profile", default=None,
+                       help="CA_ES_CUSTODY_PROFILE_V1 (account_map)")
+    csnap.add_argument("--now", default=None)
+    csnap.set_defaults(func=cmd_custody_snapshot)
+
+    cbind = sub.add_parser(
+        "custody-bind",
+        help="cash observation -> binding explicito -> "
+             "CA_ES_CASH_MOVEMENTS_V2 (solo BOUND)")
+    cbind.add_argument("--obs", required=True,
+                       help="CA_ES_CASH_ACCOUNT_OBSERVATION_V1")
+    cbind.add_argument("--refs", default=None,
+                       help="reference_map json {ref: {event_id,...}}")
+    cbind.add_argument("--profile", default=None,
+                       help="CA_ES_CUSTODY_PROFILE_V1")
+    cbind.add_argument("--now", default=None)
+    cbind.set_defaults(func=cmd_custody_bind)
+
+    crec = sub.add_parser(
+        "custody-recon",
+        help="reconciliacion custody: positions vs snapshot o "
+             "movements vs cash observation")
+    crec.add_argument("--expected", default=None,
+                      help="CA_ES_POSITIONS_V1 esperado")
+    crec.add_argument("--snapshot", default=None,
+                      help="CA_ES_POSITION_SNAPSHOT_V1")
+    crec.add_argument("--cash", action="store_true",
+                      help="modo cash feed recon")
+    crec.add_argument("--movements", default=None,
+                      help="CA_ES_CASH_MOVEMENTS_V2")
+    crec.add_argument("--obs", default=None,
+                      help="CA_ES_CASH_ACCOUNT_OBSERVATION_V1")
+    crec.add_argument("--now", default=None)
+    crec.set_defaults(func=cmd_custody_recon)
+
+    cinbox = sub.add_parser(
+        "custody-inbox",
+        help="procesa custody_inbox/ (dedup + facts JVM)")
+    cinbox.add_argument("--state", required=True)
+    cinbox.add_argument("--path", default=None,
+                        help="default <state>/custody_inbox")
+    cinbox.set_defaults(func=cmd_custody_inbox)
+
+    cbld = sub.add_parser(
+        "custody-build",
+        help="facts custody -> observations/snapshots/bindings "
+             "-> CA_ES_CUSTODY_FEED_STATE_V1")
+    cbld.add_argument("--state", required=True)
+    cbld.add_argument("--profile", default=None,
+                      help="CA_ES_CUSTODY_PROFILE_V1")
+    cbld.set_defaults(func=cmd_custody_build)
+
+    chlth = sub.add_parser(
+        "custody-health",
+        help="CA_ES_CUSTODY_FEED_HEALTH_V1")
+    chlth.add_argument("--state", required=True)
+    chlth.add_argument("--required-account", action="append",
+                       default=[],
+                       help="account_id_raw que debe tener snapshot "
+                            "COMPLETE (repetible)")
+    chlth.add_argument("--max-age-days", type=int, default=7)
+    chlth.add_argument("--now", default=None)
+    chlth.set_defaults(func=cmd_custody_health)
 
     return parser
 

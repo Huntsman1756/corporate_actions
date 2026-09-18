@@ -213,6 +213,35 @@ python -m ca_es.cli send-ingest-fin --state <dir> --fin <svc.fin>
     # service message FIN 21 -> Prowide -> SWIFT_ACKED/NAKED
 # lab MQ real opt-in (IBM MQ Developer, licencia IBM del operador):
 #   P12_MQ_LIVE=1 LICENSE=accept python scripts/p12_mq_lab.py
+
+# P13 custody input feeds (MT535/semt.002 -> positions;
+# MT940/950/camt.053/054 -> cash observation -> binding explicito;
+# mapping de cuentas/referencias SOLO via CA_ES_CUSTODY_PROFILE_V1;
+# nunca binding por amount/date)
+python -m ca_es.cli custody-observe --fin <mt535.fin|mt940.fin>
+python -m ca_es.cli custody-observe --mx <semt002.xml|camt05x.xml>
+python -m ca_es.cli custody-observe --facts <facts.json>
+    # -> CA_ES_POSITION_OBSERVATION_V1 | CA_ES_CASH_ACCOUNT_OBSERVATION_V1
+python -m ca_es.cli custody-snapshot --obs <obs.json> [<obs2.json> ...] \
+    [--profile <CA_ES_CUSTODY_PROFILE_V1.json>] [--now <iso>]
+    # -> CA_ES_POSITION_SNAPSHOT_V1 + positions si COMPLETE
+python -m ca_es.cli custody-bind --obs <cash-obs.json> \
+    [--refs <reference-map.json>] [--profile <profile.json>] [--now <iso>]
+    # -> CA_ES_CASH_BINDING_V1 + CA_ES_CASH_MOVEMENTS_V2 (solo BOUND)
+python -m ca_es.cli custody-recon --expected <positions.json> \
+    --snapshot <custody-positions-doc.json> [--now <iso>]
+    # -> CA_ES_POSITION_RECON_V1 (ambos lados CA_ES_POSITIONS_V1)
+python -m ca_es.cli custody-recon --cash --movements <movs.json> \
+    --obs <cash-obs.json> [--now <iso>]
+    # -> CA_ES_CASH_FEED_RECON_V1
+python -m ca_es.cli custody-inbox --state <state-dir> [--path <inbox>]
+python -m ca_es.cli custody-build --state <state-dir> [--profile <p.json>]
+    # -> CA_ES_CUSTODY_FEED_STATE_V1 (snapshots+movements en artifacts)
+python -m ca_es.cli custody-health --state <state-dir> \
+    [--required-account <acct>] [--max-age-days N] [--now <iso>]
+    # -> CA_ES_CUSTODY_FEED_HEALTH_V1
+# e2e demo S1-S7 (requiere fatJar):
+#   python scripts/p13_e2e_demo.py <work_dir>
 ```
 
 Ruff está configurado en `pyproject.toml`; ejecutar
