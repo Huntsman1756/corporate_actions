@@ -20,8 +20,10 @@ transport ACK       ≠  status de negocio
 - `GATEWAY_ACCEPTED / GATEWAY_REJECTED` — solo cuando un
   consumidor externo real deposita un receipt válido en
   `receipts/`.
-- `SWIFT_ACKED / SWIFT_NAKED` — contrato reservado; requiere
-  ingestión de ACK/NAK FIN real (sin ingestor en V1).
+- `SWIFT_ACKED / SWIFT_NAKED` — solo cuando un service message
+  FIN 21 real se parsea por Prowide (`send-ingest-fin`) y
+  correlaciona determinísticamente (MIR + SEME). Es evidencia de
+  **red** (L4), no de negocio.
 - `MT567 / seev.034` (status de instrucción de negocio) vive en
   P5.6 — lifecycle separado, jamás modelado como ACK de
   transporte.
@@ -146,6 +148,10 @@ ca-es send-retry    --state <dir> --delivery-id SND-... \
     [--force-unknown] [--actor <quien>]
 ca-es send-abandon  --state <dir> --delivery-id SND-... \
     [--actor <quien>] [--note "..."]
+
+# P12: transportes reales + polling + evidencia de red
+ca-es send-poll     --state <dir> --config ops.json
+ca-es send-ingest-fin --state <dir> --fin <service-message.fin>
 ```
 
 `send-prepare` y `send-dispatch` son pasos separados: preparar
@@ -165,13 +171,23 @@ ingestion → dispatch de elegibles, con `STARTED` durable
 - `UNKNOWN_OUTCOME` → solo `send-retry --force-unknown` o
   `send-abandon` (auditoría append-only).
 
-## Limitaciones deliberadas (V1)
+## Limitaciones deliberadas
 
-- `FileSpoolTransport` es el único adapter. MQ/SFTP/REST son
-  plugins futuros bajo el mismo contrato de ledger — no se
-  implementan sin endpoint/protocolo real contra el que probar.
-- Sin ingestor de ACK/NAK FIN nativos: `SWIFT_*` es contrato
-  reservado.
+- Adapters: `filespool`, `sftp` (Paramiko, extra `sftp`), `mq`
+  (ibmmq, extra `mq` — requiere cliente IBM MQ C instalado).
+  Ambos opcionales y lazy; sin la dependencia → fail-closed.
+  REST/SWIFT API: sin adapter (contrato público insuficiente
+  sin sandbox — ver docs/p12/p127).
+- `send-poll` ingiere receipts filespool locales y receipts
+  remotos SFTP (staging local → mismo validador → archive
+  remoto solo si la ingesta fue válida; `disposition=keep`
+  deja el remoto intacto). Una pasada, idempotente, nunca un
+  daemon.
+- `send-ingest-fin` parsea un service message FIN 21 vía el
+  adapter JVM/Prowide y correlaciona MIR+SEME → SWIFT_ACKED/
+  SWIFT_NAKED. `source=FILE_INGEST`: ejerce la máquina de
+  estados con parseo/correlación reales; la fuerza de la
+  evidencia depende del canal por el que llegó el fichero.
 - At-least-once; no exactly-once.
 - `send-prepare` acepta docs `CA_ES_MT565_FIN_V1` /
   `CA_ES_SEEV033_XML_V1` con `write_status=OK` y binding
