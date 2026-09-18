@@ -45,6 +45,8 @@ RULE_SPLIT = "SPLIT_POSITION_X_NEW_FOR_OLD_DISF"
 RULE_RIGHTS_DIST = "RIGHTS_DISTRIBUTION_POSITION_X_NEWO"
 RULE_RIGHTS_EXER = "RIGHTS_EXERCISE_ELECTED_X_NEWO_X_PRICE"
 RULE_STOCK_DIV = "STOCK_DIVIDEND_POSITION_X_NEWO"
+RULE_SCRIP = "SCRIP_ELECTION_CASH_OR_SECU"
+RULE_BONUS = "BONUS_ISSUE_POSITION_X_NEWO"
 
 _DISF_FLOOR = {"RDDN", "CINL"}
 _DISF_CEIL = {"RDUP", "BUYU"}
@@ -103,9 +105,12 @@ _RULE_BY_MECHANISM = {
     "RIGHTS_DISTRIBUTION": RULE_RIGHTS_DIST,
     "RIGHTS_EXERCISE": RULE_RIGHTS_EXER,
     "STOCK_DIVIDEND": RULE_STOCK_DIV,
+    "SCRIP_DIVIDEND": RULE_SCRIP,
+    "BONUS_ISSUE": RULE_BONUS,
 }
 
-_SUPPORTED_EVENT_TYPES = {"SPLIT", "RIGHTS_ISSUE", "STOCK_DIVIDEND"}
+_SUPPORTED_EVENT_TYPES = {"SPLIT", "RIGHTS_ISSUE", "STOCK_DIVIDEND",
+                          "SCRIP_DIVIDEND", "CAPITAL_INCREASE"}
 
 
 def _entitlement(terms: dict, position: dict,
@@ -182,11 +187,88 @@ def _entitlement(terms: dict, position: dict,
         "base": base, "quantity": quantity, "ratio": (new_f, old_f),
         "disf": disf, "basis_value": basis_value, "fail": fail,
     }
-    if mechanism in ("RIGHTS_DISTRIBUTION", "STOCK_DIVIDEND"):
+    if mechanism in ("RIGHTS_DISTRIBUTION", "STOCK_DIVIDEND",
+                     "BONUS_ISSUE"):
         return _rights_distribution(terms, ctx)
     if mechanism == "RIGHTS_EXERCISE":
         return _rights_exercise(terms, ctx, account_id, election)
+    if mechanism == "SCRIP_DIVIDEND":
+        return _scrip(terms, ctx, account_id, election)
     return _split(terms, ctx)
+
+
+def _scrip(terms: dict, ctx: dict, account_id,
+           election: dict | None) -> dict:
+    """DVOP: la eleccion por cuenta decide la pierna.
+
+    SECU -> receipt-only de acciones (misma math que RHDI/DVSE);
+    CASH -> receivable_cash = posicion x gross_per_share.
+    Nunca se aplica el DFLT de la fuente."""
+    fail = ctx["fail"]
+    quantity, (new_f, old_f) = ctx["quantity"], ctx["ratio"]
+
+    if not election or account_id not in election:
+        return fail(INDETERMINATE, "PENDING_ELECTION")
+    option = election.get(account_id)
+    if option not in ("CASH", "SECU"):
+        return fail(INDETERMINATE, f"INVALID_ELECTION:{option}")
+
+    if option == "SECU":
+        disf = ctx["disf"]
+        raw_qty = quantity * new_f / old_f
+        resolved, fraction, cash_leg, reason = _apply_disf(
+            raw_qty, disf)
+        if reason is not None:
+            return fail(INDETERMINATE, reason)
+        cash_in_lieu = None
+        if cash_leg:
+            ctx["terms"] = terms
+            cash_in_lieu, failure = _cash_in_lieu(ctx, fraction)
+            if failure is not None:
+                return failure
+        return {
+            **ctx["base"],
+            "status": ENTITLED,
+            "elected_option": "SECU",
+            "delivered": None,
+            "receivable": {
+                "isin": terms["target_isin"],
+                "quantity": format(resolved, "f"),
+            },
+            "raw_quantity": format(raw_qty, "f"),
+            "fraction": {
+                "amount": format(fraction, "f"),
+                "disposition": disf or "NOT_REQUIRED",
+                "cash_in_lieu": cash_in_lieu,
+            },
+            "calculation":
+                "position_quantity x new_for_old + DISF "
+                "(elected SECU)",
+            "basis": {
+                "record_date": ctx["basis_value"],
+                "position_eligibility": "POSITION_AT_RECORD_DATE",
+            },
+        }
+
+    # pierna CASH
+    gross = _decimal(terms.get("gross_per_share"))
+    currency = terms.get("currency")
+    if gross is None or not currency:
+        return fail(INDETERMINATE, "INVALID_GROSS_OR_CURRENCY")
+    return {
+        **ctx["base"],
+        "status": ENTITLED,
+        "elected_option": "CASH",
+        "delivered": None,
+        "receivable": None,
+        "receivable_cash": _money(quantity * gross, currency),
+        "calculation":
+            "position_quantity x gross_per_share (elected CASH)",
+        "basis": {
+            "record_date": ctx["basis_value"],
+            "position_eligibility": "POSITION_AT_RECORD_DATE",
+        },
+    }
 
 
 def _cash_in_lieu(ctx, fraction):

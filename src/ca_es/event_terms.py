@@ -26,16 +26,21 @@ INCOMPLETE = "INCOMPLETE"
 UNSUPPORTED = "UNSUPPORTED"
 
 # familias cuyo outcome se computa desde terms en V1
-SUPPORTED_FAMILIES = {"SPLIT", "RIGHTS_ISSUE", "STOCK_DIVIDEND"}
+SUPPORTED_FAMILIES = {"SPLIT", "RIGHTS_ISSUE", "STOCK_DIVIDEND",
+                      "SCRIP_DIVIDEND", "CAPITAL_INCREASE"}
 
-# mechanism -> camv admisible: RHDI/DVSE son MAND (como SPLIT); EXRI
-# es electivo por definicion (la eleccion la aporta la instruccion
-# P5, no el terms). Un DVSE electivo es un scrip (P8.5), no un
-# stock dividend
+# mechanism -> camv admisible: RHDI/DVSE son MAND (como SPLIT);
+# EXRI/DVOP son electivos por definicion (la eleccion la aporta la
+# instruccion P5, no el terms). Un DVSE electivo es un scrip
+# (P8.5), no un stock dividend
 _MECHANISM_CAMV = {
     "RIGHTS_DISTRIBUTION": {"MAND"},
     "RIGHTS_EXERCISE": {"CHOS", "VOLU"},
     "STOCK_DIVIDEND": {"MAND"},
+    "SCRIP_DIVIDEND": {"CHOS", "VOLU"},
+    # BONU es la unica via demostrada de CAPITAL_INCREASE en V1
+    # (ampliacion liberada); CAPI/CAPG/PRIO quedan UNMAPPED
+    "BONUS_ISSUE": {"MAND"},
 }
 
 
@@ -142,6 +147,26 @@ def build_event_terms(ca_message: dict, binding: dict | None = None,
                 if price_f.get("status") == "ABSENT"
                 else "CONFLICTING_SUBSCRIPTION_PRICE")
 
+    # SCRIP: la pierna CASH tambien debe ser demostrable — ambas
+    # opciones tienen que ser economicamente evaluables
+    gross_f = fields.get("gross_per_share") or {}
+    gross = gross_f.get("value") \
+        if gross_f.get("status") == "PRESENT" else None
+    ccy_f = fields.get("currency") or {}
+    currency = ccy_f.get("value") \
+        if ccy_f.get("status") == "PRESENT" else None
+    if mechanism == "SCRIP_DIVIDEND":
+        if gross is None:
+            reasons.append(
+                "MISSING_GROSS_PER_SHARE"
+                if gross_f.get("status") == "ABSENT"
+                else "CONFLICTING_GROSS_PER_SHARE")
+        if currency is None:
+            reasons.append(
+                "MISSING_CURRENCY"
+                if ccy_f.get("status") == "ABSENT"
+                else "CONFLICTING_CURRENCY")
+
     if any(r.startswith("UNSUPPORTED") or r.startswith("NON_MAND")
            or r.startswith("NON_ADMISSIBLE")
            or r.startswith("MESSAGE_STATUS")
@@ -172,6 +197,8 @@ def build_event_terms(ca_message: dict, binding: dict | None = None,
         "target_isin": target_isin,
         "fraction_disposition": disf,
         "subscription_price": price,
+        "gross_per_share": gross,
+        "currency": currency,
         "cash_in_lieu_price": None,
         "effective_date": _val(fields.get("effective_date")),
         "provenance": {

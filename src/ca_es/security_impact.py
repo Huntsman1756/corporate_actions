@@ -188,6 +188,17 @@ def compute_security_impact(
                     reasons=cell_reasons)
                 recv_item["target_isin"] = receivable["isin"]
                 impacts.append(recv_item)
+            receivable_cash = cell.get("receivable_cash")
+            if receivable_cash:
+                impacts.append(_item(
+                    position, "CASH_RECEIVABLE", PROJECTED, cell,
+                    provenance,
+                    cash_amount=receivable_cash,
+                    currency=receivable_cash.get("currency"),
+                    basis_date=basis,
+                    rule_id=rule,
+                    cell_index=cell_index,
+                    reasons=cell_reasons))
             payable = cell.get("payable")
             if payable:
                 impacts.append(_item(
@@ -253,6 +264,10 @@ def compute_security_impact(
                 "RIGHTS_EXERCISE_ELECTED_X_NEWO_X_PRICE",
             "STOCK_DIVIDEND":
                 "STOCK_DIVIDEND_POSITION_X_NEWO",
+            "SCRIP_DIVIDEND":
+                "SCRIP_ELECTION_CASH_OR_SECU",
+            "BONUS_ISSUE":
+                "BONUS_ISSUE_POSITION_X_NEWO",
         }.get(ent_doc.get("mechanism"),
               "SPLIT_POSITION_X_NEW_FOR_OLD_DISF"),
         "reasons": [],

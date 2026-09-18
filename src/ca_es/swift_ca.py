@@ -31,18 +31,22 @@ FACTS_SCHEMA = "CA_ES_SWIFT_MT_FACTS_V1"
 
 CAEV_MAP = {"DVCA": "CASH_DIVIDEND", "SPLF": "SPLIT",
             "SPLR": "SPLIT", "RHDI": "RIGHTS_ISSUE",
-            "EXRI": "RIGHTS_ISSUE", "DVSE": "STOCK_DIVIDEND"}
+            "EXRI": "RIGHTS_ISSUE", "DVSE": "STOCK_DIVIDEND",
+            "DVOP": "SCRIP_DIVIDEND",
+            "BONU": "CAPITAL_INCREASE"}
 
 # mechanism derivado del CAEV mismo (registry P8.0): SPLR es el
 # codigo de reverso; SPLI es opcion de instruccion, no CAEV.
 # RHDI/EXRI son las dos etapas enlazadas de una emision de
 # derechos (P8.2); RHTS/PRIO quedan UNMAPPED. DVSE es la
-# distribucion obligatoria de valores (P8.4); DVOP (scrip) queda
-# UNMAPPED hasta P8.5
+# distribucion obligatoria de valores (P8.4); DVOP es el scrip
+# electivo cash/valores (P8.5)
 CAEV_MECHANISM = {"SPLR": "REVERSE_SPLIT",
                   "RHDI": "RIGHTS_DISTRIBUTION",
                   "EXRI": "RIGHTS_EXERCISE",
-                  "DVSE": "STOCK_DIVIDEND"}
+                  "DVSE": "STOCK_DIVIDEND",
+                  "DVOP": "SCRIP_DIVIDEND",
+                  "BONU": "BONUS_ISSUE"}
 
 PRESENT = "PRESENT"
 ABSENT = "ABSENT"
