@@ -1,0 +1,63 @@
+# ca-es operational daily run — GitHub Actions example (P7.6).
+#
+# SOLO datos sinteticos: NUNCA subir el state store como
+# artifact (puede contener posiciones/cuentas/SWIFT). Manual via
+# workflow_dispatch; el schedule comentado es ilustrativo.
+name: ops-run-example
+
+on:
+  workflow_dispatch:
+    inputs:
+      as_of:
+        description: "as-of (YYYY-MM-DD); vacio = hoy UTC"
+        required: false
+  # schedule:
+  #   - cron: "30 6 * * 1-5"
+
+permissions:
+  contents: read
+
+jobs:
+  ops-run:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+      - name: Install ca-es
+        run: pip install .
+      - name: Synthetic ops config
+        run: |
+          mkdir -p ops-demo/state ops-demo/inputs
+          cat > ops-demo/inputs/rules.json <<'EOF'
+          {"schema":"CA_ES_DEADLINE_RULES_V1","rules":[{"rule_id":"R1",
+            "deadline_type":"RESPONSE_DEADLINE",
+            "source_field":"date.payment_date",
+            "business_days_offset":-1,"calendar_id":"TARGET2"}]}
+          EOF
+          cat > ops-demo/inputs/cals.json <<'EOF'
+          {"schema":"CA_ES_CALENDARS_V1","calendars":[{"calendar_id":
+            "TARGET2","business_week":[0,1,2,3,4],"holidays":[]}]}
+          EOF
+          cat > ops-demo/ops.json <<'EOF'
+          {"schema":"CA_ES_OPS_CONFIG_V1","inputs":{
+            "canon":{"path":"g3/input/canon.json","required":true},
+            "source_policy":{"path":"docs/sources/source-policy.json",
+              "required":true},
+            "deadline_rules":{"path":"ops-demo/inputs/rules.json",
+              "required":true},
+            "calendars":{"path":"ops-demo/inputs/cals.json",
+              "required":true}},
+           "action_queue":{"window_days":30,"due_soon_days":7}}
+          EOF
+      - name: ops-init + ops-run
+        run: |
+          ca-es ops-init --state ops-demo/state
+          ASOF="${{ inputs.as_of }}"
+          ASOF="${ASOF:-$(date -u +%F)}"
+          ca-es ops-run --state ops-demo/state \
+            --config ops-demo/ops.json --as-of "$ASOF"
+      - name: ops-status
+        run: ca-es ops-status --state ops-demo/state
+        if: always()

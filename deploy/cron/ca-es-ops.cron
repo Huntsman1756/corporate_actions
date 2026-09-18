@@ -1,0 +1,12 @@
+# ca-es operational daily run — cron example.
+# Instalar en /etc/cron.d/ca-es-ops o via `crontab -e`.
+#
+# Un solo writer por state store: si un run anterior sigue vivo,
+# el nuevo falla rapido con OPS_RUN_ALREADY_ACTIVE (exit 3) y el
+# siguiente tick lo reintenta. No encolar retries.
+
+CA_ES_STATE=/var/lib/ca-es/state
+CA_ES_CONFIG=/etc/ca-es/ops.json
+
+# Diario 06:30 hora local del host.
+30 6 * * *  caops  ca-es ops-run --state "$CA_ES_STATE" --config "$CA_ES_CONFIG" --as-of "$(date +\%F)" >> /var/log/ca-es/ops.log 2>&1

@@ -1,0 +1,11 @@
+[Unit]
+Description=ca-es operational daily run timer
+
+[Timer]
+# Diario 06:30 hora local. Ajustar al calendario operativo.
+OnCalendar=*-*-* 06:30:00
+# Si el host estaba apagado, ejecuta al arrancar.
+Persistent=true
+
+[Install]
+WantedBy=timers.target

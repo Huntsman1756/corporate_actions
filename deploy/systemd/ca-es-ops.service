@@ -1,0 +1,24 @@
+[Unit]
+Description=ca-es operational daily run (P7)
+After=local-fs.target
+
+[Service]
+Type=oneshot
+# Ajustar paths al despliegue real.
+Environment=CA_ES_STATE=/var/lib/ca-es/state
+Environment=CA_ES_CONFIG=/etc/ca-es/ops.json
+Environment=CA_ES_AS_OF=
+ExecStart=/bin/sh -c '\
+  ASOF="${CA_ES_AS_OF:-$(date +%%F)}"; \
+  /usr/local/bin/ca-es ops-run \
+    --state "$CA_ES_STATE" --config "$CA_ES_CONFIG" \
+    --as-of "$ASOF"'
+# exit 3 (OPS_RUN_ALREADY_ACTIVE) no es fallo del servicio: otro
+# writer activo; el siguiente tick del timer lo reintenta.
+SuccessExitStatus=0 3
+# state puede contener posiciones/cuentas/SWIFT: permisos duros.
+UMask=0077
+NoNewPrivileges=true
+ProtectSystem=strict
+ReadWritePaths=/var/lib/ca-es
+PrivateTmp=true
