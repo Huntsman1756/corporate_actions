@@ -25,7 +25,7 @@ from pathlib import Path
 
 from .semantic_hash import byte_sha256, semantic_sha256
 
-OPS_STATE_SCHEMA_VERSION = "3"
+OPS_STATE_SCHEMA_VERSION = "4"
 
 # v2: tablas P9 (source refresh). Aditivas — los estados v1 se
 # migran al vuelo en open()/init() sin perdida.
@@ -137,6 +137,76 @@ CREATE TABLE IF NOT EXISTS delivery_transitions (
 );
 CREATE INDEX IF NOT EXISTS idx_transitions_delivery
     ON delivery_transitions(delivery_key);
+"""
+
+# v4: tablas P11 (instruction send ledger). Aditivas — ninguna
+# tabla P7/P9/P10 se altera; attempts/transitions/receipts
+# append-only; transport_reference solo desde receipt externo.
+# docs/p11/p112-send-ledger.md
+SEND_SCHEMA_SQL = """
+CREATE TABLE IF NOT EXISTS sends (
+    delivery_id           TEXT PRIMARY KEY,
+    instruction_id        TEXT NOT NULL,
+    message_reference     TEXT,
+    message_schema        TEXT NOT NULL,
+    message_text          TEXT NOT NULL,
+    content_sha256        TEXT NOT NULL,
+    destination_id        TEXT NOT NULL,
+    adapter_type          TEXT NOT NULL,
+    generation            INTEGER NOT NULL,
+    status                TEXT NOT NULL,
+    transport_reference   TEXT,
+    attempt_count         INTEGER NOT NULL DEFAULT 0,
+    first_prepared_at     TEXT NOT NULL,
+    spooled_at            TEXT,
+    last_attempt_at       TEXT,
+    next_attempt_after    TEXT,
+    external_receipt_json TEXT
+);
+CREATE INDEX IF NOT EXISTS idx_sends_instruction
+    ON sends(instruction_id);
+CREATE INDEX IF NOT EXISTS idx_sends_status
+    ON sends(status);
+CREATE TABLE IF NOT EXISTS send_attempts (
+    attempt_id              TEXT PRIMARY KEY,
+    delivery_id             TEXT NOT NULL
+        REFERENCES sends(delivery_id),
+    attempt_number          INTEGER NOT NULL,
+    started_at              TEXT,
+    completed_at            TEXT,
+    status                  TEXT,
+    retryable               INTEGER,
+    error_code              TEXT,
+    error_detail_safe       TEXT,
+    transport_metadata_json TEXT
+);
+CREATE INDEX IF NOT EXISTS idx_send_attempts_delivery
+    ON send_attempts(delivery_id);
+CREATE TABLE IF NOT EXISTS send_transitions (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    delivery_id      TEXT NOT NULL,
+    at               TEXT,
+    from_status      TEXT,
+    to_status        TEXT NOT NULL,
+    actor            TEXT,
+    note             TEXT
+);
+CREATE INDEX IF NOT EXISTS idx_send_transitions_delivery
+    ON send_transitions(delivery_id);
+CREATE TABLE IF NOT EXISTS send_receipts (
+    receipt_id        INTEGER PRIMARY KEY AUTOINCREMENT,
+    delivery_id       TEXT NOT NULL,
+    receipt_sha256    TEXT NOT NULL,
+    status            TEXT NOT NULL,
+    gateway_reference TEXT,
+    received_at       TEXT,
+    reason            TEXT,
+    source_path       TEXT,
+    quarantine_reason TEXT,
+    ingested_at       TEXT NOT NULL
+);
+CREATE INDEX IF NOT EXISTS idx_send_receipts_delivery
+    ON send_receipts(delivery_id);
 """
 
 SCHEMA_SQL = """
@@ -277,6 +347,7 @@ class OpsState:
             conn.executescript(SCHEMA_SQL)
             conn.executescript(SOURCE_SCHEMA_SQL)
             conn.executescript(DELIVERY_SCHEMA_SQL)
+            conn.executescript(SEND_SCHEMA_SQL)
             conn.execute(
                 "INSERT OR REPLACE INTO state_meta(key, value)"
                 " VALUES ('schema_version', ?)",
@@ -318,10 +389,12 @@ class OpsState:
                 "ops.db sin schema_version (no inicializado)")
         if version == OPS_STATE_SCHEMA_VERSION:
             return
-        if version in ("1", "2"):
-            # migraciones aditivas: v1 -> +P9+P10, v2 -> +P10
+        if version in ("1", "2", "3"):
+            # migraciones aditivas: v1 -> +P9+P10+P11,
+            # v2 -> +P10+P11, v3 -> +P11
             conn.executescript(SOURCE_SCHEMA_SQL)
             conn.executescript(DELIVERY_SCHEMA_SQL)
+            conn.executescript(SEND_SCHEMA_SQL)
             conn.execute(
                 "UPDATE state_meta SET value=?"
                 " WHERE key='schema_version'",
