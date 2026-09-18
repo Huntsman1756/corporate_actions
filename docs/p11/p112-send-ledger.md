@@ -46,11 +46,12 @@ CREATE INDEX IF NOT EXISTS idx_send_attempts_delivery
     ON send_attempts(delivery_id);
 
 CREATE TABLE IF NOT EXISTS send_transitions (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
     delivery_id      TEXT NOT NULL,
-    transitioned_at  TEXT NOT NULL,
+    at               TEXT,
     from_status      TEXT,
     to_status        TEXT NOT NULL,
-    actor            TEXT NOT NULL,
+    actor            TEXT,
     note             TEXT
 );
 CREATE INDEX IF NOT EXISTS idx_send_transitions_delivery

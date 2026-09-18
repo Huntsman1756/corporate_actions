@@ -400,18 +400,52 @@ P10 Alert Delivery Boundary
           dispatcher, CLI; scripts/p10_e2e_demo.py con los
           6 legs de aceptación)
          — P10 CLOSED
+
+P11 Instruction Send Boundary (FileSpoolTransport)
+    P11.0-P11.1 arquitectura + contratos                    DONE
+         (docs/p11/p110-p113; PREPARED->SPOOLED->
+          GATEWAY_*|SWIFT_* separado de MT567/seev.034;
+          delivery_id/message_reference/transport_reference/
+          content_sha256 como campos distintos;
+          CA_ES_TRANSPORT_RECEIPT_V1 como protocolo de
+          adapter propio, no estándar SWIFT)
+    P11.2 schema v4 aditivo                                 DONE
+         (sends + send_attempts + send_transitions +
+          send_receipts; migración v1/v2/v3->v4)
+    P11.3 FileSpoolTransport                                DONE
+         (outbox/receipts/quarantine; tmp->fsync->os.replace;
+          .msg antes que .meta (commit); replay idempotente
+          con hash binding sobre bytes reales; COLLISION
+          fail-closed; verify() post-crash)
+    P11.4-P11.6 dispatcher + receipts + config + CLI        DONE
+         (orphan recovery con verify; receipt ingestion ->
+          GATEWAY_ACCEPTED/REJECTED + transport_reference +
+          processed/; quarantine de malformed/duplicados/
+          conflictivos; sección send fail-closed;
+          send-prepare/dispatch/status/show/retry/abandon +
+          bloque send en ops-status)
+    P11.7-P11.8 suite + e2e demo                            DONE
+         (tests: migración, adapter atómico/idempotente/
+          colisión/concurrencia, dispatcher, retry, orphan
+          recovery, receipts, config, CLI;
+          scripts/p11_e2e_demo.py con los 8 legs;
+          docs/ops/instruction-send.md)
+         — P11 CLOSED
 ```
 
 ## Prioridad actual
 
-P1–P10 cerrados (incl. P4 MT + ISO 20022 seev.* con conformance
+P1–P11 cerrados (incl. P4 MT + ISO 20022 seev.* con conformance
 MT<->MX verificada, P7 daily operations end-to-end, P8 economic
 coverage V1 para SPLIT/REVERSE_SPLIT, RIGHTS_ISSUE staged,
 STOCK_DIVIDEND, SCRIP_DIVIDEND y CAPITAL_INCREASE=BONU, P9 live
-source refresh y P10 alert delivery boundary con FILE/WEBHOOK/
-SMTP). P11 financial messaging gateway queda diferido. Sin
-nuevos gates formales (G4+ no existen); cada fase con tests y
-preregistro de scope.
+source refresh, P10 alert delivery boundary con FILE/WEBHOOK/
+SMTP y P11 instruction send boundary con FileSpoolTransport).
+SPOOLED no es submission SWIFT; GATEWAY_* requiere receipt
+externo real; MQ/SFTP/REST quedan como adapters futuros bajo el
+mismo contrato de ledger — no se implementan sin endpoint real.
+Sin nuevos gates formales (G4+ no existen); cada fase con tests
+y preregistro de scope.
 
 ## Deuda conocida (no bugs)
 
