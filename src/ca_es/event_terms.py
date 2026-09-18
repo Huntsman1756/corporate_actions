@@ -26,7 +26,15 @@ INCOMPLETE = "INCOMPLETE"
 UNSUPPORTED = "UNSUPPORTED"
 
 # familias cuyo outcome se computa desde terms en V1
-MAND_SECURITY_FAMILIES = {"SPLIT"}
+SUPPORTED_FAMILIES = {"SPLIT", "RIGHTS_ISSUE"}
+
+# mechanism -> camv admisible: RHDI es MAND (como SPLIT); EXRI es
+# electivo por definicion (la eleccion la aporta la instruccion P5,
+# no el terms)
+_MECHANISM_CAMV = {
+    "RIGHTS_DISTRIBUTION": {"MAND"},
+    "RIGHTS_EXERCISE": {"CHOS", "VOLU"},
+}
 
 
 def _now() -> str:
@@ -66,6 +74,7 @@ def build_event_terms(ca_message: dict, binding: dict | None = None,
 
     fields = ca_message.get("fields") or {}
     event_type = ca_message.get("event_type")
+    mechanism = ca_message.get("mechanism")
     camv = _val(fields.get("camv"))
     binding_status = (binding or {}).get("binding_status")
     canonical_event_id = (binding or {}).get("canonical_event_id")
@@ -74,12 +83,15 @@ def build_event_terms(ca_message: dict, binding: dict | None = None,
         else "SWIFT_NOTIFICATION")
 
     reasons: list[str] = []
-    if event_type not in MAND_SECURITY_FAMILIES:
+    if event_type not in SUPPORTED_FAMILIES:
         reasons.append("UNSUPPORTED_EVENT_TYPE")
+    allowed_camv = _MECHANISM_CAMV.get(mechanism, {"MAND"})
     if camv is None:
         reasons.append("MISSING_CAMV")
-    elif camv != "MAND":
-        reasons.append(f"NON_MANDATORY_EVENT:{camv}")
+    elif camv not in allowed_camv:
+        reasons.append(
+            f"NON_ADMISSIBLE_CAMV:{camv}"
+            if mechanism else f"NON_MANDATORY_EVENT:{camv}")
     if ca_message.get("status") != "OK":
         reasons.append(
             f"MESSAGE_STATUS:{ca_message.get('status')}")
@@ -118,7 +130,18 @@ def build_event_terms(ca_message: dict, binding: dict | None = None,
     if disf_f.get("status") == "CONFLICTING":
         reasons.append("CONFLICTING_FRACTION_DISPOSITION")
 
+    price_f = fields.get("subscription_price") or {}
+    price = price_f.get("value") if price_f.get("status") == "PRESENT" \
+        else None
+    if mechanism == "RIGHTS_EXERCISE":
+        if price is None:
+            reasons.append(
+                "MISSING_SUBSCRIPTION_PRICE"
+                if price_f.get("status") == "ABSENT"
+                else "CONFLICTING_SUBSCRIPTION_PRICE")
+
     if any(r.startswith("UNSUPPORTED") or r.startswith("NON_MAND")
+           or r.startswith("NON_ADMISSIBLE")
            or r.startswith("MESSAGE_STATUS")
            for r in reasons):
         terms_status = UNSUPPORTED
@@ -146,12 +169,16 @@ def build_event_terms(ca_message: dict, binding: dict | None = None,
         "source_isin": source_isin,
         "target_isin": target_isin,
         "fraction_disposition": disf,
+        "subscription_price": price,
+        "cash_in_lieu_price": None,
         "effective_date": _val(fields.get("effective_date")),
         "provenance": {
             "ratio": ratio_f.get("provenance") or [],
             "target_isin": target_f.get("provenance") or [],
             "fraction_disposition":
                 disf_f.get("provenance") or [],
+            "subscription_price":
+                price_f.get("provenance") or [],
             "camv": (fields.get("camv") or {}).get("provenance") or [],
         },
     }

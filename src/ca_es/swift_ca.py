@@ -30,11 +30,16 @@ BINDING_SCHEMA = "CA_ES_SWIFT_EVENT_BINDING_V1"
 FACTS_SCHEMA = "CA_ES_SWIFT_MT_FACTS_V1"
 
 CAEV_MAP = {"DVCA": "CASH_DIVIDEND", "SPLF": "SPLIT",
-            "SPLR": "SPLIT"}
+            "SPLR": "SPLIT", "RHDI": "RIGHTS_ISSUE",
+            "EXRI": "RIGHTS_ISSUE"}
 
 # mechanism derivado del CAEV mismo (registry P8.0): SPLR es el
-# codigo de reverso; SPLI es opcion de instruccion, no CAEV
-CAEV_MECHANISM = {"SPLR": "REVERSE_SPLIT"}
+# codigo de reverso; SPLI es opcion de instruccion, no CAEV.
+# RHDI/EXRI son las dos etapas enlazadas de una emision de
+# derechos (P8.2); RHTS/PRIO quedan UNMAPPED
+CAEV_MECHANISM = {"SPLR": "REVERSE_SPLIT",
+                  "RHDI": "RIGHTS_DISTRIBUTION",
+                  "EXRI": "RIGHTS_EXERCISE"}
 
 PRESENT = "PRESENT"
 ABSENT = "ABSENT"
@@ -205,6 +210,46 @@ def _target_isin(facts: list[dict]) -> dict:
     return _field(others)
 
 
+def _subscription_price(facts: list[dict]) -> dict:
+    """90B::PRPP|OFFR -> {normalized, currency} por (seq, occurrence).
+
+    Precio de suscripcion de una etapa de ejercicio (EXRI). Varias
+    ocurrencias con valores distintos -> CONFLICTING."""
+    prices = [f for f in facts
+              if f.get("source_tag") == "90B"
+              and f.get("source_qualifier") in ("PRPP", "OFFR")
+              and (f.get("field_path") or "").endswith(".price")]
+    ccy = [f for f in facts
+           if f.get("source_tag") == "90B"
+           and f.get("source_qualifier") in ("PRPP", "OFFR")
+           and (f.get("field_path") or "").endswith(".currency code")]
+    provenance = [_prov(f) for f in (*prices, *ccy)]
+    ccy_by_key = {
+        (f.get("sequence"), f.get("occurrence")): f.get("value")
+        for f in ccy
+    }
+    pairs = {}
+    for f in prices:
+        key = (f.get("sequence"), f.get("occurrence"))
+        pairs[f"{f.get('value')}|{ccy_by_key.get(key)}"] = (
+            f.get("value"), ccy_by_key.get(key))
+    if not pairs:
+        return {"value": None, "status": ABSENT, "raw": None,
+                "provenance": provenance}
+    if len(pairs) > 1:
+        return {"value": None, "status": CONFLICTING, "raw": None,
+                "provenance": provenance}
+    raw, currency = next(iter(pairs.values()))
+    try:
+        normalized = format(
+            Decimal(str(raw).replace(",", ".")), "f")
+    except InvalidOperation:
+        return {"value": None, "status": CONFLICTING, "raw": None,
+                "provenance": provenance}
+    return {"value": {"normalized": normalized, "currency": currency},
+            "status": PRESENT, "raw": raw, "provenance": provenance}
+
+
 def project_ca_message(facts_doc: dict, now: str | None = None) -> dict:
     """CA_ES_SWIFT_MT_FACTS_V1 -> CA_ES_SWIFT_CA_MESSAGE_V1."""
     if facts_doc.get("schema_version") != FACTS_SCHEMA:
@@ -275,6 +320,8 @@ def project_ca_message(facts_doc: dict, now: str | None = None) -> dict:
             + _find(facts, "98A", "EFFD", label_suffix=".date")
             + _find(facts, "98A", "POST", label_suffix=".date"),
             normalize=_norm_date),
+        # P8.2: precio de suscripcion (EXRI; ausente en RHDI/SPLIT)
+        "subscription_price": _subscription_price(facts),
     }
 
     return {

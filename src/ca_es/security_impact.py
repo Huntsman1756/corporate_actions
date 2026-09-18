@@ -33,6 +33,7 @@ UNSUPPORTED = "UNSUPPORTED"
 SECURITY_DELIVERY = "SECURITY_DELIVERY"
 SECURITY_RECEIPT = "SECURITY_RECEIPT"
 CASH_IN_LIEU_RECEIVABLE = "CASH_IN_LIEU_RECEIVABLE"
+CASH_PAYABLE = "CASH_PAYABLE"
 
 
 def _now() -> str:
@@ -139,32 +140,65 @@ def compute_security_impact(
         status = cell.get("status")
         basis = ((cell.get("basis") or {}).get("record_date"))
         if status == "ENTITLED":
-            delivered = cell["delivered"]
-            receivable = cell["receivable"]
-            qty = _decimal(delivered["quantity"])
-            impacts.append(_item(
-                position, SECURITY_DELIVERY, PROJECTED, cell,
-                provenance,
-                input_quantity=delivered["quantity"],
-                output_quantity="0",
-                quantity_delta=(
-                    format(-qty, "f") if qty is not None else None),
-                basis_date=basis,
-                rule_id="SPLIT_POSITION_X_NEW_FOR_OLD_DISF",
-                cell_index=cell_index,
-                reasons=list(cell.get("reasons") or [])))
-            recv_item = _item(
-                position, SECURITY_RECEIPT, PROJECTED, cell,
-                provenance,
-                input_quantity="0",
-                output_quantity=receivable["quantity"],
-                quantity_delta=receivable["quantity"],
-                basis_date=basis,
-                rule_id="SPLIT_POSITION_X_NEW_FOR_OLD_DISF",
-                cell_index=cell_index,
-                reasons=list(cell.get("reasons") or []))
-            recv_item["target_isin"] = receivable["isin"]
-            impacts.append(recv_item)
+            rule = (cell.get("evidence") or {}).get(
+                "rule", "SPLIT_POSITION_X_NEW_FOR_OLD_DISF")
+            cell_reasons = list(cell.get("reasons") or [])
+
+            delivered = cell.get("delivered")
+            if delivered:
+                qty = _decimal(delivered["quantity"])
+                impacts.append(_item(
+                    position, SECURITY_DELIVERY, PROJECTED, cell,
+                    provenance,
+                    input_quantity=delivered["quantity"],
+                    output_quantity="0",
+                    quantity_delta=(
+                        format(-qty, "f") if qty is not None
+                        else None),
+                    basis_date=basis,
+                    rule_id=rule,
+                    cell_index=cell_index,
+                    reasons=cell_reasons))
+            if delivered is None:
+                # receipt-only (RHDI): la posicion del subyacente no
+                # cambia — item explicito delta 0 para que la
+                # proyeccion la marque PROJECTED, no INDETERMINATE
+                impacts.append(_item(
+                    position, "SECURITY_UNCHANGED", PROJECTED, cell,
+                    provenance,
+                    input_quantity=cell.get("position_quantity"),
+                    output_quantity=cell.get("position_quantity"),
+                    quantity_delta="0",
+                    basis_date=basis,
+                    rule_id=rule,
+                    cell_index=cell_index,
+                    reasons=cell_reasons +
+                    ["POSITION_UNAFFECTED_BY_EVENT"]))
+            receivable = cell.get("receivable")
+            if receivable:
+                recv_item = _item(
+                    position, SECURITY_RECEIPT, PROJECTED, cell,
+                    provenance,
+                    input_quantity="0",
+                    output_quantity=receivable["quantity"],
+                    quantity_delta=receivable["quantity"],
+                    basis_date=basis,
+                    rule_id=rule,
+                    cell_index=cell_index,
+                    reasons=cell_reasons)
+                recv_item["target_isin"] = receivable["isin"]
+                impacts.append(recv_item)
+            payable = cell.get("payable")
+            if payable:
+                impacts.append(_item(
+                    position, CASH_PAYABLE, PROJECTED, cell,
+                    provenance,
+                    cash_amount=payable,
+                    currency=payable.get("currency"),
+                    basis_date=basis,
+                    rule_id=rule,
+                    cell_index=cell_index,
+                    reasons=cell_reasons))
             cil = (cell.get("fraction") or {}).get("cash_in_lieu")
             if cil:
                 impacts.append(_item(
@@ -173,12 +207,12 @@ def compute_security_impact(
                     cash_amount=cil,
                     currency=cil.get("currency"),
                     basis_date=basis,
-                    rule_id="SPLIT_POSITION_X_NEW_FOR_OLD_DISF",
+                    rule_id=rule,
                     cell_index=cell_index,
-                    reasons=list(cell.get("reasons") or [])))
+                    reasons=cell_reasons))
         elif status == "NOT_ENTITLED":
             impacts.append(_item(
-                position, SECURITY_DELIVERY, PROJECTED, cell,
+                position, "SECURITY_UNCHANGED", PROJECTED, cell,
                 provenance,
                 input_quantity="0", output_quantity="0",
                 quantity_delta="0", basis_date=basis,
@@ -212,7 +246,13 @@ def compute_security_impact(
         "event_type": ent_doc.get("event_type"),
         "event_basis": ent_doc.get("event_basis"),
         "positions_as_of": positions_doc.get("as_of"),
-        "rule_id": "SPLIT_POSITION_X_NEW_FOR_OLD_DISF",
+        "rule_id": {
+            "RIGHTS_DISTRIBUTION":
+                "RIGHTS_DISTRIBUTION_POSITION_X_NEWO",
+            "RIGHTS_EXERCISE":
+                "RIGHTS_EXERCISE_ELECTED_X_NEWO_X_PRICE",
+        }.get(ent_doc.get("mechanism"),
+              "SPLIT_POSITION_X_NEW_FOR_OLD_DISF"),
         "reasons": [],
         **provenance["source_hashes"],
         "impacts": impacts,

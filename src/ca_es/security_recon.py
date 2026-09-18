@@ -67,6 +67,11 @@ def _expected_movements(impact_doc: dict) -> tuple[list, list]:
         delta = _decimal(item.get("quantity_delta"))
         if delta is None:
             continue
+        # P8.2: delta cero = posicion explicitamente inalterada o
+        # NOT_ENTITLED; nunca es un movimiento esperado (un actual
+        # con qty>0 seria UNEXPECTED, no MATCH contra 0)
+        if delta == 0:
+            continue
         direction = _IMPACT_DIRECTION.get(item.get("impact_type"))
         expected.append({
             "account_id": item.get("account_id"),

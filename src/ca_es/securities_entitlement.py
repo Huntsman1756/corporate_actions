@@ -42,6 +42,8 @@ INDETERMINATE = "INDETERMINATE"
 UNSUPPORTED = "UNSUPPORTED"
 
 RULE_SPLIT = "SPLIT_POSITION_X_NEW_FOR_OLD_DISF"
+RULE_RIGHTS_DIST = "RIGHTS_DISTRIBUTION_POSITION_X_NEWO"
+RULE_RIGHTS_EXER = "RIGHTS_EXERCISE_ELECTED_X_NEWO_X_PRICE"
 
 _DISF_FLOOR = {"RDDN", "CINL"}
 _DISF_CEIL = {"RDUP", "BUYU"}
@@ -94,13 +96,26 @@ def _apply_disf(raw: Decimal, disf: str | None) -> tuple:
     return None, None, False, f"UNSUPPORTED_DISF:{disf}"
 
 
+_RULE_BY_MECHANISM = {
+    None: RULE_SPLIT,
+    "REVERSE_SPLIT": RULE_SPLIT,
+    "RIGHTS_DISTRIBUTION": RULE_RIGHTS_DIST,
+    "RIGHTS_EXERCISE": RULE_RIGHTS_EXER,
+}
+
+_SUPPORTED_EVENT_TYPES = {"SPLIT", "RIGHTS_ISSUE"}
+
+
 def _entitlement(terms: dict, position: dict,
-                 default_as_of: str | None) -> dict:
+                 default_as_of: str | None,
+                 election: dict | None) -> dict:
     reasons: list[str] = []
     account_id = position.get("account_id")
     isin = position.get("isin")
     quantity = _decimal(position.get("quantity"))
     position_as_of = position.get("as_of") or default_as_of
+    mechanism = terms.get("mechanism")
+    rule = _RULE_BY_MECHANISM.get(mechanism, RULE_SPLIT)
 
     base = {
         "account_id": account_id,
@@ -110,7 +125,7 @@ def _entitlement(terms: dict, position: dict,
         "position_as_of": position_as_of,
         "reasons": reasons,
         "evidence": {
-            "rule": RULE_SPLIT,
+            "rule": rule,
             "basis_date_kind": "RECORD_DATE",
         },
     }
@@ -122,8 +137,10 @@ def _entitlement(terms: dict, position: dict,
     if terms.get("terms_status") != "PROVEN":
         return fail(UNSUPPORTED,
                     f"TERMS_{terms.get('terms_status')}")
-    if terms.get("event_type") != "SPLIT":
+    if terms.get("event_type") not in _SUPPORTED_EVENT_TYPES:
         return fail(UNSUPPORTED, "UNSUPPORTED_EVENT_TYPE")
+    if mechanism not in _RULE_BY_MECHANISM:
+        return fail(UNSUPPORTED, f"UNSUPPORTED_MECHANISM:{mechanism}")
     if account_id is None:
         return fail(INDETERMINATE, "MISSING_ACCOUNT_ID")
     if not isin:
@@ -159,26 +176,45 @@ def _entitlement(terms: dict, position: dict,
         return fail(INDETERMINATE, "INVALID_RATIO")
 
     disf = terms.get("fraction_disposition")
+    ctx = {
+        "base": base, "quantity": quantity, "ratio": (new_f, old_f),
+        "disf": disf, "basis_value": basis_value, "fail": fail,
+    }
+    if mechanism == "RIGHTS_DISTRIBUTION":
+        return _rights_distribution(terms, ctx)
+    if mechanism == "RIGHTS_EXERCISE":
+        return _rights_exercise(terms, ctx, account_id, election)
+    return _split(terms, ctx)
+
+
+def _cash_in_lieu(ctx, fraction):
+    fail = ctx["fail"]
+    price = ctx["terms"].get("cash_in_lieu_price")
+    if not price or price.get("normalized") is None:
+        return None, fail(INDETERMINATE, "CASH_IN_LIEU_PRICE_MISSING")
+    amount = _decimal(price["normalized"])
+    if amount is None:
+        return None, fail(INDETERMINATE, "INVALID_CASH_IN_LIEU_PRICE")
+    return _money(amount * abs(fraction), price.get("currency")), None
+
+
+def _split(terms: dict, ctx: dict) -> dict:
+    quantity, (new_f, old_f) = ctx["quantity"], ctx["ratio"]
+    disf = ctx["disf"]
     raw_qty = quantity * new_f / old_f
     resolved, fraction, cash_leg, reason = _apply_disf(raw_qty, disf)
     if reason is not None:
-        return fail(INDETERMINATE, reason)
+        return ctx["fail"](INDETERMINATE, reason)
 
     cash_in_lieu = None
     if cash_leg:
-        price = terms.get("cash_in_lieu_price")
-        if not price or price.get("normalized") is None:
-            return fail(INDETERMINATE,
-                        "CASH_IN_LIEU_PRICE_MISSING")
-        amount = _decimal(price["normalized"])
-        if amount is None:
-            return fail(INDETERMINATE,
-                        "INVALID_CASH_IN_LIEU_PRICE")
-        cash_in_lieu = _money(
-            amount * abs(fraction), price.get("currency"))
+        ctx["terms"] = terms
+        cash_in_lieu, failure = _cash_in_lieu(ctx, fraction)
+        if failure is not None:
+            return failure
 
     return {
-        **base,
+        **ctx["base"],
         "status": ENTITLED,
         "delivered": {
             "isin": terms["source_isin"],
@@ -196,7 +232,115 @@ def _entitlement(terms: dict, position: dict,
         },
         "calculation": "position_quantity x new_for_old + DISF",
         "basis": {
-            "record_date": basis_value,
+            "record_date": ctx["basis_value"],
+            "position_eligibility": "POSITION_AT_RECORD_DATE",
+        },
+    }
+
+
+def _rights_distribution(terms: dict, ctx: dict) -> dict:
+    """RHDI: receipt de derechos sin delivery del subyacente."""
+    quantity, (new_f, old_f) = ctx["quantity"], ctx["ratio"]
+    disf = ctx["disf"]
+    raw_qty = quantity * new_f / old_f
+    resolved, fraction, cash_leg, reason = _apply_disf(raw_qty, disf)
+    if reason is not None:
+        return ctx["fail"](INDETERMINATE, reason)
+
+    cash_in_lieu = None
+    if cash_leg:
+        ctx["terms"] = terms
+        cash_in_lieu, failure = _cash_in_lieu(ctx, fraction)
+        if failure is not None:
+            return failure
+
+    return {
+        **ctx["base"],
+        "status": ENTITLED,
+        "delivered": None,
+        "receivable": {
+            "isin": terms["target_isin"],
+            "quantity": format(resolved, "f"),
+        },
+        "raw_quantity": format(raw_qty, "f"),
+        "fraction": {
+            "amount": format(fraction, "f"),
+            "disposition": disf or "NOT_REQUIRED",
+            "cash_in_lieu": cash_in_lieu,
+        },
+        "calculation": "position_quantity x new_for_old + DISF",
+        "basis": {
+            "record_date": ctx["basis_value"],
+            "position_eligibility": "POSITION_AT_RECORD_DATE",
+        },
+    }
+
+
+def _rights_exercise(terms: dict, ctx: dict, account_id,
+                     election: dict | None) -> dict:
+    """EXRI: elected rights -> nuevas acciones + cash payable;
+    derechos no ejercidos hacen lapse (delivery sin receipt)."""
+    fail = ctx["fail"]
+    quantity, (new_f, old_f) = ctx["quantity"], ctx["ratio"]
+
+    if not election or account_id not in election:
+        return fail(INDETERMINATE, "PENDING_ELECTION")
+    elected = _decimal(election.get(account_id))
+    if elected is None or elected < 0:
+        return fail(INDETERMINATE, "INVALID_ELECTED_QUANTITY")
+    if elected != elected.to_integral_value():
+        return fail(INDETERMINATE, "NON_INTEGRAL_ELECTION")
+    if elected > quantity:
+        return fail(INDETERMINATE, "ELECTED_EXCEEDS_RIGHTS")
+    if elected == 0:
+        return {**ctx["base"], "status": NOT_ENTITLED,
+                "reasons": ctx["base"]["reasons"] +
+                ["ZERO_ELECTION_LAPSE"]}
+
+    price = terms.get("subscription_price") or {}
+    amount = _decimal(price.get("normalized"))
+    if amount is None or not price.get("currency"):
+        return fail(INDETERMINATE, "INVALID_SUBSCRIPTION_PRICE")
+
+    disf = ctx["disf"]
+    raw_qty = elected * new_f / old_f
+    resolved, fraction, cash_leg, reason = _apply_disf(raw_qty, disf)
+    if reason is not None:
+        return fail(INDETERMINATE, reason)
+
+    cash_in_lieu = None
+    if cash_leg:
+        ctx["terms"] = terms
+        cash_in_lieu, failure = _cash_in_lieu(ctx, fraction)
+        if failure is not None:
+            return failure
+
+    return {
+        **ctx["base"],
+        "status": ENTITLED,
+        "elected": format(elected, "f"),
+        "delivered": {
+            "isin": terms["source_isin"],
+            "quantity": format(quantity, "f"),
+            "exercised": format(elected, "f"),
+            "lapsed": format(quantity - elected, "f"),
+        },
+        "receivable": {
+            "isin": terms["target_isin"],
+            "quantity": format(resolved, "f"),
+        },
+        "raw_quantity": format(raw_qty, "f"),
+        "payable": _money(resolved * amount, price["currency"]),
+        "fraction": {
+            "amount": format(fraction, "f"),
+            "disposition": disf or "NOT_REQUIRED",
+            "cash_in_lieu": cash_in_lieu,
+        },
+        "calculation":
+            "elected x new_for_old + DISF; payable = receivable x "
+            "subscription_price",
+        "basis": {
+            "record_date": ctx["basis_value"],
             "position_eligibility": "POSITION_AT_RECORD_DATE",
         },
     }
@@ -204,8 +348,12 @@ def _entitlement(terms: dict, position: dict,
 
 def compute_securities_entitlements(
         terms_doc: dict, positions_doc: dict,
+        election: dict | None = None,
         now: str | None = None) -> dict:
     """terms + positions -> CA_ES_SECURITIES_ENTITLEMENT_V1.
+
+    `election`: {account_id: elected_quantity} explicito — requerido
+    solo para RIGHTS_EXERCISE (EXRI); ausente -> PENDING_ELECTION.
 
     Puro y read-only: ningun input se muta."""
     if terms_doc.get("schema") != TERMS_SCHEMA:
@@ -216,10 +364,12 @@ def compute_securities_entitlements(
         raise ValueError(
             f"positions schema debe ser {POSITIONS_SCHEMA}, "
             f"recibido {positions_doc.get('schema')!r}")
+    if election is not None and not isinstance(election, dict):
+        raise ValueError("election debe ser {account_id: qty}")
 
     default_as_of = positions_doc.get("as_of")
     entitlements = [
-        _entitlement(terms_doc, position, default_as_of)
+        _entitlement(terms_doc, position, default_as_of, election)
         for position in positions_doc.get("positions", [])
     ]
     summary = {"positions": len(entitlements)}
