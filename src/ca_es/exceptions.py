@@ -45,6 +45,8 @@ from .canonical import load_strict_json_object
 
 CASES_SCHEMA = "CA_ES_EXCEPTION_CASES_V1"
 SECURITY_RECON_SCHEMA = "CA_ES_SECURITY_RECON_V1"
+CUSTODY_POSITION_RECON_SCHEMA = "CA_ES_POSITION_RECON_V1"
+CUSTODY_CASH_RECON_SCHEMA = "CA_ES_CASH_FEED_RECON_V1"
 
 WORKFLOW_OPEN = "OPEN"
 WORKFLOW_IN_REVIEW = "IN_REVIEW"
@@ -85,6 +87,13 @@ PRIORITY = {
     "QUANTITY_MISMATCH": "HIGH",
     "MISSING_SECURITY_MOVEMENT": "HIGH",
     "UNEXPECTED_SECURITY_MOVEMENT": "MEDIUM",
+    # P13: factual statuses del recon de feeds de custodia
+    "POSITION_QUANTITY_MISMATCH": "HIGH",
+    "POSITION_MISSING_AT_CUSTODIAN": "HIGH",
+    "POSITION_UNEXPECTED_AT_CUSTODIAN": "MEDIUM",
+    "CASH_ACCOUNT_AMOUNT_MISMATCH": "HIGH",
+    "CASH_MISSING_IN_ACCOUNT_FEED": "MEDIUM",
+    "CASH_UNEXPECTED_ACCOUNT_ENTRY": "MEDIUM",
     "INDETERMINATE": "LOW",
 }
 PRIORITY_RANK = {"HIGH": 0, "MEDIUM": 1, "LOW": 2}
@@ -205,15 +214,60 @@ def _security_snapshot(item: dict, event_id: str,
     }
 
 
+def _custody_snapshot(item: dict, scope: str, priority: str,
+                      cash: bool) -> dict:
+    """Snapshot factual de un item de recon de custodia (P13).
+
+    Clave estable por scope+subject: posiciones -> expected:
+    account:isin; cash -> movement:account:movement_id. Nunca
+    incluye factual_status.
+    """
+    account = item.get("account_id") or "-"
+    if cash:
+        subject = f"movement:{account}:{item.get('movement_id') or '-'}"
+    else:
+        subject = f"expected:{account}:{item.get('isin') or '-'}"
+    return {
+        "case_key": f"{scope}|{subject}",
+        "canonical_event_id": item.get("event_id"),
+        "account_id": item.get("account_id"),
+        "isin": item.get("isin"),
+        "direction": None,
+        "factual_status": item.get("status"),
+        "reason_codes": [item["reason"]] if item.get("reason") else [],
+        "entitlement_status": None,
+        "amount_basis": None,
+        "expected_amount": item.get("expected_amount"),
+        "actual_amount": item.get("actual_amount"),
+        "expected_quantity": item.get("expected_quantity"),
+        "actual_quantity": item.get("actual_quantity"),
+        "expected_ref": None,
+        "delta": item.get("delta"),
+        "currency": item.get("currency"),
+        "value_date": item.get("value_date"),
+        "movement_ids": [item["movement_id"]]
+        if item.get("movement_id") else [],
+        "linked_movement_ids": [],
+        "evidence": item.get("entry_id"),
+        "priority": priority,
+    }
+
+
 def classify_cases(recon_doc: dict) -> list[dict]:
     """recon result -> snapshots factuales observados (sin workflow).
 
     Funcion pura: no muta recon_doc. MATCH no produce caso.
-    Acepta CA_ES_CASH_RECON_V1 y CA_ES_SECURITY_RECON_V1 (P6.5);
-    el motor consume resultados ya adjudicados, nunca recalcula.
+    Acepta CA_ES_CASH_RECON_V1, CA_ES_SECURITY_RECON_V1 (P6.5) y
+    los recon de feeds de custodia P13; el motor consume
+    resultados ya adjudicados, nunca recalcula.
     """
     event_id = recon_doc.get("canonical_event_id")
     security = recon_doc.get("schema") == SECURITY_RECON_SCHEMA
+    custody_pos = (recon_doc.get("schema")
+                   == CUSTODY_POSITION_RECON_SCHEMA)
+    custody_cash = recon_doc.get("schema") == CUSTODY_CASH_RECON_SCHEMA
+    custody_scope = recon_doc.get("case_scope") or (
+        "custody-positions" if custody_pos else "custody-cash")
     observed = []
     for item in recon_doc.get("items", []):
         status = item.get("status")
@@ -225,6 +279,10 @@ def classify_cases(recon_doc: dict) -> list[dict]:
             priority = "LOW"
         else:
             priority = PRIORITY[status]
+        if custody_pos or custody_cash:
+            observed.append(_custody_snapshot(
+                item, custody_scope, priority, cash=custody_cash))
+            continue
         if security:
             observed.append(
                 _security_snapshot(item, event_id, priority))
