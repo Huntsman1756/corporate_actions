@@ -261,6 +261,128 @@ def _step_exception_cases(ctx: RunContext) -> dict | None:
     }
 
 
+_SEC_MECHANISMS = {
+    None, "REVERSE_SPLIT", "RIGHTS_DISTRIBUTION", "RIGHTS_EXERCISE",
+    "STOCK_DIVIDEND", "SCRIP_DIVIDEND", "BONUS_ISSUE",
+}
+
+
+def _inbox_facts(ctx: RunContext) -> list[dict]:
+    """Facts docs de mensajes PROCESSED del inbox (dedup por sha)."""
+    rows = ctx.conn.execute(
+        "SELECT artifact_refs_json FROM inbox_messages"
+        " WHERE processing_status='PROCESSED'"
+    ).fetchall()
+    seen: set[str] = set()
+    out = []
+    for row in rows:
+        for ref in json.loads(row["artifact_refs_json"] or "[]"):
+            sha = ref.get("sha256")
+            if not sha or sha in seen:
+                continue
+            try:
+                doc = ctx.state.get_artifact(sha)
+            except Exception:
+                continue
+            if doc.get("schema_version") == \
+                    "CA_ES_SWIFT_MT_FACTS_V1":
+                seen.add(sha)
+                out.append(doc)
+    return out
+
+
+def _step_securities_events(ctx: RunContext) -> dict | None:
+    """P8: inbox MT564/MT566 -> terms -> entitlement -> impact
+    -> security recon -> cases. Impuro (lee inbox), opcional."""
+    canon = ctx.input_doc("canon")
+    positions = ctx.input_doc("positions")
+    if canon is None or positions is None:
+        return None
+    facts_docs = _inbox_facts(ctx)
+
+    from .event_terms import build_event_terms
+    from .exceptions import build_cases_doc
+    from .securities_entitlement import (
+        compute_securities_entitlements)
+    from .security_impact import compute_security_impact
+    from .security_recon import reconcile_security_movements
+    from .swift_ca import bind_event, project_ca_message
+    from .swift_securities import security_movement_candidate
+
+    elections = ctx.input_doc("elections") or {}
+    prev_cases = _previous_security_cases(ctx)
+    items: dict = {}
+    candidates: dict[str, list] = {}
+    now = ctx.now()
+
+    # pasada 1: MT566 -> candidates (el recon los consume despues,
+    # independientemente del orden de llegada al inbox)
+    for facts_doc in facts_docs:
+        if facts_doc.get("message_identifier") != "MT566":
+            continue
+        cand = security_movement_candidate(
+            facts_doc, canon, now=now)
+        ref = ctx.state.store_artifact(
+            ctx.conn, cand,
+            "CA_ES_SWIFT_SECURITY_MOVEMENT_CANDIDATE_V1", "V1",
+            run_id=ctx.run_id)
+        eid = cand.get("canonical_event_id")
+        if cand.get("binding_status") == "BOUND" and eid:
+            candidates.setdefault(eid, []).append(cand)
+        items.setdefault("_candidates", {})[
+            facts_doc["input_sha256"]] = ref
+
+    # pasada 2: MT564 -> terms -> entitlement -> impact -> recon
+    for facts_doc in facts_docs:
+        if facts_doc.get("message_identifier") != "MT564":
+            continue
+        msg = project_ca_message(facts_doc, now=now)
+        if msg.get("status") != "OK" or msg.get("mechanism") \
+                not in _SEC_MECHANISMS or msg.get("event_type") \
+                not in ("SPLIT", "RIGHTS_ISSUE", "STOCK_DIVIDEND",
+                        "SCRIP_DIVIDEND", "CAPITAL_INCREASE"):
+            continue
+        binding = bind_event(msg, canon, now=now)
+        terms = build_event_terms(msg, binding, now=now)
+        key = (binding.get("canonical_event_id")
+               or f"unbound:{facts_doc.get('input_sha256')}")
+        elected = elections.get(
+            binding.get("canonical_event_id") or "") or {}
+        ent = compute_securities_entitlements(
+            terms, positions, election=elected, now=now)
+        impact = compute_security_impact(ent, positions, now=now)
+
+        entry = {}
+        for name, doc, schema in (
+            ("terms", terms, "CA_ES_EVENT_TERMS_V1"),
+            ("entitlement", ent,
+             "CA_ES_SECURITIES_ENTITLEMENT_V1"),
+            ("impact", impact, "CA_ES_POSITION_IMPACT_V1"),
+        ):
+            entry[name] = ctx.state.store_artifact(
+                ctx.conn, doc, schema, "V1", run_id=ctx.run_id)
+
+        eid = impact.get("canonical_event_id")
+        recon = reconcile_security_movements(
+            impact, candidates.get(eid, []) if eid else [], now=now)
+        entry["recon"] = ctx.state.store_artifact(
+            ctx.conn, recon, "CA_ES_SECURITY_RECON_V1", "V1",
+            run_id=ctx.run_id)
+        cases = build_cases_doc(
+            recon, previous_cases=prev_cases.get(key), now=now)
+        entry["cases"] = ctx.state.store_artifact(
+            ctx.conn, cases, "CA_ES_EXCEPTION_CASES_V1", "V1",
+            run_id=ctx.run_id)
+        items[key] = entry
+
+    return {
+        "schema": INDEX_SCHEMA,
+        "generated_at": now,
+        "kind": "CA_ES_SECURITIES_EVENT_V1",
+        "items": items,
+    }
+
+
 def _previous_cases(ctx: RunContext) -> dict[str, list]:
     """Casos previos por evento desde el ultimo run exitoso."""
     out: dict[str, list] = {}
@@ -281,6 +403,36 @@ def _previous_cases(ctx: RunContext) -> dict[str, list]:
             except Exception:
                 continue
             out[eid] = doc.get("cases") or []
+    return out
+
+
+def _previous_security_cases(ctx: RunContext) -> dict[str, list]:
+    """Casos previos por evento de valores desde el ultimo run
+    exitoso (index `securities_events`, excluye `_candidates`)."""
+    out: dict[str, list] = {}
+    run = ctx.state.latest_successful_run(ctx.conn)
+    if not run:
+        return out
+    steps = ctx.state.get_steps(ctx.conn, run["run_id"])
+    for s in steps:
+        if s["step_id"] != "securities_events" \
+                or not s["output_sha256"]:
+            continue
+        try:
+            index = ctx.state.get_artifact(s["output_sha256"])
+        except Exception:
+            continue
+        for key, entry in (index.get("items") or {}).items():
+            if key == "_candidates" or not isinstance(entry, dict):
+                continue
+            ref = entry.get("cases")
+            if not isinstance(ref, dict):
+                continue
+            try:
+                doc = ctx.state.get_artifact(ref["sha256"])
+            except Exception:
+                continue
+            out[key] = doc.get("cases") or []
     return out
 
 
@@ -307,6 +459,18 @@ def _step_alert_outbox(ctx: RunContext) -> dict:
     if cases_index is not None:
         for eid, ref in sorted(
                 (cases_index.get("items") or {}).items()):
+            cases_doc = ctx.state.get_artifact(ref["sha256"])
+            candidates += derive_exception_alerts(cases_doc, ref)
+        evaluated.add("EXCEPTION_CASE")
+    sec_index = ctx.docs.get("securities_events")
+    if sec_index is not None:
+        for key, entry in sorted(
+                (sec_index.get("items") or {}).items()):
+            if key == "_candidates" or not isinstance(entry, dict):
+                continue
+            ref = entry.get("cases")
+            if not isinstance(ref, dict):
+                continue
             cases_doc = ctx.state.get_artifact(ref["sha256"])
             candidates += derive_exception_alerts(cases_doc, ref)
         evaluated.add("EXCEPTION_CASE")
@@ -453,6 +617,18 @@ def default_dag() -> list[OperationalStep]:
             expected_output_version="V1",
             dynamic_inputs=_dyn_prev_cases,
             fn=_step_exception_cases),
+        # P8: impuro (lee inbox_messages mutable), opcional;
+        # cadena terms->entitlement->impact->recon->cases por
+        # evento de valores procedente del inbox MT564/MT566.
+        OperationalStep(
+            "securities_events", "1",
+            dependencies=("process_inbox",),
+            pure=False, mandatory=False,
+            expected_output_schema=INDEX_SCHEMA,
+            expected_output_version="V1",
+            uses_inputs=("canon", "positions", "source_policy",
+                       "elections"),
+            fn=_step_securities_events),
         # impuro: upsert al outbox con dedup por alert_key; lee
         # oportunistamente los outputs opcionales del ctx.
         OperationalStep(
