@@ -106,3 +106,38 @@ CRED new ISIN qty vs RECEIPT esperado.
 - `internal_field` canon para SPLIT existe pero el corpus no tiene
   eventos; el camino probado es SWIFT-native (D2). Si un canon
   SPLIT existiera, bind_event compararia RDTE/PAYD.
+
+## Estado: IMPLEMENTADO
+
+Modulos:
+
+- `swift_ca.py` — `CAEV_MAP += SPLF|SPLR`, `CAEV_MECHANISM
+  {SPLR: REVERSE_SPLIT}`; nuevos fields: `camv`,
+  `new_for_old_ratio` (92D::NEWO quantity1=new/quantity2=old por
+  (sequence, occurrence)), `fraction_disposition` (22F::DISF),
+  `target_isin` (35B SECMOVE != USECU), `effective_date`
+  (98A::PAYD/EFFD/POST, informativo). `seq_contains` en `_find`.
+- `event_terms.py` — `build_event_terms()` ->
+  `CA_ES_EVENT_TERMS_V1`; `terms_status` PROVEN/INCOMPLETE/
+  UNSUPPORTED con reasons; basis `RECORD_DATE`; `event_basis`
+  CANON_BOUND|SWIFT_NOTIFICATION.
+- `securities_entitlement.py` — `compute_securities_entitlements()`
+  -> `CA_ES_SECURITIES_ENTITLEMENT_V1`; regla
+  `SPLIT_POSITION_X_NEW_FOR_OLD_DISF`; POSITION_AT_RECORD_DATE;
+  DISF RDDN/RDUP/STAN/SECU/DIST/BUYU/CINL/UKNW segun scope.
+- `security_impact.py` — `compute_security_impact()` ->
+  `CA_ES_POSITION_IMPACT_V1` con items SECURITY_DELIVERY /
+  SECURITY_RECEIPT / CASH_IN_LIEU_RECEIVABLE; binding fail-closed
+  por identidad de posicion (mismo criterio P6.1).
+
+Sin cambios: `projected_positions` (P6.2), `swift_securities`
+(P6.3), `security_recon` (P6.4), `exceptions` (P6.5) — el split
+reutiliza la cadena existente tal cual.
+
+Verificado e2e con JVM real (`mt564-splf.fin` + `mt566-secmove.fin`):
+SPLF 10:1 -> terms PROVEN -> entitlement 12500->125000 -> impact
+DELIVERY+RECEIPT -> projected 0 viejo / 125000 nuevo
+(NEW_INSTRUMENT_RECEIPT) -> recon MATCH x2 -> cero casos; y
+QUANTITY_MISMATCH abre caso P3.5 con expected/actual/delta.
+
+Tests: `tests/unit/test_p81_split.py` (36).

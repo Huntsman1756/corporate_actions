@@ -29,7 +29,12 @@ CA_MESSAGE_SCHEMA = "CA_ES_SWIFT_CA_MESSAGE_V1"
 BINDING_SCHEMA = "CA_ES_SWIFT_EVENT_BINDING_V1"
 FACTS_SCHEMA = "CA_ES_SWIFT_MT_FACTS_V1"
 
-CAEV_MAP = {"DVCA": "CASH_DIVIDEND", "SPLF": "SPLIT"}
+CAEV_MAP = {"DVCA": "CASH_DIVIDEND", "SPLF": "SPLIT",
+            "SPLR": "SPLIT"}
+
+# mechanism derivado del CAEV mismo (registry P8.0): SPLR es el
+# codigo de reverso; SPLI es opcion de instruccion, no CAEV
+CAEV_MECHANISM = {"SPLR": "REVERSE_SPLIT"}
 
 PRESENT = "PRESENT"
 ABSENT = "ABSENT"
@@ -113,7 +118,8 @@ def _norm_amount(raw: str):
         return raw
 
 
-def _find(facts, tag, qualifier=None, seq=None, label_suffix=None):
+def _find(facts, tag, qualifier=None, seq=None, label_suffix=None,
+          seq_contains=None):
     out = []
     for f in facts:
         if f.get("source_tag") != tag:
@@ -122,12 +128,81 @@ def _find(facts, tag, qualifier=None, seq=None, label_suffix=None):
             continue
         if seq is not None and f.get("sequence") != seq:
             continue
+        if seq_contains is not None and seq_contains not in (
+                f.get("sequence") or ""):
+            continue
         if label_suffix is not None and not (
             (f.get("field_path") or "").endswith(label_suffix)
         ):
             continue
         out.append(f)
     return out
+
+
+def _new_for_old(facts: list[dict]) -> dict:
+    """92D::NEWO -> {new, old} por (sequence, occurrence).
+
+    quantity1 = new, quantity2 = old (spec ISO: ratio new-for-old).
+    Multiples pares con valores distintos -> CONFLICTING.
+    """
+    q1 = [f for f in facts if f.get("source_qualifier") == "NEWO"
+          and (f.get("field_path") or "").endswith(".quantity1")]
+    q2 = [f for f in facts if f.get("source_qualifier") == "NEWO"
+          and (f.get("field_path") or "").endswith(".quantity2")]
+    pairs = {}
+    provenance = []
+    for f in (*q1, *q2):
+        provenance.append(_prov(f))
+    by_key = {}
+    for f in q1:
+        by_key.setdefault(
+            (f.get("sequence"), f.get("occurrence")), {})["new"] = \
+            f.get("value")
+    for f in q2:
+        by_key.setdefault(
+            (f.get("sequence"), f.get("occurrence")), {})["old"] = \
+            f.get("value")
+    for _, v in by_key.items():
+        if v.get("new") is not None and v.get("old") is not None:
+            pairs[f"{v['new']}/{v['old']}"] = v
+    if not pairs:
+        return {"value": None, "status": ABSENT, "raw": None,
+                "provenance": provenance}
+    if len(pairs) > 1:
+        return {"value": None, "status": CONFLICTING, "raw": None,
+                "provenance": provenance}
+    new_s, old_s = next(iter(pairs)).split("/")
+    try:
+        new = format(Decimal(new_s.replace(",", ".")), "f")
+        old = format(Decimal(old_s.replace(",", ".")), "f")
+    except InvalidOperation:
+        return {"value": None, "status": CONFLICTING, "raw": None,
+                "provenance": provenance}
+    return {"value": {"new": new, "old": old}, "status": PRESENT,
+            "raw": next(iter(pairs)), "provenance": provenance}
+
+
+def _target_isin(facts: list[dict]) -> dict:
+    """35B en SECMOVE distinto del USECU 35B -> instrumento destino.
+
+    Si todos los SECMOVE 35B coinciden con el source, el target es el
+    propio source (split sin cambio de ISIN)."""
+    source_f = _field(
+        _find(facts, "35B", seq="USECU", label_suffix=".isin")
+        or _find(facts, "35B", seq="USEQ", label_suffix=".isin"))
+    source = source_f["value"] if source_f["status"] == PRESENT \
+        else None
+    secmove_isins = _find(facts, "35B", label_suffix=".isin",
+                          seq_contains="SECMOVE")
+    others = [f for f in secmove_isins
+              if f.get("value") and f.get("value") != source]
+    if not others:
+        if source is not None:
+            return {"value": source, "status": PRESENT, "raw": source,
+                    "provenance": source_f.get("provenance") or []}
+        return {"value": None, "status": ABSENT, "raw": None,
+                "provenance": []}
+    return _field(others)
 
 
 def project_ca_message(facts_doc: dict, now: str | None = None) -> dict:
@@ -187,6 +262,19 @@ def project_ca_message(facts_doc: dict, now: str | None = None) -> dict:
             _find(genl, "23G", label_suffix=".function")),
         "processing_status": _field(
             _find(genl, "25D", label_suffix=".status code")),
+        # P8.1: operandos de familias de valores (SPLIT & co)
+        "camv": _field(
+            _find(genl, "22F", "CAMV", label_suffix=".indicator")),
+        "new_for_old_ratio": _new_for_old(facts),
+        "fraction_disposition": _field(
+            _find(facts, "22F", "DISF", label_suffix=".indicator")),
+        "target_isin": _target_isin(facts),
+        "effective_date": _field(
+            _find(facts, "98A", "PAYD", label_suffix=".date",
+                  seq_contains="SECMOVE")
+            + _find(facts, "98A", "EFFD", label_suffix=".date")
+            + _find(facts, "98A", "POST", label_suffix=".date"),
+            normalize=_norm_date),
     }
 
     return {
@@ -197,6 +285,7 @@ def project_ca_message(facts_doc: dict, now: str | None = None) -> dict:
         "status": status,
         "caev": caev_val,
         "event_type": event_type,
+        "mechanism": CAEV_MECHANISM.get(caev_val),
         "fields": fields,
     }
 
