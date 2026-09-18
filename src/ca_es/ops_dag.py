@@ -138,6 +138,20 @@ def _step_validate_inputs(ctx: RunContext) -> dict:
     }
 
 
+def _step_process_inbox(ctx: RunContext) -> dict | None:
+    inbox_cfg = ctx.config.get("inbox") or {}
+    inbox_dir = Path(inbox_cfg["path"]) if inbox_cfg.get("path") \
+        else ctx.state.root / "inbox"
+    if not (inbox_dir / "incoming").is_dir() and \
+            not inbox_dir.is_dir():
+        return None
+    from .ops_inbox import process_inbox
+
+    return process_inbox(
+        ctx.state, ctx.conn, inbox_dir,
+        run_id=ctx.run_id, now=ctx.now())
+
+
 def _step_deadlines(ctx: RunContext) -> dict:
     from .deadlines import compute_deadlines
 
@@ -295,6 +309,16 @@ def default_dag() -> list[OperationalStep]:
             expected_output_schema=INPUTS_SCHEMA,
             expected_output_version="V1",
             fn=_step_validate_inputs),
+        # pure=False: la ingestion tiene side effects (mueve
+        # ficheros, registra observaciones); es idempotente por
+        # input_sha256.
+        OperationalStep(
+            "process_inbox", "1",
+            dependencies=("validate_inputs",),
+            pure=False, mandatory=False,
+            expected_output_schema="CA_ES_OPS_INBOX_V1",
+            expected_output_version="V1",
+            fn=_step_process_inbox),
         OperationalStep(
             "compute_deadlines", "1",
             dependencies=("validate_inputs",),

@@ -1160,6 +1160,34 @@ def cmd_ops_run(args: argparse.Namespace) -> int:
         else 2
 
 
+def cmd_ops_inbox(args: argparse.Namespace) -> int:
+    import uuid
+
+    from .ops_inbox import process_inbox
+    from .ops_state import OpsRunAlreadyActive, OpsStateError
+
+    state, code = _open_state(args)
+    if state is None:
+        return code
+    inbox_dir = Path(args.path) if args.path else \
+        state.root / "inbox"
+    run_id = f"inbox-{uuid.uuid4().hex[:8]}"
+    try:
+        conn = state.acquire_run_lock(run_id)
+    except OpsRunAlreadyActive:
+        print(json.dumps({"status": "OPS_RUN_ALREADY_ACTIVE"}))
+        return 3
+    try:
+        doc = process_inbox(state, conn, inbox_dir, run_id=run_id)
+        state.checkpoint()
+    except OpsStateError as exc:
+        print(json.dumps({"status": str(exc)[:200]}))
+        return 2
+    finally:
+        state.release_run_lock()
+    return _emit(doc)
+
+
 def build_parser() -> argparse.ArgumentParser:
     parser = argparse.ArgumentParser(prog="ca-es", description=__doc__)
     parser.add_argument("--repo-root", default=None)
@@ -1536,6 +1564,12 @@ def build_parser() -> argparse.ArgumentParser:
                     help="YYYY-MM-DD (obligatorio en run nuevo)")
     orun.add_argument("--resume", default=None, metavar="RUN_ID")
     orun.set_defaults(func=cmd_ops_run)
+
+    oinbox = sub.add_parser("ops-inbox")
+    oinbox.add_argument("--state", required=True)
+    oinbox.add_argument("--path", default=None,
+                      help="directorio inbox (default <state>/inbox)")
+    oinbox.set_defaults(func=cmd_ops_inbox)
 
     return parser
 

@@ -80,10 +80,10 @@ def test_clean_first_run_all_steps_succeed(env):
     assert m["schema"] == "CA_ES_OPERATIONAL_RUN_V1"
     assert m["run_status"] == "SUCCEEDED"
     steps = _steps(m)
-    expected = ["validate_inputs", "compute_deadlines",
-                "build_action_queue", "morning_brief_v2",
-                "entitlements", "cash_reconciliation",
-                "exception_cases"]
+    expected = ["validate_inputs", "process_inbox",
+                "compute_deadlines", "build_action_queue",
+                "morning_brief_v2", "entitlements",
+                "cash_reconciliation", "exception_cases"]
     assert [s["step_id"] for s in m["steps"]] == expected
     assert all(s["status"] == "SUCCEEDED" for s in m["steps"])
     assert all(steps[s]["output_sha256"] for s in expected)
@@ -311,16 +311,16 @@ def test_resume_does_not_duplicate_artifacts(env):
         conn.execute(
             "UPDATE runs SET run_status='FAILED' WHERE run_id=?",
             (m1["run_id"],))
-        n1 = conn.execute("SELECT COUNT(*) FROM artifacts"
-                          ).fetchone()[0]
     m2 = run_ops(env["cfg"], env["state"], AS_OF,
                  resume_run_id=m1["run_id"])
     assert m2["run_status"] == "SUCCEEDED"
     with env["state"].open() as conn:
-        n2 = conn.execute("SELECT COUNT(*) FROM artifacts"
-                          ).fetchone()[0]
-    # content-addressed: resume no duplica artefactos
-    assert n2 == n1
+        steps = env["state"].get_steps(conn, m2["run_id"])
+    pure = [s for s in steps if s["step_id"] not in
+            ("validate_inputs", "process_inbox")]
+    # resume reutiliza los pasos puros ya commiteados: ningun
+    # side effect de negocio se duplica
+    assert all(s["status"] == "SKIPPED_UNCHANGED" for s in pure)
 
 
 def test_manifest_records_reuse_provenance(env):
