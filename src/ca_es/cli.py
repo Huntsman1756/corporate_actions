@@ -1434,6 +1434,160 @@ def cmd_ops_source_replay(args: argparse.Namespace) -> int:
     })
 
 
+# ------------------------------------------------------------------
+# P10 — alert delivery boundary
+# ------------------------------------------------------------------
+
+def cmd_alert_deliver(args: argparse.Namespace) -> int:
+    """P10.7 — una pasada del dispatcher; unica superficie de red
+    de entrega (webhook/smtp)."""
+    from .ops_config import validate_delivery_config
+    from .ops_delivery import run_alert_deliver
+    from .ops_state import OpsRunAlreadyActive, OpsStateError
+
+    state, code = _open_state(args)
+    if state is None:
+        return code
+    config, code = _load_json(args.config, "config")
+    if config is None:
+        return code
+    try:
+        validate_delivery_config(config.get("delivery"))
+    except ValueError as exc:
+        print(json.dumps({"status": str(exc)[:200]}))
+        return 2
+    try:
+        run_id = f"alert-deliver-{uuid.uuid4().hex[:8]}"
+        conn = state.acquire_run_lock(run_id)
+    except OpsRunAlreadyActive:
+        print(json.dumps({"status": "OPS_RUN_ALREADY_ACTIVE"}))
+        return 3
+    try:
+        doc = run_alert_deliver(
+            state, conn, config.get("delivery") or {},
+            only_delivery_key=args.delivery_key)
+        state.checkpoint()
+    except (OpsStateError, ValueError) as exc:
+        print(json.dumps({"status": str(exc)[:200]}))
+        return 2
+    finally:
+        state.release_run_lock()
+    _emit(doc)
+    return 0 if doc["status"] in (
+        "SUCCESS", "UNCHANGED", "DISABLED") else 2
+
+
+def cmd_delivery_status(args: argparse.Namespace) -> int:
+    from .ops_delivery import delivery_status_doc
+    from .ops_state import OpsStateError
+
+    state, code = _open_state(args)
+    if state is None:
+        return code
+    delivery_cfg = {}
+    if args.config:
+        config, code = _load_json(args.config, "config")
+        if config is None:
+            return code
+        delivery_cfg = config.get("delivery") or {}
+    try:
+        with state.open() as conn:
+            doc = delivery_status_doc(state, conn, delivery_cfg)
+    except OpsStateError as exc:
+        print(json.dumps({"status": str(exc)[:200]}))
+        return 2
+    return _emit(doc)
+
+
+def cmd_delivery_show(args: argparse.Namespace) -> int:
+    from .ops_delivery import (
+        get_delivery, list_attempts, list_transitions)
+    from .ops_state import OpsStateError
+
+    state, code = _open_state(args)
+    if state is None:
+        return code
+    try:
+        with state.open() as conn:
+            delivery = get_delivery(conn, args.delivery_key)
+            if delivery is None:
+                print(json.dumps({
+                    "status": "DELIVERY_NOT_FOUND",
+                    "delivery_key": args.delivery_key}))
+                return 2
+            attempts = list_attempts(conn, args.delivery_key)
+            transitions = list_transitions(conn, args.delivery_key)
+    except OpsStateError as exc:
+        print(json.dumps({"status": str(exc)[:200]}))
+        return 2
+    return _emit({
+        "schema": "CA_ES_DELIVERY_SHOW_V1",
+        "delivery": delivery,
+        "attempts": attempts,
+        "transitions": transitions,
+    })
+
+
+def cmd_delivery_retry(args: argparse.Namespace) -> int:
+    from .ops_delivery import delivery_retry
+    from .ops_state import OpsRunAlreadyActive, OpsStateError
+
+    state, code = _open_state(args)
+    if state is None:
+        return code
+    try:
+        conn = state.acquire_run_lock(
+            f"delivery-retry-{uuid.uuid4().hex[:8]}")
+    except OpsRunAlreadyActive:
+        print(json.dumps({"status": "OPS_RUN_ALREADY_ACTIVE"}))
+        return 3
+    try:
+        delivery = delivery_retry(
+            conn, args.delivery_key, now=_utcnow_iso(),
+            actor=args.actor or "operator",
+            force_unknown=args.force_unknown)
+        state.checkpoint()
+    except (OpsStateError, ValueError) as exc:
+        print(json.dumps({"status": str(exc)[:200]}))
+        return 2
+    finally:
+        state.release_run_lock()
+    return _emit({"status": "REQUEUED", "delivery": delivery})
+
+
+def cmd_delivery_abandon(args: argparse.Namespace) -> int:
+    from .ops_delivery import delivery_abandon
+    from .ops_state import OpsRunAlreadyActive, OpsStateError
+
+    state, code = _open_state(args)
+    if state is None:
+        return code
+    try:
+        conn = state.acquire_run_lock(
+            f"delivery-abandon-{uuid.uuid4().hex[:8]}")
+    except OpsRunAlreadyActive:
+        print(json.dumps({"status": "OPS_RUN_ALREADY_ACTIVE"}))
+        return 3
+    try:
+        delivery = delivery_abandon(
+            conn, args.delivery_key, now=_utcnow_iso(),
+            actor=args.actor or "operator", note=args.note)
+        state.checkpoint()
+    except (OpsStateError, ValueError) as exc:
+        print(json.dumps({"status": str(exc)[:200]}))
+        return 2
+    finally:
+        state.release_run_lock()
+    return _emit({"status": "ABANDONED", "delivery": delivery})
+
+
+def _utcnow_iso() -> str:
+    from datetime import UTC, datetime
+
+    return datetime.now(UTC).replace(microsecond=0).isoformat(
+    ).replace("+00:00", "Z")
+
+
 def build_parser() -> argparse.ArgumentParser:
     parser = argparse.ArgumentParser(prog="ca-es", description=__doc__)
     parser.add_argument("--repo-root", default=None)
@@ -1868,6 +2022,42 @@ def build_parser() -> argparse.ArgumentParser:
     osrep.add_argument("--out", default=None,
                        help="escribe el canon resultante a JSON")
     osrep.set_defaults(func=cmd_ops_source_replay)
+
+    # ---------------- P10 alert delivery ----------------
+
+    adel = sub.add_parser("alert-deliver")
+    adel.add_argument("--state", required=True)
+    adel.add_argument("--config", required=True,
+                      help="doc CA_ES_OPS_CONFIG_V1 con seccion delivery")
+    adel.add_argument("--delivery-key", default=None,
+                      help="limita la pasada a una entrega")
+    adel.set_defaults(func=cmd_alert_deliver)
+
+    dstat = sub.add_parser("delivery-status")
+    dstat.add_argument("--state", required=True)
+    dstat.add_argument("--config", default=None,
+                       help="opcional: para reflejar config enabled")
+    dstat.set_defaults(func=cmd_delivery_status)
+
+    dshow = sub.add_parser("delivery-show")
+    dshow.add_argument("--state", required=True)
+    dshow.add_argument("--delivery-key", required=True)
+    dshow.set_defaults(func=cmd_delivery_show)
+
+    dretry = sub.add_parser("delivery-retry")
+    dretry.add_argument("--state", required=True)
+    dretry.add_argument("--delivery-key", required=True)
+    dretry.add_argument("--force-unknown", action="store_true",
+                        help="permite reencolar UNKNOWN_OUTCOME")
+    dretry.add_argument("--actor", default=None)
+    dretry.set_defaults(func=cmd_delivery_retry)
+
+    daband = sub.add_parser("delivery-abandon")
+    daband.add_argument("--state", required=True)
+    daband.add_argument("--delivery-key", required=True)
+    daband.add_argument("--actor", default=None)
+    daband.add_argument("--note", default=None)
+    daband.set_defaults(func=cmd_delivery_abandon)
 
     return parser
 

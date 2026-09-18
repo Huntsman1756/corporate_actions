@@ -29,14 +29,19 @@ created_at
 delivery_key = "DLV-" + sha256(
     "CA_ES_ALERT_DELIVERY_V1|" +
     alert_key + "|" +
-    payload_semantic_sha256 + "|" +
+    alert_state + "|" +
+    alert_semantic_sha256 + "|" +
     destination_id + "|" +
     adapter_policy_version )
 ```
 
-- `payload_semantic_sha256` = `semantic_sha256` del **payload de
-  salida** (incluye `state` y `details`): un cambio material en los
-  hechos o una notificación de clear producen nuevo `delivery_key`.
+- `alert_semantic_sha256` = `semantic_sha256` de la fila outbox
+  (hash del payload de **negocio**). NO se usa el hash del payload
+  outbound para la identidad: el outbound incluye metadatos de run
+  volátiles (`last_observed_run_id`) que cambiarían la clave en
+  cada re-observación aunque los hechos sean idénticos.
+- `alert_state` distingue la generación OPEN de la generación
+  CLEARED (notify_on_clear) con el mismo sem-sha.
 - `adapter_policy_version` = `CA_ES_ALERT_DELIVERY_PAYLOAD_V1` —
   un cambio de contrato de payload versiona la identidad.
 - Sin número de intento: los intentos cuelgan de la identidad.

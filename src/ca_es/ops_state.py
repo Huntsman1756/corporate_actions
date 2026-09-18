@@ -25,7 +25,7 @@ from pathlib import Path
 
 from .semantic_hash import byte_sha256, semantic_sha256
 
-OPS_STATE_SCHEMA_VERSION = "2"
+OPS_STATE_SCHEMA_VERSION = "3"
 
 # v2: tablas P9 (source refresh). Aditivas — los estados v1 se
 # migran al vuelo en open()/init() sin perdida.
@@ -83,6 +83,60 @@ CREATE TABLE IF NOT EXISTS source_refreshes (
     status TEXT,
     summary_json TEXT
 );
+"""
+
+# v3: tablas P10 (alert delivery ledger). Aditivas — ninguna tabla
+# P7/P9 se altera; sin secretos; attempts/transitions append-only.
+# docs/p10/p102-delivery-ledger.md
+DELIVERY_SCHEMA_SQL = """
+CREATE TABLE IF NOT EXISTS deliveries (
+    delivery_key TEXT PRIMARY KEY,
+    alert_key TEXT NOT NULL,
+    alert_semantic_sha256 TEXT,
+    alert_state TEXT,
+    payload_semantic_sha256 TEXT,
+    payload_json TEXT,
+    destination_id TEXT NOT NULL,
+    adapter_type TEXT NOT NULL,
+    generation INTEGER NOT NULL,
+    status TEXT NOT NULL,
+    next_attempt_after TEXT,
+    attempt_count INTEGER DEFAULT 0,
+    first_created_at TEXT,
+    delivered_at TEXT,
+    last_attempt_at TEXT,
+    external_receipt_json TEXT
+);
+CREATE INDEX IF NOT EXISTS idx_deliveries_alert
+    ON deliveries(alert_key);
+CREATE INDEX IF NOT EXISTS idx_deliveries_status
+    ON deliveries(status);
+CREATE TABLE IF NOT EXISTS delivery_attempts (
+    attempt_id TEXT PRIMARY KEY,
+    delivery_key TEXT NOT NULL
+        REFERENCES deliveries(delivery_key),
+    attempt_number INTEGER NOT NULL,
+    started_at TEXT,
+    completed_at TEXT,
+    status TEXT,
+    retryable INTEGER,
+    error_code TEXT,
+    error_detail_safe TEXT,
+    transport_metadata_json TEXT
+);
+CREATE INDEX IF NOT EXISTS idx_attempts_delivery
+    ON delivery_attempts(delivery_key);
+CREATE TABLE IF NOT EXISTS delivery_transitions (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    delivery_key TEXT NOT NULL,
+    at TEXT,
+    from_status TEXT,
+    to_status TEXT,
+    actor TEXT,
+    note TEXT
+);
+CREATE INDEX IF NOT EXISTS idx_transitions_delivery
+    ON delivery_transitions(delivery_key);
 """
 
 SCHEMA_SQL = """
@@ -222,6 +276,7 @@ class OpsState:
         try:
             conn.executescript(SCHEMA_SQL)
             conn.executescript(SOURCE_SCHEMA_SQL)
+            conn.executescript(DELIVERY_SCHEMA_SQL)
             conn.execute(
                 "INSERT OR REPLACE INTO state_meta(key, value)"
                 " VALUES ('schema_version', ?)",
@@ -263,9 +318,10 @@ class OpsState:
                 "ops.db sin schema_version (no inicializado)")
         if version == OPS_STATE_SCHEMA_VERSION:
             return
-        if version == "1":
-            # migracion aditiva: solo crea las tablas P9
+        if version in ("1", "2"):
+            # migraciones aditivas: v1 -> +P9+P10, v2 -> +P10
             conn.executescript(SOURCE_SCHEMA_SQL)
+            conn.executescript(DELIVERY_SCHEMA_SQL)
             conn.execute(
                 "UPDATE state_meta SET value=?"
                 " WHERE key='schema_version'",

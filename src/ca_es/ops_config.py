@@ -13,6 +13,7 @@ OPS_CONFIG_SCHEMA = "CA_ES_OPS_CONFIG_V1"
 _TOP_KEYS = {
     "schema", "inputs", "action_queue", "reconciliation",
     "inbox", "health", "alerts", "lineage", "sources",
+    "delivery",
 }
 _INPUT_KEYS = {
     "canon", "source_policy", "positions", "deadline_rules",
@@ -45,7 +46,131 @@ _SECTION_KEYS = {
     "alerts": _ALERT_KEYS,
     "lineage": _LINEAGE_KEYS,
     "sources": _SOURCES_KEYS,
+    "delivery": {"enabled", "destinations", "retry", "payload_policy"},
 }
+
+# ------------------------------------------------------------------
+# P10 — delivery (docs/p10/p103-delivery-policy.md)
+# ------------------------------------------------------------------
+
+_DELIVERY_RETRY_KEYS = {
+    "max_attempts", "base_delay_seconds", "max_delay_seconds",
+    "backoff_factor"}
+_DELIVERY_PAYLOAD_POLICY_KEYS = {
+    "max_payload_bytes", "notify_on_open", "notify_on_change",
+    "notify_on_clear"}
+_DELIVERY_DEST_KEYS = {
+    "destination_id", "adapter", "enabled", "categories", "config"}
+_DELIVERY_ADAPTERS = {"file", "webhook", "smtp"}
+
+_DELIVERY_ADAPTER_CONFIG_KEYS = {
+    "file": {"directory"},
+    "webhook": {
+        "url", "url_env", "token_env", "timeout_seconds",
+        "max_response_bytes", "expected_statuses", "max_redirects",
+        "host_allowlist", "allow_insecure_http", "extra_headers"},
+    "smtp": {
+        "host", "port", "security", "username_env", "password_env",
+        "from_address", "to_addresses", "message_id_domain",
+        "timeout_seconds", "allow_plaintext_localhost"},
+}
+
+_SECRETISH = (
+    "password", "passwd", "token", "api_key", "apikey",
+    "authorization", "secret", "credential", "bearer")
+
+
+def _reject_secretish(name: str, obj: dict) -> None:
+    for key in obj:
+        k = str(key).lower()
+        if k.endswith("_env"):
+            continue
+        if any(marker in k for marker in _SECRETISH):
+            raise ValueError(
+                f"INVALID_OPS_CONFIG:{name}:secretish_key:{key}")
+
+
+def _validate_delivery(doc: dict) -> None:
+    validate_delivery_config(doc.get("delivery"))
+
+
+def validate_delivery_config(delivery) -> None:
+    """Valida solo la seccion `delivery` (fail-closed).
+
+    Exportada para `alert-deliver`, que no exige el doc
+    CA_ES_OPS_CONFIG_V1 completo.
+    """
+    if delivery is None:
+        return
+    if not isinstance(delivery, dict):
+        raise ValueError("INVALID_OPS_CONFIG:delivery")
+    _reject_unknown("delivery", delivery, _SECTION_KEYS["delivery"])
+    _reject_secretish("delivery", delivery)
+
+    retry = delivery.get("retry") or {}
+    if not isinstance(retry, dict):
+        raise ValueError("INVALID_OPS_CONFIG:delivery:retry")
+    _reject_unknown("delivery:retry", retry, _DELIVERY_RETRY_KEYS)
+    if "max_attempts" in retry and (
+            not isinstance(retry["max_attempts"], int)
+            or retry["max_attempts"] < 1):
+        raise ValueError(
+            "INVALID_OPS_CONFIG:delivery:retry:max_attempts")
+    for k in ("base_delay_seconds", "max_delay_seconds"):
+        if k in retry and (
+                not isinstance(retry[k], (int, float))
+                or retry[k] < 0):
+            raise ValueError(f"INVALID_OPS_CONFIG:delivery:retry:{k}")
+    if "backoff_factor" in retry and (
+            not isinstance(retry["backoff_factor"], (int, float))
+            or retry["backoff_factor"] < 1.0):
+        raise ValueError(
+            "INVALID_OPS_CONFIG:delivery:retry:backoff_factor")
+
+    pp = delivery.get("payload_policy") or {}
+    if not isinstance(pp, dict):
+        raise ValueError("INVALID_OPS_CONFIG:delivery:payload_policy")
+    _reject_unknown(
+        "delivery:payload_policy", pp, _DELIVERY_PAYLOAD_POLICY_KEYS)
+    if "max_payload_bytes" in pp and (
+            not isinstance(pp["max_payload_bytes"], int)
+            or pp["max_payload_bytes"] <= 0):
+        raise ValueError(
+            "INVALID_OPS_CONFIG:delivery:payload_policy:"
+            "max_payload_bytes")
+
+    destinations = delivery.get("destinations") or []
+    if not isinstance(destinations, list):
+        raise ValueError("INVALID_OPS_CONFIG:delivery:destinations")
+    seen_ids = set()
+    for i, dest in enumerate(destinations):
+        name = f"delivery:destinations[{i}]"
+        if not isinstance(dest, dict):
+            raise ValueError(f"INVALID_OPS_CONFIG:{name}")
+        _reject_unknown(name, dest, _DELIVERY_DEST_KEYS)
+        _reject_secretish(name, dest)
+        dest_id = dest.get("destination_id")
+        if not dest_id or not isinstance(dest_id, str):
+            raise ValueError(
+                f"INVALID_OPS_CONFIG:{name}:destination_id")
+        if dest_id in seen_ids:
+            raise ValueError(
+                f"INVALID_OPS_CONFIG:{name}:duplicate_destination_id")
+        seen_ids.add(dest_id)
+        adapter = dest.get("adapter")
+        if adapter not in _DELIVERY_ADAPTERS:
+            raise ValueError(f"INVALID_OPS_CONFIG:{name}:adapter")
+        cats = dest.get("categories")
+        if not isinstance(cats, list) or not all(
+                isinstance(c, str) for c in cats):
+            raise ValueError(f"INVALID_OPS_CONFIG:{name}:categories")
+        cfg = dest.get("config") or {}
+        if not isinstance(cfg, dict):
+            raise ValueError(f"INVALID_OPS_CONFIG:{name}:config")
+        _reject_secretish(f"{name}:config", cfg)
+        _reject_unknown(
+            f"{name}:config", cfg,
+            _DELIVERY_ADAPTER_CONFIG_KEYS[adapter])
 
 
 def _reject_unknown(name: str, obj: dict, allowed: set) -> None:
@@ -76,13 +201,16 @@ def validate_ops_config(doc: Any) -> dict:
             raise ValueError(f"INVALID_OPS_CONFIG:input:{name}:path")
 
     for section in ("action_queue", "reconciliation", "inbox",
-                    "health", "alerts", "lineage", "sources"):
+                    "health", "alerts", "lineage", "sources",
+                    "delivery"):
         sub = doc.get(section)
         if sub is None:
             continue
         if not isinstance(sub, dict):
             raise ValueError(f"INVALID_OPS_CONFIG:{section}")
         _reject_unknown(section, sub, _SECTION_KEYS[section])
+
+    _validate_delivery(doc)
 
     sources = doc.get("sources") or {}
     adapters = sources.get("adapters") or {}

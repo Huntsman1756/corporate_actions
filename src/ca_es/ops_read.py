@@ -116,6 +116,33 @@ def ops_status_doc(state, conn) -> dict:
         "SELECT COUNT(*) c FROM inbox_messages"
         " WHERE processing_status='FAILED'").fetchone()["c"]
 
+    # P10.11 — resumen del ledger de entrega (aditivo; las tablas
+    # existen siempre tras la migracion a schema v3).
+    delivery: dict | None = None
+    has_ledger = conn.execute(
+        "SELECT 1 FROM sqlite_master WHERE type='table'"
+        " AND name='deliveries'").fetchone()
+    if has_ledger:
+        counts = {r["status"]: r["c"] for r in conn.execute(
+            "SELECT status, COUNT(*) c FROM deliveries"
+            " GROUP BY status").fetchall()}
+        if counts.get("FAILED_PERMANENT") or counts.get(
+                "UNKNOWN_OUTCOME"):
+            d_status = "FAILED"
+        elif counts.get("FAILED_RETRYABLE") or counts.get("PENDING"):
+            d_status = "DEGRADED"
+        else:
+            d_status = "HEALTHY"
+        delivery = {
+            "status": d_status,
+            "pending": counts.get("PENDING", 0),
+            "delivered": counts.get("DELIVERED", 0),
+            "failed_retryable": counts.get("FAILED_RETRYABLE", 0),
+            "failed_permanent": counts.get("FAILED_PERMANENT", 0),
+            "unknown_outcome": counts.get("UNKNOWN_OUTCOME", 0),
+            "abandoned": counts.get("ABANDONED", 0),
+        }
+
     return {
         "schema": "CA_ES_OPS_STATUS_V1",
         "active_run": (
@@ -142,6 +169,7 @@ def ops_status_doc(state, conn) -> dict:
         "open_exceptions": open_exceptions,
         "action_counts": action_counts,
         "inbox_failures": inbox_failures,
+        "delivery": delivery,
     }
 
 
