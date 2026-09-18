@@ -1,0 +1,61 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Document xmlns="urn:iso:std:iso:20022:tech:xsd:camt.054.001.13">
+  <BkToCstmrDbtCdtNtfctn>
+    <GrpHdr>
+      <MsgId>NTFCTN-2026-001</MsgId>
+      <CreDtTm>2026-05-07T09:30:00Z</CreDtTm>
+    </GrpHdr>
+    <Ntfctn>
+      <Id>NTFCTN-PAGE-1</Id>
+      <CreDtTm>2026-05-07T09:30:00Z</CreDtTm>
+      <Acct>
+        <Id>
+          <IBAN>ES9121000418450200051332</IBAN>
+        </Id>
+        <Ccy>EUR</Ccy>
+      </Acct>
+      <Ntry>
+        <NtryRef>NTRY-001</NtryRef>
+        <Amt Ccy="EUR">1562.50</Amt>
+        <CdtDbtInd>CRDT</CdtDbtInd>
+        <RvslInd>false</RvslInd>
+        <Sts>
+          <Cd>BOOK</Cd>
+        </Sts>
+        <BookgDt>
+          <Dt>2026-05-06</Dt>
+        </BookgDt>
+        <ValDt>
+          <Dt>2026-05-06</Dt>
+        </ValDt>
+        <AcctSvcrRef>SRV-REF-99</AcctSvcrRef>
+        <NtryDtls>
+          <TxDtls>
+            <Refs>
+              <AcctSvcrRef>SRV-REF-99</AcctSvcrRef>
+              <EndToEndId>CA-EVT-001</EndToEndId>
+              <TxId>TXN-88001</TxId>
+            </Refs>
+          </TxDtls>
+        </NtryDtls>
+      </Ntry>
+      <Ntry>
+        <NtryRef>NTRY-002</NtryRef>
+        <Amt Ccy="EUR">200.00</Amt>
+        <CdtDbtInd>DBIT</CdtDbtInd>
+        <RvslInd>false</RvslInd>
+        <Sts>
+          <Cd>BOOK</Cd>
+        </Sts>
+        <BookgDt>
+          <Dt>2026-05-07</Dt>
+        </BookgDt>
+        <ValDt>
+          <Dt>2026-05-07</Dt>
+        </ValDt>
+        <AcctSvcrRef>SRV-REF-100</AcctSvcrRef>
+        <AddtlNtryInf>ACCOUNT FEE</AddtlNtryInf>
+      </Ntry>
+    </Ntfctn>
+  </BkToCstmrDbtCdtNtfctn>
+</Document>

@@ -1,0 +1,67 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Document xmlns="urn:iso:std:iso:20022:tech:xsd:camt.053.001.13">
+  <BkToCstmrStmt>
+    <GrpHdr>
+      <MsgId>STMT-2026-001</MsgId>
+      <CreDtTm>2026-05-07T09:30:00Z</CreDtTm>
+    </GrpHdr>
+    <Stmt>
+      <Id>STMT-PAGE-1</Id>
+      <CreDtTm>2026-05-07T09:30:00Z</CreDtTm>
+      <Acct>
+        <Id>
+          <IBAN>ES9121000418450200051332</IBAN>
+        </Id>
+        <Ccy>EUR</Ccy>
+      </Acct>
+      <Bal>
+        <Tp>
+          <CdOrPrtry>
+            <Cd>OPBD</Cd>
+          </CdOrPrtry>
+        </Tp>
+        <Amt Ccy="EUR">10000.00</Amt>
+        <CdtDbtInd>CRDT</CdtDbtInd>
+        <Dt>
+          <Dt>2026-05-05</Dt>
+        </Dt>
+      </Bal>
+      <Bal>
+        <Tp>
+          <CdOrPrtry>
+            <Cd>CLBD</Cd>
+          </CdOrPrtry>
+        </Tp>
+        <Amt Ccy="EUR">11362.50</Amt>
+        <CdtDbtInd>CRDT</CdtDbtInd>
+        <Dt>
+          <Dt>2026-05-07</Dt>
+        </Dt>
+      </Bal>
+      <Ntry>
+        <NtryRef>NTRY-001</NtryRef>
+        <Amt Ccy="EUR">1562.50</Amt>
+        <CdtDbtInd>CRDT</CdtDbtInd>
+        <RvslInd>false</RvslInd>
+        <Sts>
+          <Cd>BOOK</Cd>
+        </Sts>
+        <BookgDt>
+          <Dt>2026-05-06</Dt>
+        </BookgDt>
+        <ValDt>
+          <Dt>2026-05-06</Dt>
+        </ValDt>
+        <AcctSvcrRef>SRV-REF-99</AcctSvcrRef>
+        <NtryDtls>
+          <TxDtls>
+            <Refs>
+              <AcctSvcrRef>SRV-REF-99</AcctSvcrRef>
+              <EndToEndId>CA-EVT-001</EndToEndId>
+            </Refs>
+          </TxDtls>
+        </NtryDtls>
+      </Ntry>
+    </Stmt>
+  </BkToCstmrStmt>
+</Document>

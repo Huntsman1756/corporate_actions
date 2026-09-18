@@ -54,7 +54,7 @@ public final class IsoAdapter {
     static final int EXIT_ADAPTER_ERROR = 4;
 
     private static final Set<String> SUPPORTED =
-            Set.of("564", "566", "567");
+            Set.of("535", "564", "566", "567", "940", "950");
     private static final String FIELD_PKG =
             "com.prowidesoftware.swift.model.field.Field";
 

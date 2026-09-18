@@ -52,7 +52,9 @@ public final class MxFactsAdapter {
             "seev.031.001.15", "seev.031.002.15",
             "seev.033.001.13", "seev.033.002.13",
             "seev.034.001.15", "seev.034.002.15",
-            "seev.036.001.16", "seev.036.002.16");
+            "seev.036.001.16", "seev.036.002.16",
+            "semt.002.001.12", "semt.002.002.11",
+            "camt.053.001.13", "camt.054.001.13");
 
     private MxFactsAdapter() {
     }
