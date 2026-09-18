@@ -37,6 +37,7 @@ RUN_SCHEMA = "CA_ES_OPERATIONAL_RUN_V1"
 INPUTS_SCHEMA = "CA_ES_OPS_INPUTS_V1"
 INDEX_SCHEMA = "CA_ES_OPS_INDEX_V1"
 OUTBOX_SCHEMA = "CA_ES_ALERT_OUTBOX_V1"
+LINEAGE_SCHEMA = "CA_ES_OPS_LINEAGE_V1"
 
 RUNNING = "RUNNING"
 SUCCEEDED = "SUCCEEDED"
@@ -341,6 +342,32 @@ def _step_health_report(ctx: RunContext) -> dict:
         now=ctx.now())
 
 
+def _step_lineage_export(ctx: RunContext) -> dict:
+    """OpenLineage JSONL (opcional). Fallo con required=false no
+    invalida el run de negocio."""
+    from .ops_lineage import export_lineage
+
+    cfg = ctx.config.get("lineage") or {}
+    if not cfg.get("enabled"):
+        return {"schema": LINEAGE_SCHEMA,
+                "generated_at": ctx.now(),
+                "enabled": False, "events": 0}
+    out = Path(cfg["path"]) if cfg.get("path") else \
+        ctx.state.root / "lineage" / f"{ctx.run_id}.jsonl"
+    try:
+        res = export_lineage(ctx.state, ctx.conn, ctx.run_id, out)
+    except Exception as exc:
+        if cfg.get("required"):
+            raise
+        return {"schema": LINEAGE_SCHEMA,
+                "generated_at": ctx.now(),
+                "enabled": True,
+                "error": f"{exc.__class__.__name__}:{exc}"[:200]}
+    return {"schema": LINEAGE_SCHEMA,
+            "generated_at": ctx.now(),
+            "enabled": True, **res}
+
+
 def _dyn_prev_cases(ctx: RunContext) -> list:
     """Semantic hash del estado de casos previos (input efectivo
     del step exception_cases; un estado previo distinto invalida
@@ -443,6 +470,15 @@ def default_dag() -> list[OperationalStep]:
             expected_output_schema="CA_ES_OPERATIONAL_HEALTH_V1",
             expected_output_version="V1",
             fn=_step_health_report),
+        # opcional: export OpenLineage; fallo con required=false
+        # no invalida el run.
+        OperationalStep(
+            "lineage_export", "1",
+            dependencies=("health_report",),
+            pure=False, mandatory=False,
+            expected_output_schema=LINEAGE_SCHEMA,
+            expected_output_version="V1",
+            fn=_step_lineage_export),
     ]
 
 
