@@ -7,6 +7,7 @@ contenido de negocio en la exportacion.
 
 from __future__ import annotations
 
+import hashlib
 import json
 from datetime import UTC, datetime
 from pathlib import Path
@@ -98,8 +99,13 @@ def build_lineage_events(state, conn, run_id: str) -> list[dict]:
         except json.JSONDecodeError:
             hashes = []
         for h in hashes:
+            # la columna persiste el cache-key JSON completo;
+            # el nombre del dataset es su sha256 (estable, sin
+            # truncar JSON ni colisionar por prefijo)
+            digest = hashlib.sha256(
+                h.encode("utf-8")).hexdigest()
             inputs.append({"namespace": DS_NS,
-                           "name": f"cachekey:{h[:32]}"})
+                           "name": f"cachekey:{digest[:32]}"})
         outputs = []
         if s.get("output_sha256"):
             outputs.append(_dataset(
