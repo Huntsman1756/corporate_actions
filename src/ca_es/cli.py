@@ -323,6 +323,14 @@ def cmd_desk(args: argparse.Namespace) -> int:
             )
         )
         return 2
+    if getattr(args, "latest", False):
+        return _cmd_desk_latest(args, OpsDesk, build_desk_model)
+    if not args.canon:
+        print(json.dumps({
+            "status": "INVALID_INPUT",
+            "detail": "--canon requerido (o usa --latest --state)",
+        }))
+        return 2
     surface = _surface(args)
     previous = _load_previous(args)
     if args.queue:
@@ -346,6 +354,56 @@ def cmd_desk(args: argparse.Namespace) -> int:
         surface,
         previous_surface=previous,
     ).run()
+    return 0
+
+
+def _cmd_desk_latest(args, OpsDesk, build_desk_model) -> int:
+    """desk sobre el ultimo run SUCCEEDED: consume artefactos
+    persistidos, nunca recalcula."""
+    from .surface import Surface
+
+    if not args.state:
+        print(json.dumps({
+            "status": "INVALID_INPUT",
+            "detail": "--latest requiere --state",
+        }))
+        return 2
+    state, code = _open_state(args)
+    if state is None:
+        return code
+    try:
+        with state.open() as conn:
+            run = state.latest_successful_run(conn)
+            if run is None:
+                print(json.dumps({"status": "NO_SUCCESSFUL_RUN"}))
+                return 1
+            steps = {s["step_id"]: s
+                     for s in state.get_steps(conn, run["run_id"])}
+            brief_sha = (steps.get("morning_brief_v2") or {}
+                         ).get("output_sha256")
+            inputs_sha = (steps.get("validate_inputs") or {}
+                          ).get("output_sha256")
+            if not brief_sha or not inputs_sha:
+                print(json.dumps({
+                    "status": "LATEST_RUN_INCOMPLETE"}))
+                return 2
+            brief = state.get_artifact(brief_sha)
+            inputs_doc = state.get_artifact(inputs_sha)
+            canon_ref = (inputs_doc.get("inputs") or {}
+                         ).get("canon")
+            policy_ref = (inputs_doc.get("inputs") or {}
+                          ).get("source_policy")
+            canon = state.get_artifact(canon_ref["sha256"])
+            policy = (state.get_artifact(policy_ref["sha256"])
+                      if policy_ref else {})
+            surface = Surface(canon, policy)
+    except Exception as exc:
+        print(json.dumps({
+            "status": "DESK_LATEST_ERROR",
+            "detail": str(exc)[:200],
+        }))
+        return 2
+    OpsDesk(build_desk_model(brief), surface).run()
     return 0
 
 
@@ -1188,6 +1246,56 @@ def cmd_ops_inbox(args: argparse.Namespace) -> int:
     return _emit(doc)
 
 
+def cmd_ops_status(args: argparse.Namespace) -> int:
+    from .ops_read import ops_status_doc
+    from .ops_state import OpsStateError
+
+    state, code = _open_state(args)
+    if state is None:
+        return code
+    try:
+        with state.open() as conn:
+            doc = ops_status_doc(state, conn)
+    except OpsStateError as exc:
+        print(json.dumps({"status": str(exc)[:200]}))
+        return 2
+    return _emit(doc)
+
+
+def cmd_ops_latest(args: argparse.Namespace) -> int:
+    from .ops_read import ops_latest_doc
+    from .ops_state import OpsStateError
+
+    state, code = _open_state(args)
+    if state is None:
+        return code
+    try:
+        with state.open() as conn:
+            doc = ops_latest_doc(state, conn)
+    except OpsStateError as exc:
+        print(json.dumps({"status": str(exc)[:200]}))
+        return 2
+    return _emit(doc)
+
+
+def cmd_ops_export_run(args: argparse.Namespace) -> int:
+    from .ops_read import export_run
+    from .ops_state import OpsStateError
+
+    state, code = _open_state(args)
+    if state is None:
+        return code
+    try:
+        with state.open() as conn:
+            doc = export_run(
+                state, conn, args.run_id, Path(args.output),
+                include_inputs=args.include_inputs)
+    except (OpsStateError, ValueError) as exc:
+        print(json.dumps({"status": str(exc)[:200]}))
+        return 2
+    return _emit(doc)
+
+
 def build_parser() -> argparse.ArgumentParser:
     parser = argparse.ArgumentParser(prog="ca-es", description=__doc__)
     parser.add_argument("--repo-root", default=None)
@@ -1268,12 +1376,19 @@ def build_parser() -> argparse.ArgumentParser:
     brief.add_argument("--format", choices=["json", "text"], default="text")
     brief.set_defaults(func=cmd_brief)
 
-    desk = sub.add_parser("desk", parents=[surface_common])
-    desk.add_argument("--as-of", required=True)
+    desk = sub.add_parser("desk")
+    desk.add_argument("--canon", default=None,
+                      help="obligatorio salvo --latest")
+    desk.add_argument("--policy", default=None)
+    desk.add_argument("--as-of", default=None)
     desk.add_argument("--previous-canon", default=None)
     desk.add_argument("--window", type=int, default=7)
     desk.add_argument("--queue", default=None,
                       help="doc CA_ES_ACTION_QUEUE_V1 -> brief V2")
+    desk.add_argument("--state", default=None,
+                      help="state store operativo (P7)")
+    desk.add_argument("--latest", action="store_true",
+                      help="consume el ultimo run SUCCEEDED")
     desk.set_defaults(func=cmd_desk)
 
     entitlement = sub.add_parser("entitlement", parents=[surface_common])
@@ -1570,6 +1685,21 @@ def build_parser() -> argparse.ArgumentParser:
     oinbox.add_argument("--path", default=None,
                       help="directorio inbox (default <state>/inbox)")
     oinbox.set_defaults(func=cmd_ops_inbox)
+
+    ostatus = sub.add_parser("ops-status")
+    ostatus.add_argument("--state", required=True)
+    ostatus.set_defaults(func=cmd_ops_status)
+
+    olatest = sub.add_parser("ops-latest")
+    olatest.add_argument("--state", required=True)
+    olatest.set_defaults(func=cmd_ops_latest)
+
+    oexport = sub.add_parser("ops-export-run")
+    oexport.add_argument("--state", required=True)
+    oexport.add_argument("--run-id", required=True)
+    oexport.add_argument("--output", required=True)
+    oexport.add_argument("--include-inputs", action="store_true")
+    oexport.set_defaults(func=cmd_ops_export_run)
 
     return parser
 
