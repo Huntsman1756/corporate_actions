@@ -1581,6 +1581,197 @@ def cmd_delivery_abandon(args: argparse.Namespace) -> int:
     return _emit({"status": "ABANDONED", "delivery": delivery})
 
 
+# ------------------------------------------------------------------
+# P11 — instruction send boundary (FileSpoolTransport)
+# ------------------------------------------------------------------
+
+def cmd_send_prepare(args: argparse.Namespace) -> int:
+    """P11 — deriva sends PREPARED desde un doc de mensaje
+    serializado (CA_ES_MT565_FIN_V1 / CA_ES_SEEV033_XML_V1)."""
+    from .ops_config import validate_send_config
+    from .ops_send import prepare_sends
+    from .ops_state import OpsRunAlreadyActive, OpsStateError
+
+    state, code = _open_state(args)
+    if state is None:
+        return code
+    config, code = _load_json(args.config, "config")
+    if config is None:
+        return code
+    message_doc, code = _load_json(args.message, "message")
+    if message_doc is None:
+        return code
+    try:
+        validate_send_config(config.get("send"))
+    except ValueError as exc:
+        print(json.dumps({"status": str(exc)[:200]}))
+        return 2
+    try:
+        conn = state.acquire_run_lock(
+            f"send-prepare-{uuid.uuid4().hex[:8]}")
+    except OpsRunAlreadyActive:
+        print(json.dumps({"status": "OPS_RUN_ALREADY_ACTIVE"}))
+        return 3
+    try:
+        doc = prepare_sends(
+            conn, message_doc, args.instruction_id,
+            config.get("send") or {})
+        state.checkpoint()
+    except (OpsStateError, ValueError) as exc:
+        print(json.dumps({"status": str(exc)[:200]}))
+        return 2
+    finally:
+        state.release_run_lock()
+    return _emit(doc)
+
+
+def cmd_send_dispatch(args: argparse.Namespace) -> int:
+    """P11 — una pasada del send dispatcher: orphan recovery +
+    receipt ingestion + dispatch de elegibles."""
+    from .ops_config import validate_send_config
+    from .ops_send import run_send_dispatch
+    from .ops_state import OpsRunAlreadyActive, OpsStateError
+
+    state, code = _open_state(args)
+    if state is None:
+        return code
+    config, code = _load_json(args.config, "config")
+    if config is None:
+        return code
+    try:
+        validate_send_config(config.get("send"))
+    except ValueError as exc:
+        print(json.dumps({"status": str(exc)[:200]}))
+        return 2
+    try:
+        run_id = f"send-dispatch-{uuid.uuid4().hex[:8]}"
+        conn = state.acquire_run_lock(run_id)
+    except OpsRunAlreadyActive:
+        print(json.dumps({"status": "OPS_RUN_ALREADY_ACTIVE"}))
+        return 3
+    try:
+        doc = run_send_dispatch(
+            state, conn, config.get("send") or {},
+            only_delivery_id=args.delivery_id)
+        state.checkpoint()
+    except (OpsStateError, ValueError) as exc:
+        print(json.dumps({"status": str(exc)[:200]}))
+        return 2
+    finally:
+        state.release_run_lock()
+    _emit(doc)
+    return 0 if doc["status"] in (
+        "SUCCESS", "UNCHANGED", "DISABLED") else 2
+
+
+def cmd_send_status(args: argparse.Namespace) -> int:
+    from .ops_send import send_status_doc
+    from .ops_state import OpsStateError
+
+    state, code = _open_state(args)
+    if state is None:
+        return code
+    send_cfg = {}
+    if args.config:
+        config, code = _load_json(args.config, "config")
+        if config is None:
+            return code
+        send_cfg = config.get("send") or {}
+    try:
+        with state.open() as conn:
+            doc = send_status_doc(state, conn, send_cfg)
+    except OpsStateError as exc:
+        print(json.dumps({"status": str(exc)[:200]}))
+        return 2
+    return _emit(doc)
+
+
+def cmd_send_show(args: argparse.Namespace) -> int:
+    from .ops_send import (
+        get_send, list_send_attempts, list_send_receipts,
+        list_send_transitions)
+    from .ops_state import OpsStateError
+
+    state, code = _open_state(args)
+    if state is None:
+        return code
+    try:
+        with state.open() as conn:
+            send = get_send(conn, args.delivery_id)
+            if send is None:
+                print(json.dumps({
+                    "status": "SEND_NOT_FOUND",
+                    "delivery_id": args.delivery_id}))
+                return 2
+            doc = {
+                "schema": "CA_ES_SEND_SHOW_V1",
+                "send": send,
+                "attempts": list_send_attempts(
+                    conn, args.delivery_id),
+                "transitions": list_send_transitions(
+                    conn, args.delivery_id),
+                "receipts": list_send_receipts(
+                    conn, args.delivery_id),
+            }
+    except OpsStateError as exc:
+        print(json.dumps({"status": str(exc)[:200]}))
+        return 2
+    return _emit(doc)
+
+
+def cmd_send_retry(args: argparse.Namespace) -> int:
+    from .ops_send import send_retry
+    from .ops_state import OpsRunAlreadyActive, OpsStateError
+
+    state, code = _open_state(args)
+    if state is None:
+        return code
+    try:
+        conn = state.acquire_run_lock(
+            f"send-retry-{uuid.uuid4().hex[:8]}")
+    except OpsRunAlreadyActive:
+        print(json.dumps({"status": "OPS_RUN_ALREADY_ACTIVE"}))
+        return 3
+    try:
+        send = send_retry(
+            conn, args.delivery_id, now=_utcnow_iso(),
+            actor=args.actor or "operator",
+            force_unknown=args.force_unknown)
+        state.checkpoint()
+    except (OpsStateError, ValueError) as exc:
+        print(json.dumps({"status": str(exc)[:200]}))
+        return 2
+    finally:
+        state.release_run_lock()
+    return _emit({"status": "REQUEUED", "send": send})
+
+
+def cmd_send_abandon(args: argparse.Namespace) -> int:
+    from .ops_send import send_abandon
+    from .ops_state import OpsRunAlreadyActive, OpsStateError
+
+    state, code = _open_state(args)
+    if state is None:
+        return code
+    try:
+        conn = state.acquire_run_lock(
+            f"send-abandon-{uuid.uuid4().hex[:8]}")
+    except OpsRunAlreadyActive:
+        print(json.dumps({"status": "OPS_RUN_ALREADY_ACTIVE"}))
+        return 3
+    try:
+        send = send_abandon(
+            conn, args.delivery_id, now=_utcnow_iso(),
+            actor=args.actor or "operator", note=args.note)
+        state.checkpoint()
+    except (OpsStateError, ValueError) as exc:
+        print(json.dumps({"status": str(exc)[:200]}))
+        return 2
+    finally:
+        state.release_run_lock()
+    return _emit({"status": "ABANDONED", "send": send})
+
+
 def _utcnow_iso() -> str:
     from datetime import UTC, datetime
 
@@ -2058,6 +2249,52 @@ def build_parser() -> argparse.ArgumentParser:
     daband.add_argument("--actor", default=None)
     daband.add_argument("--note", default=None)
     daband.set_defaults(func=cmd_delivery_abandon)
+
+    # ---------------- P11 instruction send ----------------
+
+    sprep = sub.add_parser("send-prepare")
+    sprep.add_argument("--state", required=True)
+    sprep.add_argument("--config", required=True,
+                       help="doc CA_ES_OPS_CONFIG_V1 con seccion send")
+    sprep.add_argument("--message", required=True,
+                       help="doc CA_ES_MT565_FIN_V1 o "
+                            "CA_ES_SEEV033_XML_V1")
+    sprep.add_argument("--instruction-id", required=True,
+                       help="instruction_id / SEME / BizMsgIdr")
+    sprep.set_defaults(func=cmd_send_prepare)
+
+    sdisp = sub.add_parser("send-dispatch")
+    sdisp.add_argument("--state", required=True)
+    sdisp.add_argument("--config", required=True)
+    sdisp.add_argument("--delivery-id", default=None,
+                       help="limita la pasada a un send")
+    sdisp.set_defaults(func=cmd_send_dispatch)
+
+    sstat = sub.add_parser("send-status")
+    sstat.add_argument("--state", required=True)
+    sstat.add_argument("--config", default=None,
+                       help="opcional: para reflejar config enabled")
+    sstat.set_defaults(func=cmd_send_status)
+
+    sshow = sub.add_parser("send-show")
+    sshow.add_argument("--state", required=True)
+    sshow.add_argument("--delivery-id", required=True)
+    sshow.set_defaults(func=cmd_send_show)
+
+    sretry = sub.add_parser("send-retry")
+    sretry.add_argument("--state", required=True)
+    sretry.add_argument("--delivery-id", required=True)
+    sretry.add_argument("--force-unknown", action="store_true",
+                        help="permite reencolar UNKNOWN_OUTCOME")
+    sretry.add_argument("--actor", default=None)
+    sretry.set_defaults(func=cmd_send_retry)
+
+    saband = sub.add_parser("send-abandon")
+    saband.add_argument("--state", required=True)
+    saband.add_argument("--delivery-id", required=True)
+    saband.add_argument("--actor", default=None)
+    saband.add_argument("--note", default=None)
+    saband.set_defaults(func=cmd_send_abandon)
 
     return parser
 

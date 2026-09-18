@@ -17,7 +17,7 @@ def test_init_creates_delivery_tables(tmp_path):
         version = conn.execute(
             "SELECT value FROM state_meta"
             " WHERE key='schema_version'").fetchone()["value"]
-    assert version == "3"
+    assert version == "4"
     assert {"deliveries", "delivery_attempts",
             "delivery_transitions"} <= tables
 
@@ -61,7 +61,7 @@ def test_migration_v2_to_v3_preserves_state(tmp_path):
             ("DEADLINE_OVERDUE|dk1",)).fetchone()
         tables = {r[0] for r in conn.execute(
             "SELECT name FROM sqlite_master WHERE type='table'")}
-    assert version == OPS_STATE_SCHEMA_VERSION == "3"
+    assert version == OPS_STATE_SCHEMA_VERSION == "4"
     assert alert["delivery_state"] == "PENDING_DELIVERY"
     assert {"deliveries", "delivery_attempts",
             "delivery_transitions"} <= tables
@@ -86,5 +86,5 @@ def test_migration_v1_to_v3(tmp_path):
             " WHERE key='schema_version'").fetchone()["value"]
         tables = {r[0] for r in conn.execute(
             "SELECT name FROM sqlite_master WHERE type='table'")}
-    assert version == "3"
-    assert {"source_documents", "deliveries"} <= tables
+    assert version == "4"
+    assert {"source_documents", "deliveries", "sends"} <= tables

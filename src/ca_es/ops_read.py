@@ -143,6 +143,41 @@ def ops_status_doc(state, conn) -> dict:
             "abandoned": counts.get("ABANDONED", 0),
         }
 
+    # P11 — resumen del send ledger (aditivo; tablas tras schema v4).
+    send: dict | None = None
+    has_sends = conn.execute(
+        "SELECT 1 FROM sqlite_master WHERE type='table'"
+        " AND name='sends'").fetchone()
+    if has_sends:
+        scounts = {r["status"]: r["c"] for r in conn.execute(
+            "SELECT status, COUNT(*) c FROM sends"
+            " GROUP BY status").fetchall()}
+        quarantined = conn.execute(
+            "SELECT COUNT(*) c FROM send_receipts"
+            " WHERE status='QUARANTINED'").fetchone()["c"]
+        if scounts.get("SPOOL_FAILED_PERMANENT") or scounts.get(
+                "UNKNOWN_OUTCOME") or quarantined:
+            s_status = "FAILED"
+        elif scounts.get("SPOOL_FAILED_RETRYABLE") or scounts.get(
+                "PREPARED") or scounts.get("SPOOLED"):
+            s_status = "DEGRADED"
+        else:
+            s_status = "HEALTHY"
+        send = {
+            "status": s_status,
+            "prepared": scounts.get("PREPARED", 0),
+            "spooled": scounts.get("SPOOLED", 0),
+            "gateway_accepted": scounts.get("GATEWAY_ACCEPTED", 0),
+            "gateway_rejected": scounts.get("GATEWAY_REJECTED", 0),
+            "failed_retryable": scounts.get(
+                "SPOOL_FAILED_RETRYABLE", 0),
+            "failed_permanent": scounts.get(
+                "SPOOL_FAILED_PERMANENT", 0),
+            "unknown_outcome": scounts.get("UNKNOWN_OUTCOME", 0),
+            "abandoned": scounts.get("ABANDONED", 0),
+            "quarantined_receipts": quarantined,
+        }
+
     return {
         "schema": "CA_ES_OPS_STATUS_V1",
         "active_run": (
@@ -170,6 +205,7 @@ def ops_status_doc(state, conn) -> dict:
         "action_counts": action_counts,
         "inbox_failures": inbox_failures,
         "delivery": delivery,
+        "send": send,
     }
 
 

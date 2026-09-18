@@ -13,7 +13,7 @@ OPS_CONFIG_SCHEMA = "CA_ES_OPS_CONFIG_V1"
 _TOP_KEYS = {
     "schema", "inputs", "action_queue", "reconciliation",
     "inbox", "health", "alerts", "lineage", "sources",
-    "delivery",
+    "delivery", "send",
 }
 _INPUT_KEYS = {
     "canon", "source_policy", "positions", "deadline_rules",
@@ -47,6 +47,7 @@ _SECTION_KEYS = {
     "lineage": _LINEAGE_KEYS,
     "sources": _SOURCES_KEYS,
     "delivery": {"enabled", "destinations", "retry", "payload_policy"},
+    "send": {"enabled", "destinations", "retry", "send_policy"},
 }
 
 # ------------------------------------------------------------------
@@ -73,6 +74,26 @@ _DELIVERY_ADAPTER_CONFIG_KEYS = {
         "host", "port", "security", "username_env", "password_env",
         "from_address", "to_addresses", "message_id_domain",
         "timeout_seconds", "allow_plaintext_localhost"},
+}
+
+# ------------------------------------------------------------------
+# P11 — send (docs/p11/p112-send-ledger.md)
+# ------------------------------------------------------------------
+
+_SEND_RETRY_KEYS = {
+    "max_attempts", "base_delay_seconds", "max_delay_seconds",
+    "backoff_factor"}
+_SEND_POLICY_KEYS = {"max_message_bytes"}
+_SEND_DEST_KEYS = {
+    "destination_id", "adapter", "enabled", "message_schemas",
+    "config"}
+_SEND_ADAPTERS = {"filespool"}
+
+_SEND_ADAPTER_CONFIG_KEYS = {
+    "filespool": {"spool_directory"},
+}
+_SEND_ADAPTER_REQUIRED = {
+    "filespool": {"spool_directory"},
 }
 
 _SECRETISH = (
@@ -173,6 +194,94 @@ def validate_delivery_config(delivery) -> None:
             _DELIVERY_ADAPTER_CONFIG_KEYS[adapter])
 
 
+def _validate_send(doc: dict) -> None:
+    validate_send_config(doc.get("send"))
+
+
+def validate_send_config(send) -> None:
+    """Valida solo la seccion `send` (fail-closed).
+
+    Exportada para los comandos send-*, que no exigen el doc
+    CA_ES_OPS_CONFIG_V1 completo.
+    """
+    if send is None:
+        return
+    if not isinstance(send, dict):
+        raise ValueError("INVALID_OPS_CONFIG:send")
+    _reject_secretish("send", send)
+    _reject_unknown("send", send, _SECTION_KEYS["send"])
+
+    retry = send.get("retry") or {}
+    if not isinstance(retry, dict):
+        raise ValueError("INVALID_OPS_CONFIG:send:retry")
+    _reject_unknown("send:retry", retry, _SEND_RETRY_KEYS)
+    if "max_attempts" in retry and (
+            not isinstance(retry["max_attempts"], int)
+            or retry["max_attempts"] < 1):
+        raise ValueError(
+            "INVALID_OPS_CONFIG:send:retry:max_attempts")
+    for k in ("base_delay_seconds", "max_delay_seconds"):
+        if k in retry and (
+                not isinstance(retry[k], (int, float))
+                or retry[k] < 0):
+            raise ValueError(f"INVALID_OPS_CONFIG:send:retry:{k}")
+    if "backoff_factor" in retry and (
+            not isinstance(retry["backoff_factor"], (int, float))
+            or retry["backoff_factor"] < 1.0):
+        raise ValueError(
+            "INVALID_OPS_CONFIG:send:retry:backoff_factor")
+
+    sp = send.get("send_policy") or {}
+    if not isinstance(sp, dict):
+        raise ValueError("INVALID_OPS_CONFIG:send:send_policy")
+    _reject_unknown("send:send_policy", sp, _SEND_POLICY_KEYS)
+    if "max_message_bytes" in sp and (
+            not isinstance(sp["max_message_bytes"], int)
+            or sp["max_message_bytes"] <= 0):
+        raise ValueError(
+            "INVALID_OPS_CONFIG:send:send_policy:max_message_bytes")
+
+    destinations = send.get("destinations") or []
+    if not isinstance(destinations, list):
+        raise ValueError("INVALID_OPS_CONFIG:send:destinations")
+    seen_ids = set()
+    for i, dest in enumerate(destinations):
+        name = f"send:destinations[{i}]"
+        if not isinstance(dest, dict):
+            raise ValueError(f"INVALID_OPS_CONFIG:{name}")
+        _reject_secretish(name, dest)
+        _reject_unknown(name, dest, _SEND_DEST_KEYS)
+        dest_id = dest.get("destination_id")
+        if not dest_id or not isinstance(dest_id, str):
+            raise ValueError(
+                f"INVALID_OPS_CONFIG:{name}:destination_id")
+        if dest_id in seen_ids:
+            raise ValueError(
+                f"INVALID_OPS_CONFIG:{name}:duplicate_destination_id")
+        seen_ids.add(dest_id)
+        adapter = dest.get("adapter")
+        if adapter not in _SEND_ADAPTERS:
+            raise ValueError(f"INVALID_OPS_CONFIG:{name}:adapter")
+        schemas = dest.get("message_schemas")
+        if not isinstance(schemas, list) or not all(
+                isinstance(s, str) for s in schemas):
+            raise ValueError(
+                f"INVALID_OPS_CONFIG:{name}:message_schemas")
+        cfg = dest.get("config") or {}
+        if not isinstance(cfg, dict):
+            raise ValueError(f"INVALID_OPS_CONFIG:{name}:config")
+        _reject_secretish(f"{name}:config", cfg)
+        _reject_unknown(
+            f"{name}:config", cfg,
+            _SEND_ADAPTER_CONFIG_KEYS[adapter])
+        missing = _SEND_ADAPTER_REQUIRED.get(adapter, set()) - \
+            set(cfg)
+        if missing:
+            raise ValueError(
+                f"INVALID_OPS_CONFIG:{name}:config:"
+                f"missing:{sorted(missing)[0]}")
+
+
 def _reject_unknown(name: str, obj: dict, allowed: set) -> None:
     unknown = set(obj) - allowed
     if unknown:
@@ -202,7 +311,7 @@ def validate_ops_config(doc: Any) -> dict:
 
     for section in ("action_queue", "reconciliation", "inbox",
                     "health", "alerts", "lineage", "sources",
-                    "delivery"):
+                    "delivery", "send"):
         sub = doc.get(section)
         if sub is None:
             continue
@@ -211,6 +320,7 @@ def validate_ops_config(doc: Any) -> dict:
         _reject_unknown(section, sub, _SECTION_KEYS[section])
 
     _validate_delivery(doc)
+    _validate_send(doc)
 
     sources = doc.get("sources") or {}
     adapters = sources.get("adapters") or {}
