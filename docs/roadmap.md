@@ -113,9 +113,47 @@ P4  SWIFT / ISO adapters
           PROJECTABLE/INDETERMINATE/UNSUPPORTED;
           solo PROJECTABLE emite movement V2;
           MT566-only)
-    Prowide MT564/565/566/567/568
-    Prowide seev.031 / seev.* (ISO 20022)
-    adapter ca-es -> Prowide, no parser SWIFT propio
+    P4.3 ISO20022 capability + MX facts adapter         DONE
+         (docs/p4/p43-see-v-capability.md; decision
+          .001/.002 por evidencia javap: lectura ambas,
+          escritura .002; pw-iso20022 SRU2025-10.3.10 +
+          verification sha256; modo mxfacts ->
+          CA_ES_SWIFT_MX_FACTS_V1 con model_path/
+          evidence_locator deterministicos; XXE/DOCTYPE/
+          malformed fail-closed; PARSE_OK nunca
+          SCHEMA/NETWORK/SWIFT_VALID)
+    P4.4 seev.031 -> dominio existente                  DONE
+         (docs/p4/p44-seev031-scope.md; mx-project/
+          mx-bind/mx-election -> mismos contratos
+          CA_ES_SWIFT_CA_MESSAGE_V1 / BINDING /
+          ELECTION_OPPORTUNITY_V1; paridad MT564)
+    P4.5 seev.033 instruction writer                    DONE
+         (docs/p4/p45-seev033-scope.md; seev033-project/
+          seev033-write -> CA_ES_SEEV033_PROJECTION_V1 /
+          CA_ES_SEEV033_XML_V1; BAH head.001.001.02 via
+          CA_ES_SWIFT_MX_ENVELOPE_V1 sin defaults;
+          BizMsgIdr=instruction_id; round-trip Prowide)
+    P4.6 seev.034 status -> instruction binding         DONE
+         (docs/p4/p46-seev034-scope.md; mx-status ->
+          CA_ES_ELECTION_INSTRUCTION_STATUS_V1 (mismo
+          contrato P5.6); binding por InstrId/Id;
+          choice status AccptdForFrthrPrcg/Rjctd/Pdg/
+          DfltActn -> ACCEPTED/REJECTED/PENDING/
+          DEFAULT_ACTION_APPLIED; resto UNSUPPORTED raw;
+          paridad MT567)
+    P4.7 seev.036 -> cash/security candidates           DONE
+         (docs/p4/p47-seev036-scope.md;
+          mx-cash-candidate / mx-security-candidate ->
+          mismos contratos P4.2/P6.3; basis
+          PstngAmt/NetAmt/GrssAmt = UNKNOWN/NET/GROSS
+          (prioridad 19B); CdtDbtInd CRDT/DBIT =
+          RECEIPT/DELIVERY; PstngQty/Qty/Unit; sin
+          agregacion; paridad MT566 e2e)
+    P4.8 Cross-transport conformance                    DONE
+         (docs/p4/seev-conformance.md; 12 escenarios
+          MT<->MX sobre mismos outcomes de dominio;
+          diferencias legitimas documentadas)
+         — P4 CLOSED (MT + ISO 20022 seev.*)
 
 P5  Elections / deadlines
     P5.0 Operational deadlines                          DONE
@@ -211,14 +249,23 @@ P6  Positions / impact
           MISSING/UNEXPECTED_SECURITY_MOVEMENT; case_key
           por sujeto nunca por factual_status)
 
-P7  Automation / alerts
+P7  Automation / operational runtime
+    Operational Run Engine (un `ca-es ops-run` determinista:
+     DAG explicito, checkpoints SQLite stdlib, idempotencia
+     material por hashes de inputs/config, outbox de alertas
+     deduplicado CA_ES_ALERT_OUTBOX_V1, health/stale-data,
+     resume sin recomputar; scheduler EXTERNO — systemd/cron/
+     GHA/Task Scheduler solo dispara; el core nunca hace side
+     effects; INDETERMINATE nunca se convierte en decision)
     OpenLineage adapter, FDC3 interop
 ```
 
 ## Prioridad actual
 
-P1 → P2 → P3 → P4. Cada fase se implementa con tests; sin nuevos gates
-formales (G4+ no existen).
+P1–P6 cerrados (incl. P4 MT + ISO 20022 seev.* con conformance
+MT<->MX verificada). Siguiente: P7 Operational Run Engine. Sin
+nuevos gates formales (G4+ no existen); cada fase con tests y
+preregistro de scope.
 
 ## Deuda conocida (no bugs)
 
