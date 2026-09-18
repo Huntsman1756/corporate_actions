@@ -68,6 +68,16 @@ def load_and_parse(
 ) -> ParsedCorpus:
     policy = load_source_policy(policy_path)
     manifest = load_corpus_manifest(manifest_path, policy)
+    return parse_manifest_corpus(corpus_root, manifest, policy)
+
+
+def parse_manifest_corpus(
+    corpus_root: Path,
+    manifest: CorpusManifest,
+    policy: dict[str, SourcePolicy],
+) -> ParsedCorpus:
+    """Parsea un manifest ya construido (fichero o en memoria — P9
+    canon refresh). Identica semantica a ``load_and_parse``."""
     documents: dict[str, SourceDocument] = {}
     parsed: dict[str, ParsedDocument] = {}
     raw_records: dict[str, dict] = {}
@@ -490,18 +500,55 @@ def run_pipeline(
             (repo_root / identity_ledger_relpath).read_text(encoding="utf-8")
         )
 
-    _, identity = build_identity(
-        corpus,
-        seed_ledger,
-        (repo_root / adjudications_relpath) if adjudications_relpath else None,
-    )
-
-    effective_resolver = resolver or UnresolvedListingResolver()
     instrument_index = (
         load_instrument_bindings(repo_root / instrument_bindings_relpath)
         if instrument_bindings_relpath
         else None
     )
+    result = pipeline_body(
+        corpus,
+        seed_ledger=seed_ledger,
+        adjudications_path=(
+            repo_root / adjudications_relpath
+            if adjudications_relpath
+            else None
+        ),
+        resolver=resolver,
+        instrument_index=instrument_index,
+    )
+    return {
+        "run": {
+            "run_id": run_id,
+            "executed_at": executed_at,
+            "corpus_id": corpus.manifest.corpus_id,
+            "manifest_sha256": sha256_text(manifest_path.read_text(encoding="utf-8")),
+            "policy_sha256": sha256_text(policy_path.read_text(encoding="utf-8")),
+            "identity_ledger_sha256": ledger_source_sha,
+            "pipeline_version": PIPELINE_VERSION,
+        },
+        "body": result["body"],
+        "metrics": result["metrics"],
+        "result_sha": result["result_sha"],
+    }
+
+
+def pipeline_body(
+    corpus: ParsedCorpus,
+    *,
+    seed_ledger: IdentityLedger | None = None,
+    adjudications_path: Path | None = None,
+    resolver: ListingResolver | None = None,
+    instrument_index: InstrumentBindingIndex | None = None,
+) -> dict:
+    """Cuerpo canonico del pipeline sobre un corpus ya parseado.
+
+    Misma composicion que ``run_pipeline`` (identidad -> event views
+    -> assertions -> body -> result_sha), reutilizada por el canon
+    refresh P9 sin duplicar semantica.
+    """
+    _, identity = build_identity(corpus, seed_ledger, adjudications_path)
+
+    effective_resolver = resolver or UnresolvedListingResolver()
     events, facts, conflicts = build_event_views(
         corpus, identity, effective_resolver, instrument_index
     )
@@ -534,15 +581,6 @@ def run_pipeline(
     metrics = compute_metrics(body)
     result_sha = sha256_hex(body)
     return {
-        "run": {
-            "run_id": run_id,
-            "executed_at": executed_at,
-            "corpus_id": corpus.manifest.corpus_id,
-            "manifest_sha256": sha256_text(manifest_path.read_text(encoding="utf-8")),
-            "policy_sha256": sha256_text(policy_path.read_text(encoding="utf-8")),
-            "identity_ledger_sha256": ledger_source_sha,
-            "pipeline_version": PIPELINE_VERSION,
-        },
         "body": body,
         "metrics": metrics,
         "result_sha": result_sha,

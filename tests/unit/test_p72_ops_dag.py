@@ -80,7 +80,8 @@ def test_clean_first_run_all_steps_succeed(env):
     assert m["schema"] == "CA_ES_OPERATIONAL_RUN_V1"
     assert m["run_status"] == "SUCCEEDED"
     steps = _steps(m)
-    expected = ["validate_inputs", "process_inbox",
+    expected = ["validate_inputs", "source_refresh",
+                "canon_refresh", "process_inbox",
                 "compute_deadlines", "build_action_queue",
                 "morning_brief_v2", "entitlements",
                 "cash_reconciliation", "exception_cases",
@@ -318,9 +319,10 @@ def test_resume_does_not_duplicate_artifacts(env):
     assert m2["run_status"] == "SUCCEEDED"
     with env["state"].open() as conn:
         steps = env["state"].get_steps(conn, m2["run_id"])
-    impure = {"validate_inputs", "process_inbox",
-              "alert_outbox", "health_report", "lineage_export",
-              "exception_cases", "securities_events"}
+    impure = {"validate_inputs", "source_refresh", "canon_refresh",
+              "process_inbox", "alert_outbox", "health_report",
+              "lineage_export", "exception_cases",
+              "securities_events"}
     pure = [s for s in steps if s["step_id"] not in impure]
     # resume reutiliza los pasos puros ya commiteados: ningun
     # side effect de negocio se duplica
@@ -347,9 +349,10 @@ def test_deterministic_outputs_across_runs(env):
     # cambia legitimamente: last_seen_at es timestamp de negocio)
     # y los pasos impuros, cuyo output refleja estado mutable del
     # store (alertas/outbox, health, lineage referencian run_ids).
-    impure = {"validate_inputs", "process_inbox",
-              "alert_outbox", "health_report", "lineage_export",
-              "exception_cases", "securities_events"}
+    impure = {"validate_inputs", "source_refresh", "canon_refresh",
+              "process_inbox", "alert_outbox", "health_report",
+              "lineage_export", "exception_cases",
+              "securities_events"}
     m1 = run_ops(env["cfg"], env["state"], AS_OF)
     m2 = run_ops(env["cfg"], env["state"], AS_OF)
     s1 = _steps(m1)

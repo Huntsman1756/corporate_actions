@@ -70,7 +70,7 @@ def test_refresh_new_document_persists_blob_obs_doc_checkpoint(
         tmp_path):
     state = OpsState(tmp_path / "st").init()
     routes = _bme_routes({"Dividends": [
-        {"ISIN": "ES0100000001", "FechaPago": "2026-10-15",
+        {"isin": "ES0100000001", "issuerName": "AAA", "paymentDate": "20261015",
          "Emisor": "AAA", "Importe": "0.5"},
     ]})
     with state.open() as conn:
@@ -78,7 +78,7 @@ def test_refresh_new_document_persists_blob_obs_doc_checkpoint(
             state, conn, _cfg(),
             fetchers={"bme_growth": fake_fetcher(routes)},
             now="2026-10-01T09:00:00Z")
-    assert doc["contract"] == "CA_ES_SOURCE_REFRESH_V1"
+    assert doc["schema"] == "CA_ES_SOURCE_REFRESH_V1"
     assert doc["status"] == "SUCCESS"
     sr = doc["source_results"][0]
     assert sr["new_documents"] == 1
@@ -91,7 +91,7 @@ def test_refresh_new_document_persists_blob_obs_doc_checkpoint(
         assert d["latest_content_sha256"]
         assert d["chosen_content_sha256"] is None
         payload = state.get_blob(d["latest_content_sha256"])
-        assert json.loads(payload)["ISIN"] == "ES0100000001"
+        assert json.loads(payload)["metadata"]["isin"] == "ES0100000001"
         obs = state.list_source_observations(
             conn, source_id="BME_GROWTH")
         assert len(obs) == 1
@@ -108,7 +108,7 @@ def test_second_refresh_same_bytes_no_duplicate_observation_id(
         tmp_path):
     state = OpsState(tmp_path / "st").init()
     routes = _bme_routes({"Dividends": [
-        {"ISIN": "ES0100000001", "FechaPago": "2026-10-15"},
+        {"isin": "ES0100000001", "issuerName": "AAA", "paymentDate": "20261015"},
     ]})
     with state.open() as conn:
         doc1 = run_source_refresh(
@@ -132,9 +132,9 @@ def test_second_refresh_same_bytes_no_duplicate_observation_id(
 
 def test_changed_bytes_same_identity_marks_content_changed(tmp_path):
     state = OpsState(tmp_path / "st").init()
-    rows_v1 = [{"ISIN": "ES0100000001", "FechaPago": "2026-10-15",
+    rows_v1 = [{"isin": "ES0100000001", "issuerName": "AAA", "paymentDate": "20261015",
                 "Importe": "0.5"}]
-    rows_v2 = [{"ISIN": "ES0100000001", "FechaPago": "2026-10-15",
+    rows_v2 = [{"isin": "ES0100000001", "issuerName": "AAA", "paymentDate": "20261015",
                 "Importe": "0.6"}]
     with state.open() as conn:
         run_source_refresh(
@@ -165,7 +165,7 @@ def test_changed_bytes_same_identity_marks_content_changed(tmp_path):
 def test_fetch_failure_marks_partial_and_freezes_checkpoint(tmp_path):
     state = OpsState(tmp_path / "st").init()
     routes = _bme_routes({"Dividends": [
-        {"ISIN": "ES0100000001", "FechaPago": "2026-10-15"},
+        {"isin": "ES0100000001", "issuerName": "AAA", "paymentDate": "20261015"},
     ]})
     # BME usa inline_content — para simular fetch failure usamos un
     # adapter cuyo discovery falla a mitad (kind roto).
@@ -264,7 +264,7 @@ def test_source_failure_isolated(tmp_path):
     """Una fuente FAILED no contamina las demas."""
     state = OpsState(tmp_path / "st").init()
     bme_routes = _bme_routes({"Dividends": [
-        {"ISIN": "ES0100000001", "FechaPago": "2026-10-15"}]})
+        {"isin": "ES0100000001", "issuerName": "AAA", "paymentDate": "20261015"}]})
     portfolio_routes = {
         "https://www.portfolio.exchange/markets/portfolio-market":
             ConnectionError("DOWN"),
@@ -306,7 +306,7 @@ def test_no_sources_configured_is_unchanged_not_blocked(tmp_path):
 def test_policy_inactive_source_not_acquired(tmp_path):
     state = OpsState(tmp_path / "st").init()
     routes = _bme_routes({"Dividends": [
-        {"ISIN": "ES0100000001", "FechaPago": "2026-10-15"}]})
+        {"isin": "ES0100000001", "issuerName": "AAA", "paymentDate": "20261015"}]})
     calls: list = []
     policy = {"sources": {"BME_GROWTH": {
         "ingestion_status": "SUSPENDED"}}}

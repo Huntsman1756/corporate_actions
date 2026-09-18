@@ -80,13 +80,16 @@ class RunContext:
     """Contexto mutable del run: inputs, outputs, state."""
 
     def __init__(self, config: dict, state: OpsState, conn,
-                 as_of: str, run_id: str, now_fn):
+                 as_of: str, run_id: str, now_fn,
+                 source_fetchers: dict | None = None):
         self.config = config
         self.state = state
         self.conn = conn
         self.as_of = as_of
         self.run_id = run_id
         self.now = now_fn
+        # fetchers inyectables P9 (tests/offline); None = urllib real
+        self.source_fetchers = source_fetchers
         self.input_docs: dict[str, dict] = {}
         self.input_refs: dict[str, dict] = {}
         self.outputs: dict[str, dict] = {}   # step_id -> artifact ref
@@ -138,6 +141,78 @@ def _step_validate_inputs(ctx: RunContext) -> dict:
         "generated_at": ctx.now(),
         "inputs": entries,
     }
+
+
+def _step_source_refresh(ctx: RunContext) -> dict | None:
+    """P9: discovery+fetch+persistencia de fuentes publicas.
+
+    Impuro (red + estado mutable). Nunca devuelve None por una caida
+    de fuente: los fallos quedan aislados por fuente dentro del doc.
+    Solo devuelve None si falta la source_policy (sin ella no se
+    puede clasificar adquisicion — fail closed)."""
+    sources_cfg = ctx.config.get("sources")
+    if sources_cfg is None:
+        sources_cfg = {"enabled": False}
+    if not sources_cfg.get("enabled"):
+        return {
+            "schema": "CA_ES_SOURCE_REFRESH_V1",
+            "refresh_id": None,
+            "status": "UNCHANGED",
+            "enabled": False,
+            "reasons": ["SOURCES_DISABLED"],
+            "source_results": [],
+            "summary": {},
+        }
+    policy = ctx.input_doc("source_policy")
+    if policy is None:
+        return None  # sin policy autoritativa no hay adquisicion
+    from .ops_sources import run_source_refresh
+
+    return run_source_refresh(
+        ctx.state, ctx.conn, sources_cfg,
+        fetchers=ctx.source_fetchers, now=ctx.now(), policy=policy)
+
+
+def _step_canon_refresh(ctx: RunContext) -> dict | None:
+    """P9.5: rebuild del canon sobre la evidencia acumulada.
+
+    Impuro pero con early-return: si el evidence set
+    (doc, chosen_sha) no cambio devuelve el MISMO artefacto, y los
+    pasos puros downstream saltan como SKIPPED_UNCHANGED.
+
+    No depende de ``source_refresh``: una caida de fuente no impide
+    reconstruir sobre evidencia durable. Si hay canon acumulado lo
+    inyecta como input ``canon`` efectivo de los pasos downstream;
+    un canon acumulado vacio nunca pisa al canon de config."""
+    inputs = ctx.config.get("inputs") or {}
+    spec = inputs.get("source_policy") or {}
+    policy_path = spec.get("path") or (
+        (spec.get("paths") or [None])[0])
+    if not policy_path:
+        return None
+    from .ops_canon import (
+        _META_CANON_SHA, get_state_meta, run_canon_refresh)
+
+    refresh_doc = ctx.docs.get("source_refresh") or {}
+    doc = run_canon_refresh(
+        ctx.state, ctx.conn,
+        policy_path=Path(policy_path),
+        source_refresh_id=refresh_doc.get("refresh_id"),
+        now=ctx.now())
+    canon_sha = get_state_meta(ctx.conn, _META_CANON_SHA)
+    if canon_sha:
+        canon = ctx.state.get_artifact(canon_sha)
+        # Solo se inyecta un canon acumulado con contenido de negocio:
+        # vacio nunca pisa al canon de config ni "rescue" un run que
+        # debe fallar por canon ausente (P7 semantic intacta).
+        if canon.get("events"):
+            ctx.input_docs["canon"] = canon
+            ctx.input_refs["canon"] = {
+                "sha256": canon_sha,
+                "semantic_sha256": semantic_sha256(canon),
+                "ref": f"{canon_sha[:2]}/{canon_sha}.json",
+            }
+    return doc
 
 
 def _step_process_inbox(ctx: RunContext) -> dict | None:
@@ -559,6 +634,32 @@ def default_dag() -> list[OperationalStep]:
             expected_output_schema=INPUTS_SCHEMA,
             expected_output_version="V1",
             fn=_step_validate_inputs),
+        # P9.3: impuro (red + estado mutable), opcional; los fallos
+        # de fuente quedan aislados dentro del doc, nunca bloquean
+        # el run. Sin dependency edge hacia canon_refresh: una caida
+        # de fuente no impide reconstruir sobre evidencia durable.
+        OperationalStep(
+            "source_refresh", "1",
+            dependencies=("validate_inputs",),
+            pure=False, mandatory=False,
+            expected_output_schema="CA_ES_SOURCE_REFRESH_V1",
+            expected_output_version="V1",
+            uses_inputs=("source_policy",),
+            fn=_step_source_refresh),
+        # P9.5/P9.6: impuro pero early-return sobre evidence-set
+        # inalterado (mismo artefacto -> mismo semantic hash ->
+        # downstream SKIPPED_UNCHANGED). Sin edge hacia
+        # source_refresh ni hacia consumidores de canon: un fallo de
+        # adquisicion o de rebuild degrada a canon de config en vez
+        # de bloquear el run. El orden lo da la posicion en la lista.
+        OperationalStep(
+            "canon_refresh", "1",
+            dependencies=("validate_inputs",),
+            pure=False, mandatory=False,
+            expected_output_schema="CA_ES_CANON_REFRESH_V1",
+            expected_output_version="V1",
+            uses_inputs=("source_policy",),
+            fn=_step_canon_refresh),
         # pure=False: la ingestion tiene side effects (mueve
         # ficheros, registra observaciones); es idempotente por
         # input_sha256.
@@ -748,8 +849,13 @@ def run_ops(config: dict, state: OpsState,
             as_of: str | None = None,
             resume_run_id: str | None = None,
             now_fn: Callable[[], str] | None = None,
-            dag: list[OperationalStep] | None = None) -> dict:
-    """Ejecuta (o reanuda) un run operativo. Devuelve el manifest."""
+            dag: list[OperationalStep] | None = None,
+            source_fetchers: dict | None = None) -> dict:
+    """Ejecuta (o reanuda) un run operativo. Devuelve el manifest.
+
+    ``source_fetchers``: mapa adapter_name -> fetch(url, referer)
+    inyectable para P9 (tests/offline). ``None`` = fetchers urllib
+    reales construidos por adapter."""
     now = now_fn or _utcnow
     validate_ops_config(config)
     dag = dag or default_dag()
@@ -765,7 +871,8 @@ def run_ops(config: dict, state: OpsState,
                 "ops.db schema_version="
                 f"{row['value'] if row else None!r}, esperada "
                 f"{OPS_STATE_SCHEMA_VERSION!r}")
-        ctx = RunContext(config, state, conn, as_of, run_id, now)
+        ctx = RunContext(config, state, conn, as_of, run_id, now,
+                         source_fetchers)
 
         if resume_run_id:
             run = state.get_run(conn, run_id)

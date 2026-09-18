@@ -354,7 +354,7 @@ def run_source_refresh(state, conn, sources_cfg: dict, *,
         if cfg.get("enabled", True)]
     # refresh_id = identidad de EJECUCION: incluye started_at, por lo
     # que NO puede ser semantic_sha256 (que lo excluye por politica).
-    seed = {"contract": CONTRACT_REFRESH, "started_at": now,
+    seed = {"schema": CONTRACT_REFRESH, "started_at": now,
             "adapters": [n for n, _ in enabled]}
     refresh_id = "SRF-" + byte_sha256(
         json.dumps(seed, sort_keys=True).encode("utf-8"))[:24]
@@ -403,7 +403,7 @@ def run_source_refresh(state, conn, sources_cfg: dict, *,
             1 for r in results if r.checkpoint_advanced),
     }
     doc = {
-        "contract": CONTRACT_REFRESH,
+        "schema": CONTRACT_REFRESH,
         "refresh_id": refresh_id,
         "started_at": now,
         "completed_at": completed,

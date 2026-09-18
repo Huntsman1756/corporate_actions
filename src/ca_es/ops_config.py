@@ -12,7 +12,7 @@ OPS_CONFIG_SCHEMA = "CA_ES_OPS_CONFIG_V1"
 
 _TOP_KEYS = {
     "schema", "inputs", "action_queue", "reconciliation",
-    "inbox", "health", "alerts", "lineage",
+    "inbox", "health", "alerts", "lineage", "sources",
 }
 _INPUT_KEYS = {
     "canon", "source_policy", "positions", "deadline_rules",
@@ -26,6 +26,15 @@ _HEALTH_KEYS = {"positions_max_age_days", "canon_max_age_hours"}
 _ALERT_KEYS = {"enabled"}
 _LINEAGE_KEYS = {"enabled", "required", "path"}
 
+_SOURCES_KEYS = {
+    "enabled", "adapters", "timeout_seconds", "retries",
+    "politeness_seconds", "max_bytes",
+}
+_SOURCES_ADAPTER_KEYS = {
+    "adapter", "portal", "source_id", "surface_id",
+    "enabled", "required", "desde", "hasta",
+    "overlap_days", "refetch_known", "kinds", "index_url",
+}
 _SECTION_KEYS = {
     "inputs": _INPUT_KEYS,
     "action_queue": _ACTION_QUEUE_KEYS,
@@ -34,6 +43,7 @@ _SECTION_KEYS = {
     "health": _HEALTH_KEYS,
     "alerts": _ALERT_KEYS,
     "lineage": _LINEAGE_KEYS,
+    "sources": _SOURCES_KEYS,
 }
 
 
@@ -65,13 +75,28 @@ def validate_ops_config(doc: Any) -> dict:
             raise ValueError(f"INVALID_OPS_CONFIG:input:{name}:path")
 
     for section in ("action_queue", "reconciliation", "inbox",
-                    "health", "alerts", "lineage"):
+                    "health", "alerts", "lineage", "sources"):
         sub = doc.get(section)
         if sub is None:
             continue
         if not isinstance(sub, dict):
             raise ValueError(f"INVALID_OPS_CONFIG:{section}")
         _reject_unknown(section, sub, _SECTION_KEYS[section])
+
+    sources = doc.get("sources") or {}
+    adapters = sources.get("adapters") or {}
+    if not isinstance(adapters, dict):
+        raise ValueError("INVALID_OPS_CONFIG:sources:adapters")
+    for name, spec in adapters.items():
+        if not isinstance(spec, dict):
+            raise ValueError(
+                f"INVALID_OPS_CONFIG:sources:adapters:{name}")
+        _reject_unknown(
+            f"sources:adapters:{name}", spec, _SOURCES_ADAPTER_KEYS)
+        if not spec.get("source_id") or not spec.get("surface_id"):
+            raise ValueError(
+                f"INVALID_OPS_CONFIG:sources:adapters:{name}:"
+                "identity")
 
     aq = doc.get("action_queue") or {}
     for k in ("window_days", "due_soon_days"):

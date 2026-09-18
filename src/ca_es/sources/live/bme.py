@@ -23,16 +23,25 @@ KINDS = (
 )
 
 _DATE_KEYS = (
-    "FechaPago", "PaymentDate", "ExDate", "FechaEx", "FechaAnuncio",
-    "AnnouncementDate", "Fecha", "Date",
+    "exDate", "paymentDate", "dividendDate", "admissionDate",
+    "splitDate", "startingDate", "finishDate", "acquiredDate",
+    "cancellationDate", "profitDate",
 )
+
+
+def _iso_date(value: str) -> str | None:
+    """API devuelve YYYYMMDD; el doc-id usa ISO. Conversion explicita."""
+    value = value.strip()
+    if len(value) == 8 and value.isdigit():
+        return f"{value[:4]}-{value[4:6]}-{value[6:]}"
+    return value[:10] if value else None
 
 
 def bme_item_date(row: dict) -> str | None:
     for key in _DATE_KEYS:
         value = row.get(key)
         if isinstance(value, str) and value.strip():
-            return value.strip()[:10]
+            return _iso_date(value)
     return None
 
 
@@ -46,6 +55,29 @@ def canonical_row_bytes(row: dict) -> bytes:
     return json.dumps(
         row, ensure_ascii=False, sort_keys=True,
         separators=(",", ":")).encode("utf-8")
+
+
+def frame_row_bytes(doc_id: str, kind: str, row: dict,
+                    day: str | None) -> bytes:
+    """Documento BME en el formato probado del corpus (el mismo que
+    produce G1 y que consume ``sources/parsers/bme_growth.py``):
+    ``{frame_item_id, instrument_isin, issuer_raw, metadata,
+    official_category, publication_date}``.
+
+    La unidad de evidencia estable para esta fuente es la row
+    canonizada (``BME_API_ROW_SNAPSHOT``), no la respuesta entera.
+    """
+    frame = {
+        "frame_item_id": doc_id,
+        "instrument_isin": row.get("isin") or row.get("ISIN") or None,
+        "issuer_raw": (
+            row.get("issuerName") or row.get("Emisor")
+            or row.get("issuer") or ""),
+        "metadata": row,
+        "official_category": kind,
+        "publication_date": day,
+    }
+    return canonical_row_bytes(frame)
 
 
 @dataclass
@@ -90,14 +122,17 @@ class BmeAdapter:
                     if not isinstance(row, dict):
                         continue
                     day = bme_item_date(row)
-                    isin = (row.get("ISIN") or row.get("Isin")
-                            or row.get("isin") or "")
+                    isin = (row.get("isin") or row.get("ISIN")
+                            or row.get("Isin") or "")
+                    issuer_raw = (
+                        row.get("issuerName") or row.get("Emisor")
+                        or row.get("Nombre") or "")
                     if isin:
                         doc_id = f"BMEG-{kind}-{isin}-{day or 'NA'}"
                     else:
                         doc_id = (
                             f"BMEG-{kind}-"
-                            f"{_normalize(str(row.get('Emisor') or row.get('Nombre') or 'UNK'))[:24]}"
+                            f"{_normalize(str(issuer_raw or 'UNK'))[:24]}"
                             f"-{day or 'NA'}")
                     if doc_id in seen:
                         continue
@@ -108,7 +143,8 @@ class BmeAdapter:
                         publication_date=day,
                         metadata={"kind": kind, "isin": isin or None,
                                   "api": url},
-                        inline_content=canonical_row_bytes(row),
+                        inline_content=frame_row_bytes(
+                            doc_id, kind, row, day),
                         media_type="application/json"))
         except Exception as exc:  # noqa: BLE001 — aislado por fuente
             result.error = f"{exc.__class__.__name__}:{exc}"[:300]
