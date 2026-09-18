@@ -175,6 +175,102 @@ def _diff_canons(previous: dict | None, new: dict) -> tuple[
     return sorted(added), sorted(changed), sorted(unchanged)
 
 
+def build_accumulated_canon(
+        state, conn, chosen_rows: list[dict], policy: dict,
+        now: str, *, seed_ledger=None,
+        adjudications_path: Path | None = None,
+        resolver=None, instrument_index=None) -> dict:
+    """Rebuild del canon sobre un conjunto de documentos chosen.
+
+    Materializa los blobs en un corpus scratch determinista bajo
+    ``state.root`` y ejecuta el pipeline existente. Devuelve el
+    payload ``CA_ES_OPERATIONAL_CANON_V1``; no persiste nada —
+    reusable por ``run_canon_refresh`` y por replay (P9.8).
+    """
+    documents: list[SourceDocument] = []
+    with tempfile.TemporaryDirectory(
+            prefix="caes-canon-", dir=state.root) as scratch:
+        scratch_root = Path(scratch)
+        for row in sorted(
+                chosen_rows,
+                key=lambda r: (r["source_id"], r["source_document_id"])):
+            sha = row["chosen_content_sha256"]
+            rel = (f"raw/{row['source_id']}/"
+                   f"{row['source_document_id']}/{sha}.bin")
+            target = scratch_root / rel
+            target.parent.mkdir(parents=True, exist_ok=True)
+            target.write_bytes(state.get_blob(sha))
+            documents.append(_source_document_for(
+                state, conn, row, sha, policy, rel))
+
+        manifest = CorpusManifest(
+            manifest_version="CA_ES_SOURCE_MANIFEST_V1",
+            corpus_id=CANON_CORPUS_ID,
+            retrieved_at=now,
+            documents=tuple(documents))
+        corpus = parse_manifest_corpus(scratch_root, manifest, policy)
+        result = pipeline_body(
+            corpus, seed_ledger=seed_ledger,
+            adjudications_path=adjudications_path,
+            resolver=resolver, instrument_index=instrument_index)
+
+    return canon_payload(
+        operational_canon(result["body"], CANON_CORPUS_ID))
+
+
+def replay_canon(state, conn, *, policy_path: Path,
+                 source_id: str | None = None,
+                 from_date: str | None = None,
+                 to_date: str | None = None,
+                 now: str | None = None,
+                 seed_ledger=None,
+                 adjudications_path: Path | None = None,
+                 resolver=None, instrument_index=None) -> dict:
+    """P9.8 — replay determinista sobre evidencia chosen almacenada.
+
+    Sin red, sin mutacion: no promueve, no escribe ``state_meta``, no
+    crea observaciones ni artefactos. ``from_date``/``to_date``
+    filtran por ``publication_date`` (inclusivos); con ventana
+    activa, documentos sin fecha quedan excluidos (fail-closed).
+    Devuelve ``{schema, window, documents, canon}`` — el canon es el
+    payload completo, byte-determinista para el mismo evidence set.
+    """
+    from .ops_sources import _now_iso
+
+    now = now or _now_iso()
+    policy = load_source_policy(Path(policy_path))
+    window = from_date is not None or to_date is not None
+    rows = []
+    for row in state.list_source_documents(conn):
+        if not row.get("chosen_content_sha256"):
+            continue
+        if source_id and row["source_id"] != source_id:
+            continue
+        if window:
+            pub = row.get("publication_date")
+            if not pub:
+                continue
+            if from_date and pub < from_date:
+                continue
+            if to_date and pub > to_date:
+                continue
+        rows.append(row)
+    canon = build_accumulated_canon(
+        state, conn, rows, policy, now,
+        seed_ledger=seed_ledger,
+        adjudications_path=adjudications_path,
+        resolver=resolver, instrument_index=instrument_index)
+    return {
+        "schema": "CA_ES_SOURCE_REPLAY_V1",
+        "generated_at": now,
+        "source_id": source_id,
+        "from_date": from_date,
+        "to_date": to_date,
+        "documents": len(rows),
+        "canon": canon,
+    }
+
+
 def run_canon_refresh(state, conn, *, policy_path: Path,
                       source_refresh_id: str | None = None,
                       now: str | None = None,
@@ -268,35 +364,11 @@ def run_canon_refresh(state, conn, *, policy_path: Path,
         set_state_meta(conn, _META_REFRESH_DOC, refresh_ref["sha256"])
         return doc
 
-    documents: list[SourceDocument] = []
-    with tempfile.TemporaryDirectory(
-            prefix="caes-canon-", dir=state.root) as scratch:
-        scratch_root = Path(scratch)
-        for row in sorted(
-                chosen_rows,
-                key=lambda r: (r["source_id"], r["source_document_id"])):
-            sha = row["chosen_content_sha256"]
-            rel = (f"raw/{row['source_id']}/"
-                   f"{row['source_document_id']}/{sha}.bin")
-            target = scratch_root / rel
-            target.parent.mkdir(parents=True, exist_ok=True)
-            target.write_bytes(state.get_blob(sha))
-            documents.append(_source_document_for(
-                state, conn, row, sha, policy, rel))
-
-        manifest = CorpusManifest(
-            manifest_version="CA_ES_SOURCE_MANIFEST_V1",
-            corpus_id=CANON_CORPUS_ID,
-            retrieved_at=now,
-            documents=tuple(documents))
-        corpus = parse_manifest_corpus(scratch_root, manifest, policy)
-        result = pipeline_body(
-            corpus, seed_ledger=seed_ledger,
-            adjudications_path=adjudications_path,
-            resolver=resolver, instrument_index=instrument_index)
-
-    canon = canon_payload(
-        operational_canon(result["body"], CANON_CORPUS_ID))
+    canon = build_accumulated_canon(
+        state, conn, chosen_rows, policy, now,
+        seed_ledger=seed_ledger,
+        adjudications_path=adjudications_path,
+        resolver=resolver, instrument_index=instrument_index)
     new_logical = canon["logical_sha256"]
 
     # -- 3. diff vs canon previo ------------------------------------

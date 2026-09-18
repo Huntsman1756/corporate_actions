@@ -3,6 +3,7 @@ from __future__ import annotations
 
 import argparse
 import json
+import uuid
 from pathlib import Path
 
 from .canonical import canonical_json, load_strict_json_object
@@ -1297,6 +1298,142 @@ def cmd_ops_export_run(args: argparse.Namespace) -> int:
     return _emit(doc)
 
 
+def _policy_path(config: dict) -> Path:
+    spec = (config.get("inputs") or {}).get("source_policy") or {}
+    path = spec.get("path")
+    if not path:
+        raise _InputError("INPUT_MISSING:source_policy")
+    return Path(path)
+
+
+def cmd_ops_source_refresh(args: argparse.Namespace) -> int:
+    """P9.8 — refresh live de fuentes (unica superficie de red)."""
+    from .ops_sources import run_source_refresh
+    from .ops_state import OpsRunAlreadyActive, OpsStateError
+    from .source_policy import load_source_policy
+
+    state, code = _open_state(args)
+    if state is None:
+        return code
+    config, code = _load_json(args.config, "config")
+    if config is None:
+        return code
+    try:
+        policy = load_source_policy(_policy_path(config))
+    except (_InputError, ValueError) as exc:
+        print(json.dumps({"status": str(exc)[:200]}))
+        return 2
+    run_id = f"source-refresh-{uuid.uuid4().hex[:8]}"
+    try:
+        conn = state.acquire_run_lock(run_id)
+    except OpsRunAlreadyActive:
+        print(json.dumps({"status": "OPS_RUN_ALREADY_ACTIVE"}))
+        return 3
+    try:
+        doc = run_source_refresh(
+            state, conn, config.get("sources") or {},
+            policy=policy)
+        state.checkpoint()
+    except OpsStateError as exc:
+        print(json.dumps({"status": str(exc)[:200]}))
+        return 2
+    finally:
+        state.release_run_lock()
+    _emit(doc)
+    return 0 if doc["status"] in ("SUCCESS", "UNCHANGED", "PARTIAL") \
+        else 2
+
+
+def cmd_ops_canon_refresh(args: argparse.Namespace) -> int:
+    """P9.8 — rebuild del canon sobre evidencia acumulada."""
+    from .ops_canon import run_canon_refresh
+    from .ops_state import OpsRunAlreadyActive, OpsStateError
+
+    state, code = _open_state(args)
+    if state is None:
+        return code
+    config, code = _load_json(args.config, "config")
+    if config is None:
+        return code
+    try:
+        policy_path = _policy_path(config)
+    except _InputError as exc:
+        print(json.dumps({"status": str(exc)[:200]}))
+        return 2
+    run_id = f"canon-refresh-{uuid.uuid4().hex[:8]}"
+    try:
+        conn = state.acquire_run_lock(run_id)
+    except OpsRunAlreadyActive:
+        print(json.dumps({"status": "OPS_RUN_ALREADY_ACTIVE"}))
+        return 3
+    try:
+        doc = run_canon_refresh(
+            state, conn, policy_path=policy_path)
+        state.checkpoint()
+    except (OpsStateError, ValueError) as exc:
+        print(json.dumps({"status": str(exc)[:200]}))
+        return 2
+    finally:
+        state.release_run_lock()
+    _emit(doc)
+    return 0 if doc["refresh_status"] in ("SUCCESS", "UNCHANGED") \
+        else 2
+
+
+def cmd_ops_source_status(args: argparse.Namespace) -> int:
+    from .ops_read import ops_source_status_doc
+    from .ops_state import OpsStateError
+
+    state, code = _open_state(args)
+    if state is None:
+        return code
+    try:
+        with state.open() as conn:
+            doc = ops_source_status_doc(state, conn)
+    except OpsStateError as exc:
+        print(json.dumps({"status": str(exc)[:200]}))
+        return 2
+    return _emit(doc)
+
+
+def cmd_ops_source_replay(args: argparse.Namespace) -> int:
+    """P9.8 — replay determinista: sin red, sin mutacion."""
+    from .ops_canon import replay_canon
+    from .ops_state import OpsStateError
+
+    state, code = _open_state(args)
+    if state is None:
+        return code
+    config, code = _load_json(args.config, "config")
+    if config is None:
+        return code
+    try:
+        policy_path = _policy_path(config)
+        with state.open() as conn:
+            doc = replay_canon(
+                state, conn, policy_path=policy_path,
+                source_id=args.source,
+                from_date=args.from_date, to_date=args.to_date)
+    except (_InputError, OpsStateError, ValueError) as exc:
+        print(json.dumps({"status": str(exc)[:200]}))
+        return 2
+    if args.out:
+        Path(args.out).write_text(
+            json.dumps(doc["canon"], indent=2, sort_keys=True,
+                       ensure_ascii=True) + "\n", encoding="utf-8")
+    return _emit({
+        "schema": doc["schema"],
+        "generated_at": doc["generated_at"],
+        "source_id": doc["source_id"],
+        "from_date": doc["from_date"],
+        "to_date": doc["to_date"],
+        "documents": doc["documents"],
+        "canon_logical_sha256": doc["canon"].get("logical_sha256"),
+        "canon_events": len(doc["canon"].get("events") or []),
+        "out": args.out,
+    })
+
+
 def build_parser() -> argparse.ArgumentParser:
     parser = argparse.ArgumentParser(prog="ca-es", description=__doc__)
     parser.add_argument("--repo-root", default=None)
@@ -1701,6 +1838,36 @@ def build_parser() -> argparse.ArgumentParser:
     oexport.add_argument("--output", required=True)
     oexport.add_argument("--include-inputs", action="store_true")
     oexport.set_defaults(func=cmd_ops_export_run)
+
+    # ---------------- P9.8 sources / replay ----------------
+
+    osrf = sub.add_parser("ops-source-refresh")
+    osrf.add_argument("--state", required=True)
+    osrf.add_argument("--config", required=True,
+                      help="doc CA_ES_OPS_CONFIG_V1")
+    osrf.set_defaults(func=cmd_ops_source_refresh)
+
+    ocrf = sub.add_parser("ops-canon-refresh")
+    ocrf.add_argument("--state", required=True)
+    ocrf.add_argument("--config", required=True)
+    ocrf.set_defaults(func=cmd_ops_canon_refresh)
+
+    osstat = sub.add_parser("ops-source-status")
+    osstat.add_argument("--state", required=True)
+    osstat.set_defaults(func=cmd_ops_source_status)
+
+    osrep = sub.add_parser("ops-source-replay")
+    osrep.add_argument("--state", required=True)
+    osrep.add_argument("--config", required=True)
+    osrep.add_argument("--source", default=None,
+                     help="filtra por source_id")
+    osrep.add_argument("--from", dest="from_date", default=None,
+                       help="publication_date >= (inclusivo)")
+    osrep.add_argument("--to", dest="to_date", default=None,
+                       help="publication_date <= (inclusivo)")
+    osrep.add_argument("--out", default=None,
+                       help="escribe el canon resultante a JSON")
+    osrep.set_defaults(func=cmd_ops_source_replay)
 
     return parser
 

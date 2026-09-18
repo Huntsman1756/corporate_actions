@@ -145,6 +145,76 @@ def ops_status_doc(state, conn) -> dict:
     }
 
 
+def ops_source_status_doc(state, conn) -> dict:
+    """P9.8 — estado read-only por fuente/superficie.
+
+    Documentos acumulados, divergencia latest-vs-chosen, parse
+    failures sobre latest, checkpoints y ultimo refresh. Nunca
+    recalcula negocio.
+    """
+    latest_refresh = state.latest_source_refresh(conn)
+    # surface_id no es columna de source_documents: se deriva de las
+    # observaciones (identidad del doc estable por fuente).
+    surf = {}
+    for r in conn.execute(
+            "SELECT DISTINCT source_id, source_document_id,"
+            " surface_id FROM source_observations").fetchall():
+        surf[(r["source_id"], r["source_document_id"])] = \
+            r["surface_id"]
+    sources: dict[tuple, dict] = {}
+    for row in state.list_source_documents(conn):
+        key = (row["source_id"],
+               surf.get((row["source_id"],
+                         row["source_document_id"])) or "?")
+        entry = sources.setdefault(key, {
+            "source_id": row["source_id"],
+            "surface_id": key[1],
+            "documents": 0,
+            "with_chosen": 0,
+            "divergent_latest": 0,
+        })
+        entry["documents"] += 1
+        if row.get("chosen_content_sha256"):
+            entry["with_chosen"] += 1
+        if (row.get("latest_content_sha256")
+                and row["latest_content_sha256"]
+                != row.get("chosen_content_sha256")):
+            entry["divergent_latest"] += 1
+    pf_rows = conn.execute(
+        "SELECT d.source_id, d.source_document_id, COUNT(*) c"
+        " FROM source_parse_results pr"
+        " JOIN source_documents d"
+        " ON pr.source_id=d.source_id"
+        " AND pr.source_document_id=d.source_document_id"
+        " AND pr.content_sha256=d.latest_content_sha256"
+        " WHERE pr.parse_status='PARSE_FAILED'"
+        " GROUP BY d.source_id, d.source_document_id").fetchall()
+    for row in pf_rows:
+        key = (row["source_id"],
+               surf.get((row["source_id"],
+                         row["source_document_id"])) or "?")
+        if key in sources:
+            sources[key]["parse_failures"] = (
+                sources[key].get("parse_failures", 0) + row["c"])
+    for cp in conn.execute(
+            "SELECT * FROM source_checkpoints").fetchall():
+        key = (cp["source_id"], cp["surface_id"])
+        if key in sources:
+            sources[key]["checkpoint"] = {
+                "updated_at": cp["updated_at"],
+                "cursor": json.loads(cp["cursor_json"] or "{}"),
+            }
+    return {
+        "schema": "CA_ES_SOURCE_STATUS_V1",
+        "latest_refresh": (
+            {"refresh_id": latest_refresh["refresh_id"],
+             "status": latest_refresh["status"],
+             "completed_at": latest_refresh["completed_at"]}
+            if latest_refresh else None),
+        "sources": [sources[k] for k in sorted(sources)],
+    }
+
+
 def export_run(state, conn, run_id: str, output: Path,
                include_inputs: bool = False) -> dict:
     """Exporta manifest + steps + artefactos derivados del run.
