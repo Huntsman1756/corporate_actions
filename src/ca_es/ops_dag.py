@@ -36,6 +36,7 @@ from .semantic_hash import (
 RUN_SCHEMA = "CA_ES_OPERATIONAL_RUN_V1"
 INPUTS_SCHEMA = "CA_ES_OPS_INPUTS_V1"
 INDEX_SCHEMA = "CA_ES_OPS_INDEX_V1"
+OUTBOX_SCHEMA = "CA_ES_ALERT_OUTBOX_V1"
 
 RUNNING = "RUNNING"
 SUCCEEDED = "SUCCEEDED"
@@ -282,6 +283,49 @@ def _previous_cases(ctx: RunContext) -> dict[str, list]:
     return out
 
 
+def _step_alert_outbox(ctx: RunContext) -> dict:
+    """Deriva candidatos desde los outputs ya producidos y los
+    aplica al outbox. Solo las categorias cuya fuente produjo
+    output este run se consideran evaluadas (clear)."""
+    from .ops_alerts import (
+        DEADLINE_CATEGORIES,
+        apply_alerts,
+        derive_deadline_alerts,
+        derive_exception_alerts,
+        derive_inbox_alerts,
+    )
+
+    candidates = []
+    evaluated = set()
+    queue_doc = ctx.docs.get("build_action_queue")
+    if queue_doc is not None:
+        candidates += derive_deadline_alerts(
+            queue_doc, ctx.outputs.get("build_action_queue"))
+        evaluated.update(DEADLINE_CATEGORIES.values())
+    cases_index = ctx.docs.get("exception_cases")
+    if cases_index is not None:
+        for eid, ref in sorted(
+                (cases_index.get("items") or {}).items()):
+            cases_doc = ctx.state.get_artifact(ref["sha256"])
+            candidates += derive_exception_alerts(cases_doc, ref)
+        evaluated.add("EXCEPTION_CASE")
+    inbox_doc = ctx.docs.get("process_inbox")
+    if inbox_doc is not None:
+        candidates += derive_inbox_alerts(
+            inbox_doc, ctx.outputs.get("process_inbox"))
+        evaluated.add("PROCESSING_FAILURE")
+
+    stats = apply_alerts(
+        ctx.conn, candidates, ctx.run_id, evaluated,
+        now=ctx.now())
+    return {
+        "schema": OUTBOX_SCHEMA,
+        "generated_at": ctx.now(),
+        "candidates": len(candidates),
+        "stats": stats,
+    }
+
+
 def _dyn_prev_cases(ctx: RunContext) -> list:
     """Semantic hash del estado de casos previos (input efectivo
     del step exception_cases; un estado previo distinto invalida
@@ -367,6 +411,15 @@ def default_dag() -> list[OperationalStep]:
             expected_output_version="V1",
             dynamic_inputs=_dyn_prev_cases,
             fn=_step_exception_cases),
+        # impuro: upsert al outbox con dedup por alert_key; lee
+        # oportunistamente los outputs opcionales del ctx.
+        OperationalStep(
+            "alert_outbox", "1",
+            dependencies=("morning_brief_v2",),
+            pure=False,
+            expected_output_schema=OUTBOX_SCHEMA,
+            expected_output_version="V1",
+            fn=_step_alert_outbox),
     ]
 
 
@@ -665,6 +718,17 @@ def run_ops(config: dict, state: OpsState,
 
         final = FAILED if mandatory_failed else (
             PARTIAL if optional_failed else SUCCEEDED)
+        if final == FAILED:
+            # alerta operativa del propio fallo (el step
+            # alert_outbox puede no haber llegado a ejecutarse)
+            from .ops_alerts import apply_alerts, run_failed_candidate
+            failed_steps = [
+                s["step_id"] for s in step_records.values()
+                if s.get("status") == FAILED]
+            apply_alerts(
+                conn,
+                [run_failed_candidate(run_id, failed_steps)],
+                run_id, {"RUN_FAILED"}, now=now())
         manifest = {
             "schema": RUN_SCHEMA,
             "run_id": run_id,
