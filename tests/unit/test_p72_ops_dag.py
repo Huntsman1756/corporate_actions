@@ -83,7 +83,8 @@ def test_clean_first_run_all_steps_succeed(env):
     expected = ["validate_inputs", "process_inbox",
                 "compute_deadlines", "build_action_queue",
                 "morning_brief_v2", "entitlements",
-                "cash_reconciliation", "exception_cases"]
+                "cash_reconciliation", "exception_cases",
+                "alert_outbox", "health_report", "lineage_export"]
     assert [s["step_id"] for s in m["steps"]] == expected
     assert all(s["status"] == "SUCCEEDED" for s in m["steps"])
     assert all(steps[s]["output_sha256"] for s in expected)
@@ -316,8 +317,10 @@ def test_resume_does_not_duplicate_artifacts(env):
     assert m2["run_status"] == "SUCCEEDED"
     with env["state"].open() as conn:
         steps = env["state"].get_steps(conn, m2["run_id"])
-    pure = [s for s in steps if s["step_id"] not in
-            ("validate_inputs", "process_inbox")]
+    impure = {"validate_inputs", "process_inbox",
+              "alert_outbox", "health_report", "lineage_export",
+              "exception_cases"}
+    pure = [s for s in steps if s["step_id"] not in impure]
     # resume reutiliza los pasos puros ya commiteados: ningun
     # side effect de negocio se duplica
     assert all(s["status"] == "SKIPPED_UNCHANGED" for s in pure)
@@ -339,15 +342,19 @@ def test_manifest_records_reuse_provenance(env):
 
 def test_deterministic_outputs_across_runs(env):
     # byte sha difiere (generated_at); la igualdad material es
-    # semantica. exception_cases queda fuera: su input efectivo
-    # (casos del ultimo run exitoso) cambia legitimamente tras el
-    # primer run (last_seen_at es timestamp de negocio).
+    # semantica. Quedan fuera: exception_cases (su input efectivo
+    # cambia legitimamente: last_seen_at es timestamp de negocio)
+    # y los pasos impuros, cuyo output refleja estado mutable del
+    # store (alertas/outbox, health, lineage referencian run_ids).
+    impure = {"validate_inputs", "process_inbox",
+              "alert_outbox", "health_report", "lineage_export",
+              "exception_cases"}
     m1 = run_ops(env["cfg"], env["state"], AS_OF)
     m2 = run_ops(env["cfg"], env["state"], AS_OF)
     s1 = _steps(m1)
     s2 = _steps(m2)
     for sid in s1:
-        if sid == "exception_cases":
+        if sid in impure:
             continue
         assert s1[sid]["output_semantic_sha256"] == \
             s2[sid]["output_semantic_sha256"]
