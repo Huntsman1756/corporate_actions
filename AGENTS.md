@@ -189,6 +189,30 @@ python -m ca_es.cli security-reconcile \
     [--candidates <cand1.json> <cand2.json> ...] [--now <iso>]
                                      # -> CA_ES_SECURITY_RECON_V1
 # P6.5: `exceptions` acepta también --recon CA_ES_SECURITY_RECON_V1
+
+# P11 send ledger (MT565/seev.033 -> transport adapter; estados
+# PREPARED/SPOOLED/GATEWAY_*/UNKNOWN_OUTCOME/ABANDONED; receipt
+# contract receipts/<delivery_id>.(ack|nak).json)
+python -m ca_es.cli send-prepare --state <dir> --config <ops.json> \
+    --message <CA_ES_MT565_FIN_V1.json> --instruction-id <id>
+python -m ca_es.cli send-dispatch --state <dir> --config <ops.json> \
+    [--delivery-id <id>]
+python -m ca_es.cli send-status --state <dir> [--config <ops.json>]
+python -m ca_es.cli send-show --state <dir> --delivery-id <id>
+python -m ca_es.cli send-retry --state <dir> --delivery-id <id> \
+    [--force-unknown] [--actor <quien>]
+python -m ca_es.cli send-abandon --state <dir> --delivery-id <id> \
+    [--actor <quien>] [--note "..."]
+
+# P12 transportes reales (adapters `sftp`/`mq` en send config;
+# extras opcionales: [sftp]=paramiko, [mq]=ibmmq, ambos lazy —
+# faltan -> PARAMIKO_UNAVAILABLE/IBMMQ_UNAVAILABLE fail-closed)
+python -m ca_es.cli send-poll --state <dir> --config <ops.json>
+    # una pasada: receipts filespool + poll remoto SFTP -> ingest
+python -m ca_es.cli send-ingest-fin --state <dir> --fin <svc.fin>
+    # service message FIN 21 -> Prowide -> SWIFT_ACKED/NAKED
+# lab MQ real opt-in (IBM MQ Developer, licencia IBM del operador):
+#   P12_MQ_LIVE=1 LICENSE=accept python scripts/p12_mq_lab.py
 ```
 
 Ruff está configurado en `pyproject.toml`; ejecutar

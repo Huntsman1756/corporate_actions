@@ -87,13 +87,29 @@ _SEND_POLICY_KEYS = {"max_message_bytes"}
 _SEND_DEST_KEYS = {
     "destination_id", "adapter", "enabled", "message_schemas",
     "config"}
-_SEND_ADAPTERS = {"filespool"}
+_SEND_ADAPTERS = {"filespool", "sftp", "mq"}
 
 _SEND_ADAPTER_CONFIG_KEYS = {
     "filespool": {"spool_directory"},
+    "sftp": {
+        "host", "port", "username", "username_env",
+        "private_key_path", "private_key_passphrase_env",
+        "password_env", "known_hosts_path", "host_key_fingerprint",
+        "remote_outbox", "remote_receipts", "local_receipt_staging",
+        "remote_receipt_disposition", "read_back_verify",
+        "connect_timeout_seconds", "operation_timeout_seconds"},
+    "mq": {
+        "queue_manager", "channel", "connection_name",
+        "request_queue", "reply_queue", "username_env",
+        "password_env", "ssl_cipher_spec", "key_repository",
+        "connect_timeout_seconds"},
 }
 _SEND_ADAPTER_REQUIRED = {
     "filespool": {"spool_directory"},
+    "sftp": {"host", "remote_outbox", "remote_receipts",
+             "local_receipt_staging"},
+    "mq": {"queue_manager", "channel", "connection_name",
+           "request_queue"},
 }
 
 _SECRETISH = (
@@ -280,6 +296,35 @@ def validate_send_config(send) -> None:
             raise ValueError(
                 f"INVALID_OPS_CONFIG:{name}:config:"
                 f"missing:{sorted(missing)[0]}")
+        if adapter == "sftp":
+            # host verification obligatoria — nunca AutoAddPolicy
+            if not cfg.get("known_hosts_path") \
+                    and not cfg.get("host_key_fingerprint"):
+                raise ValueError(
+                    f"INVALID_OPS_CONFIG:{name}:config:"
+                    "missing_host_verification")
+            if not cfg.get("username") \
+                    and not cfg.get("username_env"):
+                raise ValueError(
+                    f"INVALID_OPS_CONFIG:{name}:config:"
+                    "missing_username")
+            if not cfg.get("private_key_path") \
+                    and not cfg.get("password_env"):
+                raise ValueError(
+                    f"INVALID_OPS_CONFIG:{name}:config:"
+                    "missing_auth")
+            disp = cfg.get("remote_receipt_disposition", "archive")
+            if disp not in ("archive", "keep"):
+                raise ValueError(
+                    f"INVALID_OPS_CONFIG:{name}:config:"
+                    "remote_receipt_disposition")
+            for k in ("port", "connect_timeout_seconds",
+                      "operation_timeout_seconds"):
+                if k in cfg and (
+                        not isinstance(cfg[k], (int, float))
+                        or cfg[k] <= 0):
+                    raise ValueError(
+                        f"INVALID_OPS_CONFIG:{name}:config:{k}")
 
 
 def _reject_unknown(name: str, obj: dict, allowed: set) -> None:

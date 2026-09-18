@@ -1811,6 +1811,44 @@ def cmd_send_ingest_fin(args: argparse.Namespace) -> int:
         ("SWIFT_", "DUPLICATE:", "RECONFIRMED:")) else 2
 
 
+def cmd_send_poll(args: argparse.Namespace) -> int:
+    """P12.13 — una pasada de polling de evidencia entrante:
+    receipts filespool locales + receipts remotos SFTP. No es un
+    daemon; el scheduler externo lo encadena. Idempotente."""
+    from .ops_config import validate_send_config
+    from .ops_send import run_send_poll
+    from .ops_state import OpsRunAlreadyActive, OpsStateError
+
+    state, code = _open_state(args)
+    if state is None:
+        return code
+    config, code = _load_json(args.config, "config")
+    if config is None:
+        return code
+    try:
+        validate_send_config(config.get("send"))
+    except ValueError as exc:
+        print(json.dumps({"status": str(exc)[:200]}))
+        return 2
+    try:
+        run_id = f"send-poll-{uuid.uuid4().hex[:8]}"
+        conn = state.acquire_run_lock(run_id)
+    except OpsRunAlreadyActive:
+        print(json.dumps({"status": "OPS_RUN_ALREADY_ACTIVE"}))
+        return 3
+    try:
+        doc = run_send_poll(state, conn, config.get("send") or {})
+        state.checkpoint()
+    except (OpsStateError, ValueError) as exc:
+        print(json.dumps({"status": str(exc)[:200]}))
+        return 2
+    finally:
+        state.release_run_lock()
+    _emit(doc)
+    return 0 if doc["status"] in (
+        "SUCCESS", "UNCHANGED", "DISABLED") else 2
+
+
 def _utcnow_iso() -> str:
     from datetime import UTC, datetime
 
@@ -2341,6 +2379,11 @@ def build_parser() -> argparse.ArgumentParser:
                       help="fichero con un service message FIN "
                            "(ACK/NAK service id 21)")
     sfin.set_defaults(func=cmd_send_ingest_fin)
+
+    spoll = sub.add_parser("send-poll")
+    spoll.add_argument("--state", required=True)
+    spoll.add_argument("--config", required=True)
+    spoll.set_defaults(func=cmd_send_poll)
 
     return parser
 

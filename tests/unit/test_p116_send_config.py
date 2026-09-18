@@ -69,7 +69,7 @@ def test_env_suffix_keys_allowed():
 
 def test_unknown_adapter_rejected():
     bad = _send()
-    bad["destinations"][0]["adapter"] = "mq"
+    bad["destinations"][0]["adapter"] = "carrier-pigeon"
     with pytest.raises(ValueError, match="adapter"):
         validate_send_config(bad)
 

@@ -25,7 +25,7 @@ Repository = "https://github.com/Huntsman1756/corporate_actions"
 Issues = "https://github.com/Huntsman1756/corporate_actions/issues"
 
 [project.optional-dependencies]
-dev = ["pytest>=8,<10", "build>=1,<2", "ruff>=0.11,<1"]
+dev = ["pytest>=8,<10", "build>=1,<2", "ruff>=0.11,<1", "paramiko>=3.4,<5"]
 # Tooling/CI only; el core ca_es es stdlib-only.
 tooling = ["jsonschema>=4.21,<5"]
 # Ingesta de documentos PDF reales (CNMV). Se importa de forma perezosa;
@@ -34,6 +34,13 @@ pdf = ["pypdf>=4,<6"]
 # Ops Desk TUI (P1.2). Importacion perezosa desde cmd_desk; el core
 # sigue siendo stdlib-only. Licencia MIT.
 desk = ["textual>=0.86,<9"]
+# P12.1 SFTP transport adapter. LGPL-2.1; import lazy — el core sigue
+# stdlib-only. Tambien servidor SFTP in-process en tests.
+sftp = ["paramiko>=3.4,<5"]
+# P12.3 IBM MQ transport adapter. Requiere el cliente IBM MQ C (>=9.1,
+# propietario/redistribuible) instalado aparte — pip install falla sin
+# el. Import lazy; licencia Python-2.0.
+mq = ["ibmmq>=2,<3"]
 
 [project.scripts]
 ca-es = "ca_es.cli:main"

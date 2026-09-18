@@ -431,19 +431,57 @@ P11 Instruction Send Boundary (FileSpoolTransport)
           scripts/p11_e2e_demo.py con los 8 legs;
           docs/ops/instruction-send.md)
          — P11 CLOSED
+
+P12 External Gateway Adapters & Transport Conformance Lab
+    P12.0 OSS survey + evidence model                     DONE
+         (docs/p12/p120-* + oss-provenance; Paramiko ADOPT,
+          ibmmq ADOPT/WRAP, Prowide ADOPT, mq-container
+          REFERENCE/opt-in, swiftinc REFERENCE_ONLY,
+          qpid-proton DEFERRED_NO_TARGET_PROFILE)
+    P12.1-P12.2 SFTP adapter + receipt polling            DONE
+         (src/ca_es/transport/sftp.py sobre Paramiko real;
+          host verification obligatoria (known_hosts o
+          fingerprint pineado), atomic tmp->rename->meta,
+          read-back sha, REMOTE_PERSISTED; poll remoto ->
+          staging -> validador P11 -> archive/keep;
+          40 tests contra servidor SSH/SFTP in-process real)
+    P12.3-P12.4 IBM MQ adapter + lab opt-in               DONE
+         (src/ca_es/transport/mq.py sobre ibmmq lazy;
+          CorrelId "CAES"+sha256(delivery_id)[:20], MQPUT
+          bajo syncpoint+commit -> MQ_PUT_CONFIRMED, MQRC
+          clasificado permanente/retryable/UNKNOWN;
+          scripts/p12_mq_lab.py opt-in P12_MQ_LIVE+LICENSE)
+    P12.5-P12.6 FIN service ACK/NAK                       DONE
+         (JVM `finsvc` mode -> CA_ES_FIN_SERVICE_RECEIPT_V1;
+          correlacion MIR+SEME determinista -> SWIFT_ACKED/
+          NAKED; NO_MATCH/AMBIGUOUS/CONFLICTING/DUPLICATE
+          fail-closed; sin parser FIN en Python)
+    P12.7 SWIFT Messaging API                             DONE
+         (p127: IMPLEMENTABLE_BUT_REQUIRES_CREDENTIALS ->
+          REFERENCE_ONLY, sin adapter sin sandbox real)
+    P12.13-P12.14 send-poll CLI + transport health        DONE
+         (send-poll una pasada idempotente; send-status con
+          swift_acked/naked por destino)
+    P12.15-P12.16 conformance labs + e2e                  DONE
+         (scripts/p12_e2e_demo.py legs S1-S5+F1-F4 verde)
+         — P12 CLOSED
 ```
 
 ## Prioridad actual
 
-P1–P11 cerrados (incl. P4 MT + ISO 20022 seev.* con conformance
+P1–P12 cerrados (incl. P4 MT + ISO 20022 seev.* con conformance
 MT<->MX verificada, P7 daily operations end-to-end, P8 economic
 coverage V1 para SPLIT/REVERSE_SPLIT, RIGHTS_ISSUE staged,
 STOCK_DIVIDEND, SCRIP_DIVIDEND y CAPITAL_INCREASE=BONU, P9 live
 source refresh, P10 alert delivery boundary con FILE/WEBHOOK/
-SMTP y P11 instruction send boundary con FileSpoolTransport).
-SPOOLED no es submission SWIFT; GATEWAY_* requiere receipt
-externo real; MQ/SFTP/REST quedan como adapters futuros bajo el
-mismo contrato de ledger — no se implementan sin endpoint real.
+SMTP, P11 instruction send boundary con FileSpoolTransport y
+P12 transport conformance lab con SFTP/IBM-MQ/FIN-ACK-NAK
+reales sobre OSS). SPOOLED/MQ_PUT_CONFIRMED/REMOTE_PERSISTED no
+son submission SWIFT; GATEWAY_* requiere receipt externo real +
+trust boundary operacional; SWIFT_ACKED/NAKED requiere service
+message FIN 21 correlado. Lo que sigue sin demostrar: compat con
+el perfil concreto de Alliance/middleware de una entidad —
+requiere ese boundary real.
 Sin nuevos gates formales (G4+ no existen); cada fase con tests
 y preregistro de scope.
 

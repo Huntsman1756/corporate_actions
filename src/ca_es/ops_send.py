@@ -7,7 +7,8 @@ integration boundary por transport adapter.
 Separacion estricta de niveles:
 
     PREPARED -> SPOOLED -> GATEWAY_ACCEPTED | GATEWAY_REJECTED
-    (SWIFT_ACKED/NAKED: contrato, sin ingestor en V1)
+    SPOOLED/GATEWAY_* -> SWIFT_ACKED | SWIFT_NAKED
+    (P12.5: ingestor FIN service 21 via Prowide en ops_fin)
 
 SPOOLED significa unicamente "bytes entregados durable y
 atomicamente al boundary configurado" — NUNCA submission a SWIFT
@@ -161,13 +162,28 @@ class SendRequest:
 
 
 def adapter_registry() -> dict:
-    """adapter_type -> {"deliver": fn, "verify": fn}."""
-    from .transport import filespool
+    """adapter_type -> {"deliver": fn, "verify": fn, ...}.
+
+    sftp/mq se importan perezoso: sus dependencias son extras
+    opcionales — los modulos cargan sin ellas y fail-closed en
+    deliver() si faltan (PARAMIKO_UNAVAILABLE / IBMMQ_UNAVAILABLE).
+    """
+    from .transport import filespool, mq, sftp
 
     return {
         "filespool": {
             "deliver": filespool.deliver,
             "verify": filespool.verify,
+        },
+        "sftp": {
+            "deliver": sftp.deliver,
+            "verify": sftp.verify,
+            "poll_receipts": sftp.poll_receipts,
+            "archive_receipt": sftp.archive_remote_receipt,
+        },
+        "mq": {
+            "deliver": mq.deliver,
+            "verify": mq.verify,
         },
     }
 
@@ -882,6 +898,105 @@ def run_send_dispatch(state, conn, send_cfg: dict,
 
 
 # ------------------------------------------------------------------
+# send-poll (P12.2/P12.13): ingestion de evidencia entrante
+# ------------------------------------------------------------------
+
+def _ingest_sftp_receipts(conn, dest: dict, adapter: dict,
+                          now: str) -> dict:
+    """Poll remoto -> staging local -> validacion P11 -> archive.
+
+    poll_receipts descarga a <staging>/receipts; el mismo validador
+    del filespool mueve validos a processed/ e invalidos a
+    quarantine/. Solo los validos se archivan en remoto. Un fallo
+    de red es tecnico — jamas rechazo de negocio.
+    """
+    counts = {"ingested": 0, "quarantined": 0, "poll_errors": 0}
+    cfg = dest.get("config") or {}
+    staging = cfg.get("local_receipt_staging")
+    if not staging:
+        return counts
+    poll_fn = adapter.get("poll_receipts")
+    if poll_fn is None:
+        return counts
+    try:
+        polled = poll_fn(cfg)
+    except Exception:  # noqa: BLE001 — fallo tecnico de red
+        counts["poll_errors"] += 1
+        return counts
+    if not polled:
+        return counts
+
+    from pathlib import Path
+    staged = {p["remote_name"]: p for p in polled}
+    c = _ingest_receipts_for_dest(
+        conn, {"config": {"spool_directory": staging}}, now)
+    counts["ingested"] += c["ingested"]
+    counts["quarantined"] += c["quarantined"]
+
+    archive_fn = adapter.get("archive_receipt")
+    processed_dir = Path(staging) / "receipts" / "processed"
+    if archive_fn is not None and processed_dir.is_dir():
+        for name in staged:
+            if (processed_dir / name).is_file():
+                try:
+                    archive_fn(cfg, name)
+                except Exception:  # noqa: BLE001 — best-effort
+                    pass
+    return counts
+
+
+def run_send_poll(state, conn, send_cfg: dict,
+                  *, now_fn=None,
+                  adapters: dict | None = None) -> dict:
+    """Una pasada de polling de evidencia entrante.
+
+    filespool: receipts locales (mismo path que dispatch).
+    sftp:      poll remoto -> staging -> validacion -> archive.
+
+    No es un daemon — el scheduler externo lo encadena. Idempotente:
+    un receipt ya observado no produce transicion duplicada.
+    """
+    now = (now_fn or _utcnow)()
+    cfg = send_cfg or {}
+    destinations = enabled_destinations(cfg)
+    adapters = adapters or adapter_registry()
+
+    counts = {"ingested": 0, "quarantined": 0, "poll_errors": 0}
+    if not cfg.get("enabled"):
+        return {"schema": SCHEMA_SEND_RESULT, "generated_at": now,
+                "status": "DISABLED", **counts, "per_destination": []}
+
+    per_dest: dict[str, dict] = {}
+    for dest in destinations:
+        adapter = adapters.get(dest["adapter"])
+        if adapter is None:
+            continue
+        c = {"ingested": 0, "quarantined": 0, "poll_errors": 0}
+        if dest["adapter"] == "filespool":
+            c = {**c, **_ingest_receipts_for_dest(conn, dest, now)}
+        elif adapter.get("poll_receipts") is not None:
+            c = {**c, **_ingest_sftp_receipts(
+                conn, dest, adapter, now)}
+        for k in counts:
+            counts[k] += c.get(k, 0)
+        if any(c.get(k) for k in counts):
+            per_dest[dest["destination_id"]] = {
+                "destination_id": dest["destination_id"],
+                "adapter": dest["adapter"], **c}
+    if counts["ingested"] or counts["quarantined"]:
+        state.checkpoint()
+
+    status = ("POLL_ERROR" if counts["poll_errors"]
+              else "UNCHANGED" if not counts["ingested"]
+              and not counts["quarantined"]
+              else "SUCCESS")
+    return {"schema": SCHEMA_SEND_RESULT, "generated_at": now,
+            "status": status, **counts,
+            "per_destination": [
+                per_dest[k] for k in sorted(per_dest)]}
+
+
+# ------------------------------------------------------------------
 # operator controls
 # ------------------------------------------------------------------
 
@@ -898,10 +1013,10 @@ def send_retry(conn, delivery_id: str, *, now: str,
     if d is None:
         raise ValueError(f"SEND_NOT_FOUND:{delivery_id}")
     status = d["status"]
-    if status in (S_SPOOLED, S_GATEWAY_ACCEPTED, S_GATEWAY_REJECTED):
-        raise ValueError(f"SEND_TERMINAL_STATE:{delivery_id}:{status}")
     if status == S_ABANDONED:
         raise ValueError(f"SEND_ABANDONED:{delivery_id}")
+    if status == S_SPOOLED or status in TERMINAL_STATES:
+        raise ValueError(f"SEND_TERMINAL_STATE:{delivery_id}:{status}")
     if status == S_UNKNOWN and not force_unknown:
         raise ValueError(
             f"SEND_UNKNOWN_REQUIRES_FORCE:{delivery_id}")
@@ -921,7 +1036,7 @@ def send_abandon(conn, delivery_id: str, *, now: str,
     d = get_send(conn, delivery_id)
     if d is None:
         raise ValueError(f"SEND_NOT_FOUND:{delivery_id}")
-    if d["status"] in (S_GATEWAY_ACCEPTED, S_GATEWAY_REJECTED):
+    if d["status"] in TERMINAL_STATES:
         raise ValueError(f"SEND_TERMINAL_STATE:{delivery_id}")
     _set_send_status(
         conn, delivery_id, S_ABANDONED, actor, now,
