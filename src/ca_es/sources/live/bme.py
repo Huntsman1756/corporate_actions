@@ -16,10 +16,13 @@ from datetime import datetime, timezone
 
 API = "https://apiweb.bolsasymercados.es/Market/v1/EQ/CorporateActions"
 
+# Conjunto probado por build_g1_frame.BME_TYPES (corpus G1 real);
+# categorias que el endpoint no expone devuelven 404 -> kind_errors,
+# nunca abortan el resto.
 KINDS = (
-    "CapitalIncreases", "CapitalReductions", "Dividends",
-    "DividendOptions", "Distributions", "Exchanges", "Meetings",
-    "Splits", "Takeovers",
+    "Dividends", "CapitalIncreases", "Splits", "Mergers",
+    "OtherPayments", "NewListings", "Delistings", "PublicOfferings",
+    "TakeoverBids",
 )
 
 _DATE_KEYS = (
@@ -110,44 +113,50 @@ class BmeAdapter:
                  **_kw) -> DiscoveryResult:
         result = DiscoveryResult()
         seen: set[str] = set()
-        try:
-            for kind in kinds:
-                url = f"{API}/{kind}"
+        kind_errors: list[str] = []
+        for kind in kinds:
+            url = f"{API}/{kind}"
+            try:
                 response = fetch(url, referer=API)
                 result.pages_fetched += 1
                 payload = json.loads(response.content)
                 rows = payload if isinstance(payload, list) else (
-                    payload.get("results") or payload.get("data") or [])
-                for row in rows:
-                    if not isinstance(row, dict):
-                        continue
-                    day = bme_item_date(row)
-                    isin = (row.get("isin") or row.get("ISIN")
-                            or row.get("Isin") or "")
-                    issuer_raw = (
-                        row.get("issuerName") or row.get("Emisor")
-                        or row.get("Nombre") or "")
-                    if isin:
-                        doc_id = f"BMEG-{kind}-{isin}-{day or 'NA'}"
-                    else:
-                        doc_id = (
-                            f"BMEG-{kind}-"
-                            f"{_normalize(str(issuer_raw or 'UNK'))[:24]}"
-                            f"-{day or 'NA'}")
-                    if doc_id in seen:
-                        continue
-                    seen.add(doc_id)
-                    result.documents.append(DiscoveredDoc(
-                        source_document_id=doc_id,
-                        locator=url,
-                        publication_date=day,
-                        metadata={"kind": kind, "isin": isin or None,
-                                  "api": url},
-                        inline_content=frame_row_bytes(
-                            doc_id, kind, row, day),
-                        media_type="application/json"))
-        except Exception as exc:  # noqa: BLE001 — aislado por fuente
-            result.error = f"{exc.__class__.__name__}:{exc}"[:300]
+                    payload.get("results") or payload.get("data")
+                    or [])
+            except Exception as exc:  # noqa: BLE001 — por categoria
+                kind_errors.append(
+                    f"{kind}:{exc.__class__.__name__}:{exc}"[:200])
+                continue
+            for row in rows:
+                if not isinstance(row, dict):
+                    continue
+                day = bme_item_date(row)
+                isin = (row.get("isin") or row.get("ISIN")
+                        or row.get("Isin") or "")
+                issuer_raw = (
+                    row.get("issuerName") or row.get("Emisor")
+                    or row.get("Nombre") or "")
+                if isin:
+                    doc_id = f"BMEG-{kind}-{isin}-{day or 'NA'}"
+                else:
+                    doc_id = (
+                        f"BMEG-{kind}-"
+                        f"{_normalize(str(issuer_raw or 'UNK'))[:24]}"
+                        f"-{day or 'NA'}")
+                if doc_id in seen:
+                    continue
+                seen.add(doc_id)
+                result.documents.append(DiscoveredDoc(
+                    source_document_id=doc_id,
+                    locator=url,
+                    publication_date=day,
+                    metadata={"kind": kind, "isin": isin or None,
+                              "api": url},
+                    inline_content=frame_row_bytes(
+                        doc_id, kind, row, day),
+                    media_type="application/json"))
+        if kind_errors:
+            result.error = "; ".join(kind_errors)[:300]
             result.complete = False
         result.cursor = {
             "last_refresh_at": datetime.now(timezone.utc).strftime(

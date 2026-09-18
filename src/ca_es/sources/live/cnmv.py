@@ -271,7 +271,8 @@ def live_fetcher(portal: str, *, timeout: int = 90, retries: int = 3,
     """Fetcher urllib con sesion CNMV caliente (cookiejar del home)."""
     opener = build_opener(HOME)
     kwargs = {"timeout": timeout, "retries": retries,
-              "politeness": politeness}
+              "politeness": politeness,
+              "user_agent": HEADERS["User-Agent"]}
     if max_bytes is not None:
         kwargs["max_bytes"] = max_bytes
     return make_fetcher(opener, **kwargs)

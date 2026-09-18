@@ -30,8 +30,10 @@ class FetchResult:
     error: str | None = None
 
 
-@dataclass(frozen=True)
+@dataclass
 class FetchError(Exception):  # type: ignore[misc]
+    # NO frozen: Python asigna __traceback__/__context__ en raise —
+    # una excepcion frozen rompe la propagacion (FrozenInstanceError).
     url: str
     reason: str
     status: int | None = None
@@ -78,16 +80,20 @@ def build_opener(base_url: str | None = None,
 def make_fetcher(opener: urllib.request.OpenerDirector | None = None,
                  *, timeout: int = 90, retries: int = 3,
                  politeness: float = 0.35,
-                 max_bytes: int = DEFAULT_MAX_BYTES):
+                 max_bytes: int = DEFAULT_MAX_BYTES,
+                 user_agent: str = USER_AGENT):
     """Devuelve fetch(url, referer=None) -> FetchResult.
 
     Retries acotados solo ante errores transitorios. Politeness sleep
     antes de cada request (la fuente no es un benchmark).
+    ``user_agent`` es por fuente: algunos endpoints probados (p.ej.
+    la API de documentos Portfolio) rechazan UAs no-browser — el
+    adapter usa alli el header probado por G1-R2, no un bypass nuevo.
     """
     opener = opener or build_opener()
 
     def fetch(url: str, referer: str | None = None) -> FetchResult:
-        headers = {"User-Agent": USER_AGENT}
+        headers = {"User-Agent": user_agent}
         if referer:
             headers["Referer"] = referer
         last_exc: Exception | None = None

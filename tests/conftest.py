@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import importlib.util
 import json
+import os
 from pathlib import Path
 
 import pytest
@@ -29,15 +30,24 @@ def pytest_addoption(parser):
         "--no-private-corpus", action="store_false", dest="run_private_corpus",
         help="Disable private corpus tests even when local raw files are available.",
     )
+    group.addoption(
+        "--live", action="store_true", default=False,
+        help="Opt in to live public-source smoke tests (network).",
+    )
 
 
 def pytest_collection_modifyitems(config, items):
     disabled = not config.getoption("run_private_corpus")
+    live = config.getoption("live") or \
+        os.environ.get("CA_ES_LIVE_SMOKE") == "1"
     for item in items:
         if "real_run" in item.fixturenames and not item.get_closest_marker("private_corpus"):
             item.add_marker(pytest.mark.private_corpus("g0"))
         if disabled and item.get_closest_marker("private_corpus"):
             item.add_marker(pytest.mark.skip(reason="requires --run-private-corpus"))
+        if not live and item.get_closest_marker("live"):
+            item.add_marker(pytest.mark.skip(
+                reason="requires --live (network smoke)"))
 
 
 @pytest.fixture(scope="session")

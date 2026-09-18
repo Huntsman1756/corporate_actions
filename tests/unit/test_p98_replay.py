@@ -63,9 +63,9 @@ def fake_fetcher(routes: dict):
 def _bme_routes(rows_by_kind):
     routes = {}
     for kind in (
-            "CapitalIncreases", "CapitalReductions", "Dividends",
-            "DividendOptions", "Distributions", "Exchanges", "Meetings",
-            "Splits", "Takeovers"):
+            "Dividends", "CapitalIncreases", "Splits", "Mergers",
+            "OtherPayments", "NewListings", "Delistings",
+            "PublicOfferings", "TakeoverBids"):
         routes[f"{BME_API}/{kind}"] = json.dumps(
             rows_by_kind.get(kind, [])).encode()
     return routes

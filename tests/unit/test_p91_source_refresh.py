@@ -45,9 +45,9 @@ BME_API = ("https://apiweb.bolsasymercados.es/Market/v1/"
 def _bme_routes(rows_by_kind: dict[str, list[dict]]) -> dict:
     routes = {}
     for kind in (
-            "CapitalIncreases", "CapitalReductions", "Dividends",
-            "DividendOptions", "Distributions", "Exchanges", "Meetings",
-            "Splits", "Takeovers"):
+            "Dividends", "CapitalIncreases", "Splits", "Mergers",
+            "OtherPayments", "NewListings", "Delistings",
+            "PublicOfferings", "TakeoverBids"):
         routes[f"{BME_API}/{kind}"] = json.dumps(
             rows_by_kind.get(kind, [])).encode()
     return routes
@@ -169,7 +169,7 @@ def test_fetch_failure_marks_partial_and_freezes_checkpoint(tmp_path):
     ]})
     # BME usa inline_content — para simular fetch failure usamos un
     # adapter cuyo discovery falla a mitad (kind roto).
-    routes[f"{BME_API}/Takeovers"] = ConnectionError("BOOM")
+    routes[f"{BME_API}/TakeoverBids"] = ConnectionError("BOOM")
     with state.open() as conn:
         doc = run_source_refresh(
             state, conn, _cfg(),
@@ -187,12 +187,12 @@ def test_fetch_failure_marks_partial_and_freezes_checkpoint(tmp_path):
 def test_document_fetch_failure_keeps_checkpoint(tmp_path):
     """Un doc descubierto cuyo fetch falla => PARTIAL, sin avance."""
     state = OpsState(tmp_path / "st").init()
-    index = b'<a href="/markets/portfolio-market/PROD">P</a>'
+    index = b'<a href="/portfolio-market/PROD">P</a>'
     product = b'<a href="https://api.portfolio.exchange/poex/document/4733">d</a>'
     routes = {
-        "https://www.portfolio.exchange/markets/portfolio-market":
+        "https://www.portfolio.exchange/portfolio-market":
             index,
-        "https://www.portfolio.exchange/markets/portfolio-market/PROD":
+        "https://www.portfolio.exchange/portfolio-market/PROD":
             product,
         "https://api.portfolio.exchange/poex/document/4733":
             ConnectionError("RESET"),
@@ -224,12 +224,12 @@ def test_document_fetch_failure_keeps_checkpoint(tmp_path):
 
 def test_known_document_not_refetched_marks_discovery_only(tmp_path):
     state = OpsState(tmp_path / "st").init()
-    index = b'<a href="/markets/portfolio-market/PROD">P</a>'
+    index = b'<a href="/portfolio-market/PROD">P</a>'
     product = b'<a href="https://api.portfolio.exchange/poex/document/4733">d</a>'
     routes = {
-        "https://www.portfolio.exchange/markets/portfolio-market":
+        "https://www.portfolio.exchange/portfolio-market":
             index,
-        "https://www.portfolio.exchange/markets/portfolio-market/PROD":
+        "https://www.portfolio.exchange/portfolio-market/PROD":
             product,
         "https://api.portfolio.exchange/poex/document/4733": b"%PDF",
     }
@@ -266,7 +266,7 @@ def test_source_failure_isolated(tmp_path):
     bme_routes = _bme_routes({"Dividends": [
         {"isin": "ES0100000001", "issuerName": "AAA", "paymentDate": "20261015"}]})
     portfolio_routes = {
-        "https://www.portfolio.exchange/markets/portfolio-market":
+        "https://www.portfolio.exchange/portfolio-market":
             ConnectionError("DOWN"),
     }
     cfg = _cfg(portfolio={
@@ -318,6 +318,20 @@ def test_policy_inactive_source_not_acquired(tmp_path):
     assert doc["source_results"][0]["status"] == "FAILED"
     assert "POLICY_INGESTION_STATUS" in doc["source_results"][0]["error"]
     assert calls == []
+
+
+def test_portfolio_empty_index_is_partial_not_success(tmp_path):
+    """Shell SPA sin enlaces de producto -> PARTIAL, nunca falso
+    SUCCESS (0 docs no equivale a '0 productos listados')."""
+    from ca_es.sources.live.portfolio import PortfolioAdapter
+
+    adapter = PortfolioAdapter()
+    shell = b'<html><div id="__nuxt"></div></html>'
+    discovery = adapter.discover(
+        fake_fetcher({
+            "https://www.portfolio.exchange/portfolio-market": shell}))
+    assert discovery.complete is False
+    assert "INDEX_NO_PRODUCTS" in discovery.error
 
 
 def test_adapter_classes_exposed():

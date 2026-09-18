@@ -61,4 +61,5 @@ pythonpath = ["src"]
 addopts = "-q --strict-markers"
 markers = [
     "private_corpus(name): requires --run-private-corpus and authorized LOCAL_ONLY or qualification data",
+    "live: opt-in live public-source smoke tests (network; --live or CA_ES_LIVE_SMOKE=1)",
 ]

@@ -13,13 +13,14 @@ import re
 from dataclasses import dataclass, field
 from datetime import datetime, timezone
 
-INDEX_URL = "https://www.portfolio.exchange/markets/portfolio-market"
+INDEX_URL = "https://www.portfolio.exchange/portfolio-market"
 DOC_API = "https://api.portfolio.exchange/poex/document/{doc_id}"
 
 _PRODUCT_RE = re.compile(
-    r'href="(/markets/portfolio-market/[^"]+)"', re.I)
+    r'href="(/(?:markets/)?portfolio-market/[^"]+)"', re.I)
 _DOC_RE = re.compile(
-    r'(?:api\.portfolio\.exchange)?/poex/document/(\d+)', re.I)
+    r'(?:api\.portfolio\.exchange(?:/|\\u002F))?poex'
+    r'(?:/|\\u002F)document(?:/|\\u002F)(\d+)', re.I)
 
 
 @dataclass
@@ -59,6 +60,15 @@ class PortfolioAdapter:
                 html_mod.unescape(u) for u in
                 _PRODUCT_RE.findall(
                     index.content.decode("utf-8", "replace"))))
+            if not products:
+                # Index sin enlaces de producto: en esta superficie
+                # probada hubo siempre ~30 productos. 0 = probable
+                # shell SPA / upstream degradado, no "0 productos
+                # reales" -> PARTIAL, nunca falso SUCCESS.
+                result.error = (
+                    "INDEX_NO_PRODUCTS:index sin enlaces de"
+                    " producto (posible degradacion upstream)")
+                result.complete = False
             for product_path in products:
                 product_url = (
                     product_path if product_path.startswith("http")
@@ -92,6 +102,11 @@ class PortfolioAdapter:
 
 
 def live_fetcher(**kw):
+    """Fetcher Portfolio: la API de documentos rechaza UAs no-browser
+    (403). Se usa el UA probado por la adquisicion G1/G1-R2
+    (cnmv.HEADERS), documentado como mecanismo establecido."""
+    from .cnmv import HEADERS
     from .http import make_fetcher
 
+    kw.setdefault("user_agent", HEADERS["User-Agent"])
     return make_fetcher(None, **kw)
