@@ -55,9 +55,13 @@ S_GATEWAY_ACCEPTED = "GATEWAY_ACCEPTED"
 S_GATEWAY_REJECTED = "GATEWAY_REJECTED"
 S_UNKNOWN = "UNKNOWN_OUTCOME"
 S_ABANDONED = "ABANDONED"
+# P12 — evidencia de red (L4): service message FIN 21 correlado
+S_SWIFT_ACKED = "SWIFT_ACKED"
+S_SWIFT_NAKED = "SWIFT_NAKED"
 
 TERMINAL_STATES = frozenset({
-    S_GATEWAY_ACCEPTED, S_GATEWAY_REJECTED, S_ABANDONED})
+    S_GATEWAY_ACCEPTED, S_GATEWAY_REJECTED, S_ABANDONED,
+    S_SWIFT_ACKED, S_SWIFT_NAKED})
 
 # estados del attempt
 A_STARTED = "STARTED"
@@ -941,7 +945,8 @@ def send_status_doc(state, conn, send_cfg: dict | None,
     rows = list_sends(conn)
     counts = {s: 0 for s in (
         S_PREPARED, S_SPOOLED, S_GATEWAY_ACCEPTED,
-        S_GATEWAY_REJECTED, S_FAILED_RETRYABLE,
+        S_GATEWAY_REJECTED, S_SWIFT_ACKED, S_SWIFT_NAKED,
+        S_FAILED_RETRYABLE,
         S_FAILED_PERMANENT, S_UNKNOWN, S_ABANDONED)}
     for r in rows:
         counts[r["status"]] = counts.get(r["status"], 0) + 1
@@ -989,6 +994,8 @@ def send_status_doc(state, conn, send_cfg: dict | None,
         "spooled": counts[S_SPOOLED],
         "gateway_accepted": counts[S_GATEWAY_ACCEPTED],
         "gateway_rejected": counts[S_GATEWAY_REJECTED],
+        "swift_acked": counts[S_SWIFT_ACKED],
+        "swift_naked": counts[S_SWIFT_NAKED],
         "failed_retryable": counts[S_FAILED_RETRYABLE],
         "failed_permanent": counts[S_FAILED_PERMANENT],
         "unknown_outcome": counts[S_UNKNOWN],

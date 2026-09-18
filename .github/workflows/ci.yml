@@ -160,5 +160,6 @@ jobs:
               "tests/unit/test_p55_mt565.py",
               "tests/unit/test_p56_instruction_status.py",
               "tests/unit/test_p63_security_candidate.py",
+              "tests/unit/test_p125_fin_service_adapter.py",
               "--no-private-corpus", "-ra",
           ], plugins=[NoSkips()]))

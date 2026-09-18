@@ -125,6 +125,21 @@ public final class IsoAdapter {
             emit(w);
             return;
         }
+        if (args.length > 0 && "finsvc".equals(args[0])) {
+            Result f;
+            try {
+                f = FinServiceAdapter.mainResult();
+            } catch (Throwable t) {
+                f = new Result(FinServiceAdapter.EXIT_ADAPTER_ERROR,
+                        new LinkedHashMap<>());
+                f.doc().put("schema",
+                        FinServiceAdapter.SCHEMA_VERSION);
+                f.doc().put("parse_status", "ADAPTER_ERROR");
+                f.doc().put("detail", t.getClass().getSimpleName());
+            }
+            emit(f);
+            return;
+        }
         Result r;
         try {
             r = run(System.in.readAllBytes());

@@ -1772,6 +1772,45 @@ def cmd_send_abandon(args: argparse.Namespace) -> int:
     return _emit({"status": "ABANDONED", "send": send})
 
 
+def cmd_send_ingest_fin(args: argparse.Namespace) -> int:
+    """P12.5 — ingiere un service message FIN (ACK/NAK service id 21)
+    via el adapter JVM/Prowide y lo correlaciona contra el send
+    ledger. Un fichero depositado por el operador registra
+    source=FILE_INGEST — evidencia de state machine, no de red."""
+    from .ops_fin import ingest_fin_service_file
+    from .ops_state import OpsRunAlreadyActive, OpsStateError
+    from .swift_mt import AdapterUnavailable
+
+    state, code = _open_state(args)
+    if state is None:
+        return code
+    fin_path = Path(args.fin)
+    if not fin_path.is_file():
+        print(json.dumps({"status": "FIN_FILE_NOT_FOUND",
+                          "path": args.fin}))
+        return 2
+    try:
+        conn = state.acquire_run_lock(
+            f"send-ingest-fin-{uuid.uuid4().hex[:8]}")
+    except OpsRunAlreadyActive:
+        print(json.dumps({"status": "OPS_RUN_ALREADY_ACTIVE"}))
+        return 3
+    try:
+        doc = ingest_fin_service_file(conn, fin_path)
+        state.checkpoint()
+    except AdapterUnavailable as exc:
+        print(json.dumps({"status": f"ADAPTER_UNAVAILABLE:{exc}"}))
+        return 4
+    except (OpsStateError, ValueError) as exc:
+        print(json.dumps({"status": str(exc)[:200]}))
+        return 2
+    finally:
+        state.release_run_lock()
+    _emit(doc)
+    return 0 if str(doc.get("result") or "").startswith(
+        ("SWIFT_", "DUPLICATE:", "RECONFIRMED:")) else 2
+
+
 def _utcnow_iso() -> str:
     from datetime import UTC, datetime
 
@@ -2295,6 +2334,13 @@ def build_parser() -> argparse.ArgumentParser:
     saband.add_argument("--actor", default=None)
     saband.add_argument("--note", default=None)
     saband.set_defaults(func=cmd_send_abandon)
+
+    sfin = sub.add_parser("send-ingest-fin")
+    sfin.add_argument("--state", required=True)
+    sfin.add_argument("--fin", required=True,
+                      help="fichero con un service message FIN "
+                           "(ACK/NAK service id 21)")
+    sfin.set_defaults(func=cmd_send_ingest_fin)
 
     return parser
 
