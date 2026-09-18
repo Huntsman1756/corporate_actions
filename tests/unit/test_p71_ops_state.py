@@ -39,7 +39,7 @@ def test_init_creates_schema(tmp_path):
         row = conn.execute(
             "SELECT value FROM state_meta WHERE key='schema_version'"
         ).fetchone()
-        assert row["value"] == "1"
+        assert row["value"] == "2"
 
 
 def test_reopen(state):

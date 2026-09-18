@@ -52,11 +52,26 @@ def _normalize(text: str) -> str:
     return re.sub(r"[^A-Z0-9]+", "-", text.upper()).strip("-")
 
 
+def _no_floats(obj: object) -> object:
+    """float -> lexema (repr), igual que build_g1_frame.no_floats:
+    la API devuelve floats, pero los valores financieros entran al
+    canon como raw_lexeme string y ``strict_json_loads`` rechaza
+    float en la frontera de parse."""
+    if isinstance(obj, float):
+        return repr(obj)
+    if isinstance(obj, dict):
+        return {k: _no_floats(v) for k, v in obj.items()}
+    if isinstance(obj, (list, tuple)):
+        return [_no_floats(v) for v in obj]
+    return obj
+
+
 def canonical_row_bytes(row: dict) -> bytes:
-    """JSON determinista del row fuente: orden estable, sin
+    """JSON determinista del row fuente: orden estable; floats se
+    serializan como lexema (semantica probada de G1), sin otra
     normalizacion semantica de valores."""
     return json.dumps(
-        row, ensure_ascii=False, sort_keys=True,
+        _no_floats(row), ensure_ascii=False, sort_keys=True,
         separators=(",", ":")).encode("utf-8")
 
 

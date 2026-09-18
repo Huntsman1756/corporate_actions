@@ -53,3 +53,33 @@ ids, hashes, counts, statuses, errores. Nunca bytes raw.
 Un fallo del smoke por outage temporal upstream **no** es fallo de
 CI (el test es opt-in y fuera del CI normal); se reporta tal cual
 en `error` del reporte.
+
+## Hallazgos live corregidos
+
+La primera ejecución e2e real (`scripts/p9_e2e_demo.py`, leg LIVE
+contra la API BME) expuso dos defectos que ninguna fixture offline
+reproducía:
+
+1. **Floats en la API BME** — la API devuelve números como float
+   JSON (`"disbursement": 0.0`). La serialización inicial del
+   adapter los conservaba como float y `strict_json_loads` los
+   rechazaba en la frontera de parse → 167/167 `PARSE_FAILED`.
+   Fix: `live/bme.py` aplica la misma normalización probada de
+   `build_g1_frame.no_floats` (float → lexema `repr`) al serializar
+   la row. El doc almacenado sigue siendo determinista y la regla
+   no-float del canon queda intacta (los valores financieros entran
+   como `raw_lexeme` string). Regresión:
+   `test_p95.test_api_float_serializes_as_lexeme_and_parses`.
+
+2. **Doc-ids con caracteres ilegales en path** — un emisor real
+   produce doc-ids como `BMEG-CapitalIncreases-BRBBDCACNPR8-(*)`,
+   que rompen `mkdir` del corpus scratch en Windows (`WinError
+   123`). El `source_document_id` es identidad de evidencia y no
+   se toca; `ops_canon._safe_path_component` sanea solo el
+   componente de directorio (la unicidad real la da el SHA del
+   nombre de archivo, así que un colapso de directorio es
+   inofensivo).
+
+Tras ambos fixes, el leg LIVE completo es verde: 167 docs →
+167 eventos → canon build → `SKIPPED_UNCHANGED` en leg 2 → delta
+selectivo en leg 3.

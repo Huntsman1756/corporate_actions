@@ -38,6 +38,18 @@ _META_REFRESH_DOC = "current_canon_refresh_sha256"
 
 _RELATED_REG_RE = re.compile(r"(\d{4,})")
 
+_UNSAFE_PATH_CHARS_RE = re.compile(r"[^A-Za-z0-9._=-]+")
+
+
+def _safe_path_component(doc_id: str) -> str:
+    """El source_document_id es identidad de evidencia y puede
+    contener cualquier caracter (p.ej. '(*)' en emisores BME); el
+    scratch corpus lo materializa como directorio, asi que se sanea
+    de forma determinista. La unicidad real la da el sha del nombre
+    de archivo — un colapso de directorio es inofensivo."""
+    safe = _UNSAFE_PATH_CHARS_RE.sub("-", doc_id).strip("-.")
+    return safe or "doc"
+
 
 def get_state_meta(conn, key: str) -> str | None:
     row = conn.execute(
@@ -196,7 +208,8 @@ def build_accumulated_canon(
                 key=lambda r: (r["source_id"], r["source_document_id"])):
             sha = row["chosen_content_sha256"]
             rel = (f"raw/{row['source_id']}/"
-                   f"{row['source_document_id']}/{sha}.bin")
+                   f"{_safe_path_component(row['source_document_id'])}"
+                   f"/{sha}.bin")
             target = scratch_root / rel
             target.parent.mkdir(parents=True, exist_ok=True)
             target.write_bytes(state.get_blob(sha))

@@ -109,6 +109,49 @@ def test_first_canon_refresh_promotes_and_builds(tmp_path):
         assert canon["events"]
 
 
+def test_api_float_serializes_as_lexeme_and_parses(tmp_path):
+    """La API live devuelve floats (p.ej. disbursement 0.0). La
+    serializacion probada de G1 los convierte a raw_lexeme string;
+    sin eso strict_json_loads rechaza el doc como PARSE_FAILED."""
+    state = OpsState(tmp_path / "st").init()
+    row = dict(BME_ROW, disbursement=0.0, newShares=5.5)
+    routes = _bme_routes({"CapitalIncreases": [row]})
+    with state.open() as conn:
+        _refresh(state, conn, routes, "2026-10-01T09:00:00Z")
+        doc = run_canon_refresh(
+            state, conn, policy_path=POLICY,
+            now="2026-10-01T09:05:00Z")
+        d = state.get_source_document(
+            conn, "BME_GROWTH",
+            "BMEG-CapitalIncreases-ES0105561007-2025-01-13")
+        blob = state.get_blob(d["latest_content_sha256"])
+    stored = json.loads(blob)
+    assert stored["metadata"]["disbursement"] == "0.0"
+    assert stored["metadata"]["newShares"] == "5.5"
+    assert doc["refresh_status"] == "SUCCESS"
+    assert doc["documents_new"] == 1
+    assert doc["parse_promotions"][0]["to"] == d[
+        "chosen_content_sha256"]
+
+
+def test_doc_id_with_unsafe_path_chars_rebuilds(tmp_path):
+    """Doc-ids reales pueden contener '(*)' etc. (emisor BME sin
+    ISIN). La identidad no se toca; el scratch corpus sanea el
+    componente de directorio."""
+    state = OpsState(tmp_path / "st").init()
+    row = dict(BME_ROW)
+    row.pop("isin")
+    row["issuerName"] = "BRBBDCACNPR8(*)"
+    routes = _bme_routes({"CapitalIncreases": [row]})
+    with state.open() as conn:
+        _refresh(state, conn, routes, "2026-10-01T09:00:00Z")
+        doc = run_canon_refresh(
+            state, conn, policy_path=POLICY,
+            now="2026-10-01T09:05:00Z")
+    assert doc["refresh_status"] == "SUCCESS"
+    assert doc["documents_new"] == 1
+
+
 def test_identical_rebuild_is_unchanged(tmp_path):
     """Evidencia inalterada => UNCHANGED sin re-ejecutar el pipeline;
     el canon artifact es el MISMO (mismo input ref downstream =>
