@@ -290,6 +290,7 @@ def _step_cash_recon(ctx: RunContext) -> dict | None:
         return None
     from .reconciliation import reconcile
 
+    expected_cash = ctx.docs.get("_expected_cash") or {}
     events_cfg = (ctx.config.get("reconciliation") or {}).get(
         "events", "all")
     items = {}
@@ -298,7 +299,8 @@ def _step_cash_recon(ctx: RunContext) -> dict | None:
             continue
         ent_doc = ctx.state.get_artifact(
             ent_index["items"][eid]["sha256"])
-        doc = reconcile(ent_doc, movements)
+        doc = reconcile(ent_doc, movements,
+                        expected_cash_doc=expected_cash.get(eid))
         ref = ctx.state.store_artifact(
             ctx.conn, doc, "CA_ES_RECON_RESULT_V1", "V1",
             run_id=ctx.run_id)
@@ -307,6 +309,186 @@ def _step_cash_recon(ctx: RunContext) -> dict | None:
         "schema": INDEX_SCHEMA,
         "generated_at": ctx.now(),
         "kind": "CA_ES_RECON_RESULT_V1",
+        "items": items,
+    }
+
+
+_INCOME_TYPE_BY_EVENT = {
+    "CASH_DIVIDEND": "DIVIDEND",
+    "INTEREST_PAYMENT": "INTEREST",
+    "CAPITAL_REPAYMENT": "CAPITAL_REPAYMENT",
+}
+
+
+def _inbox_facts_all(ctx: RunContext) -> list[dict]:
+    """Facts docs MT+MX de mensajes PROCESSED (dedup por sha)."""
+    rows = ctx.conn.execute(
+        "SELECT artifact_refs_json FROM inbox_messages"
+        " WHERE processing_status='PROCESSED'"
+    ).fetchall()
+    seen: set[str] = set()
+    out = []
+    for row in rows:
+        for ref in json.loads(row["artifact_refs_json"] or "[]"):
+            sha = ref.get("sha256")
+            if not sha or sha in seen:
+                continue
+            try:
+                doc = ctx.state.get_artifact(sha)
+            except Exception:
+                continue
+            if doc.get("schema_version") in (
+                    "CA_ES_SWIFT_MT_FACTS_V1",
+                    "CA_ES_SWIFT_MX_FACTS_V1"):
+                seen.add(sha)
+                out.append(doc)
+    return out
+
+
+def _step_tax_events(ctx: RunContext) -> dict | None:
+    """P14.18: tax evidence -> tax entitlement -> expected_cash ->
+    tax recon -> cases. Impuro (lee inbox), opcional.
+
+    Solo invalida la rama fiscal: cambios en tax_profile/tax_rules
+    entran via uses_inputs/config_section del step; el cache
+    semantico mantiene intactas discovery/positions/parsing."""
+    canon = ctx.input_doc("canon")
+    ent_index = ctx.docs.get("entitlements")
+    if canon is None or ent_index is None:
+        return None
+
+    from .exceptions import build_cases_doc
+    from .surface import Surface
+    from .swift_ca import bind_event, project_ca_message
+    from .tax_entitlement import expected_cash, tax_entitlement
+    from .tax_evidence import tax_evidence
+    from .tax_recon import tax_recon
+
+    try:
+        from .mx_ca import project_mx_message
+    except ImportError:
+        project_mx_message = None
+
+    tax_cfg = ctx.config.get("tax") or {}
+    jurisdiction = tax_cfg.get("jurisdiction")
+    profile_doc = ctx.input_doc("tax_profile")
+    rules_doc = ctx.input_doc("tax_rules")
+    if profile_doc is None and rules_doc is None:
+        # rama fiscal no configurada: indice minimo estable para no
+        # invalidar el cache semantico de cash_reconciliation
+        return {
+            "schema": INDEX_SCHEMA,
+            "generated_at": ctx.now(),
+            "kind": "CA_ES_TAX_EVENT_V1",
+            "items": {},
+        }
+    surface = Surface(canon, ctx.input_doc("source_policy"))
+    facts_docs = _inbox_facts_all(ctx)
+    now = ctx.now()
+
+    # pasada 1: evidencia fiscal por mensaje, ligada a evento canon.
+    # Notificaciones (MT564/seev.031) ligan via binder canonico;
+    # confirmaciones (MT566/seev.036) ligan por referencia de evento
+    # compartida con una notificacion ya ligada (CORP/CorpActnEvtId).
+    evidence_by_event: dict[str, dict[str, list]] = {}
+    pending: list[tuple[dict, dict, str | None]] = []
+    ref_to_eid: dict[str, str] = {}
+    for facts_doc in facts_docs:
+        mid = facts_doc.get("message_identifier")
+        is_mt = isinstance(mid, str) and mid.startswith("MT")
+        is_mx = isinstance(mid, str) and mid.startswith("seev.")
+        if not (is_mt or is_mx):
+            continue
+        eid = None
+        if mid == "MT564":
+            msg = project_ca_message(facts_doc, now=now)
+            if msg.get("status") == "OK":
+                eid = (bind_event(msg, canon, now=now) or {}).get(
+                    "canonical_event_id")
+        elif is_mx and mid.startswith("seev.031.") and (
+                project_mx_message is not None):
+            try:
+                msg = project_mx_message(facts_doc, now=now)
+                eid = (bind_event(msg, canon, now=now) or {}).get(
+                    "canonical_event_id")
+            except Exception:
+                eid = None
+        ev = tax_evidence(facts_doc, canonical_event_id=eid, now=now)
+        pending.append((facts_doc, ev, eid))
+        if eid:
+            for ref_item in ev.get("event_references") or []:
+                ref_to_eid.setdefault(
+                    ref_item.get("reference"), eid)
+
+    for facts_doc, ev, eid in pending:
+        if eid is None:
+            for ref_item in ev.get("event_references") or []:
+                eid = ref_to_eid.get(ref_item.get("reference"))
+                if eid:
+                    ev["canonical_event_id"] = eid
+                    break
+        ref = ctx.state.store_artifact(
+            ctx.conn, ev, "CA_ES_TAX_EVIDENCE_V1", "V1",
+            run_id=ctx.run_id)
+        if eid:
+            role = "actual" if ev.get("evidence_role") == "ACTUAL" \
+                else "expected"
+            slot = evidence_by_event.setdefault(
+                eid, {"expected": [], "actual": [],
+                      "expected_docs": [], "actual_docs": []})
+            slot[role].append(ref)
+            slot[f"{role}_docs"].append(ev)
+
+    # pasada 2: entitlement + profile + rules -> tax entitlement
+    items: dict = {}
+    expected_cash_docs: dict = ctx.docs.setdefault(
+        "_expected_cash", {})
+    prev_cases = _previous_cases(ctx)
+    for eid in sorted(ent_index.get("items") or {}):
+        ent_doc = ctx.state.get_artifact(
+            ent_index["items"][eid]["sha256"])
+        event = surface._find(eid)
+        state = surface._current_state(event) if event else {}
+        payment_date = (state.get("payment_date") or {}).get("value") \
+            if isinstance(state.get("payment_date"), dict) else \
+            state.get("payment_date")
+        income_type = _INCOME_TYPE_BY_EVENT.get(
+            (event or {}).get("event_type"), "DIVIDEND")
+        slot = evidence_by_event.get(
+            eid, {"expected_docs": [], "actual_docs": []})
+        tax_doc = tax_entitlement(
+            ent_doc, slot["expected_docs"], profile_doc, rules_doc,
+            jurisdiction=jurisdiction or "ES",
+            income_type=income_type,
+            calculation_date=payment_date,
+            now=now)
+        entry = {
+            "tax_evidence": slot.get("expected", []),
+            "tax_evidence_actual": slot.get("actual", []),
+            "tax_entitlement": ctx.state.store_artifact(
+                ctx.conn, tax_doc, "CA_ES_TAX_ENTITLEMENT_V1", "V1",
+                run_id=ctx.run_id),
+        }
+        exp_doc = expected_cash(tax_doc)
+        entry["expected_cash"] = ctx.state.store_artifact(
+            ctx.conn, exp_doc, "CA_ES_EXPECTED_CASH_V1", "V1",
+            run_id=ctx.run_id)
+        expected_cash_docs[eid] = exp_doc
+        recon = tax_recon(tax_doc, slot["actual_docs"], now=now)
+        entry["tax_recon"] = ctx.state.store_artifact(
+            ctx.conn, recon, "CA_ES_TAX_RECON_V1", "V1",
+            run_id=ctx.run_id)
+        cases = build_cases_doc(
+            recon, previous_cases=prev_cases.get(eid), now=now)
+        entry["tax_cases"] = ctx.state.store_artifact(
+            ctx.conn, cases, "CA_ES_EXCEPTION_CASES_V1", "V1",
+            run_id=ctx.run_id)
+        items[eid] = entry
+
+    return {
+        "schema": INDEX_SCHEMA,
+        "generated_at": now,
+        "kind": "CA_ES_TAX_EVENT_V1",
         "items": items,
     }
 
@@ -717,9 +899,23 @@ def default_dag() -> list[OperationalStep]:
             expected_output_version="V1",
             uses_inputs=("canon", "positions", "source_policy"),
             fn=_step_entitlements),
+        # P14.18: rama fiscal entre entitlements y cash_recon.
+        # uses_inputs de tax_profile/tax_rules + config_section
+        # 'tax' -> un cambio fiscal invalida SOLO este step (y
+        # downstream via outputs), nunca discovery/positions.
+        OperationalStep(
+            "tax_events", "1",
+            dependencies=("entitlements", "process_inbox"),
+            pure=False, mandatory=False,
+            expected_output_schema=INDEX_SCHEMA,
+            expected_output_version="V1",
+            config_section="tax",
+            uses_inputs=("canon", "source_policy",
+                         "tax_profile", "tax_rules"),
+            fn=_step_tax_events),
         OperationalStep(
             "cash_reconciliation", "1",
-            dependencies=("entitlements",),
+            dependencies=("entitlements", "tax_events"),
             mandatory=False,
             expected_output_schema=INDEX_SCHEMA,
             expected_output_version="V1",
