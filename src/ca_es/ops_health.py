@@ -142,6 +142,94 @@ def compute_health(state, conn, config: dict, *,
         {"failures": integrity_failures}
         if integrity_failures else None))
 
+    # --- fuentes (P9.7): disponibilidad, nunca verdad de negocio ---
+    sources_cfg = config.get("sources") or {}
+    if not sources_cfg.get("enabled"):
+        checks.append(_check("source_refresh", INFO,
+                             "NOT_CONFIGURED"))
+    else:
+        row = conn.execute(
+            "SELECT refresh_id, status, completed_at"
+            " FROM source_refreshes"
+            " ORDER BY started_at DESC, rowid DESC LIMIT 1"
+        ).fetchone()
+        if row is None:
+            checks.append(_check(
+                "source_refresh", DEGRADED, "NO_REFRESH_YET"))
+        else:
+            sev = {"SUCCESS": OK, "UNCHANGED": OK,
+                   "PARTIAL": DEGRADED}.get(row["status"], FAILED)
+            checks.append(_check("source_refresh", sev, {
+                "refresh_id": row["refresh_id"],
+                "status": row["status"],
+                "completed_at": row["completed_at"],
+            }))
+            arow = conn.execute(
+                "SELECT sha256 FROM artifacts"
+                " WHERE schema='CA_ES_SOURCE_REFRESH_V1'"
+                " ORDER BY created_at DESC, rowid DESC LIMIT 1"
+            ).fetchone()
+            refresh_doc = None
+            if arow is not None:
+                try:
+                    refresh_doc = state.get_artifact(arow["sha256"])
+                except Exception:
+                    refresh_doc = None
+            if refresh_doc:
+                required_bad = [
+                    f"{sr['source_id']}/{sr['surface_id']}"
+                    for sr in
+                    refresh_doc.get("source_results") or []
+                    if sr.get("required")
+                    and sr.get("status") in ("FAILED", "PARTIAL")]
+                checks.append(_check(
+                    "source_required",
+                    FAILED if required_bad else OK,
+                    {"degraded": required_bad}
+                    if required_bad else None))
+            else:
+                checks.append(_check(
+                    "source_required", INFO, "NO_REFRESH_DOC"))
+        # parse failures pendientes sobre el latest observado
+        pf = conn.execute(
+            "SELECT COUNT(*) c FROM source_parse_results pr"
+            " JOIN source_documents d"
+            " ON pr.source_id=d.source_id"
+            " AND pr.source_document_id=d.source_document_id"
+            " AND pr.content_sha256=d.latest_content_sha256"
+            " WHERE pr.parse_status='PARSE_FAILED'").fetchone()["c"]
+        checks.append(_check(
+            "source_parse_failures",
+            DEGRADED if pf else OK,
+            {"count": pf} if pf else None))
+        cp_age = health_cfg.get("source_checkpoint_max_age_days")
+        if cp_age is None:
+            checks.append(_check(
+                "source_checkpoints", INFO, "NO_THRESHOLD"))
+        else:
+            oldest = conn.execute(
+                "SELECT MIN(updated_at) m"
+                " FROM source_checkpoints").fetchone()["m"]
+            if oldest is None:
+                checks.append(_check(
+                    "source_checkpoints", DEGRADED,
+                    "NO_CHECKPOINTS"))
+            else:
+                try:
+                    run_day = datetime.fromisoformat(
+                        as_of or ts[:10])
+                    cp_day = datetime.fromisoformat(oldest[:10])
+                    age = (run_day - cp_day).days
+                    checks.append(_check(
+                        "source_checkpoints",
+                        DEGRADED if age > cp_age else OK,
+                        {"oldest": oldest, "age_days": age,
+                         "max_age_days": cp_age}))
+                except ValueError:
+                    checks.append(_check(
+                        "source_checkpoints", INFO,
+                        "UNPARSEABLE"))
+
     # --- informational -------------------------------------------
     indeterminate = 0
     if deadlines_doc is not None:

@@ -136,6 +136,7 @@ class SourceResult:
     discovery_only: int = 0
     pages_fetched: int = 0
     pagination_complete: bool = True
+    required: bool = False
     error: str | None = None
     checkpoint_advanced: bool = False
     detail: dict = field(default_factory=dict)
@@ -154,6 +155,7 @@ class SourceResult:
             "discovery_only": self.discovery_only,
             "pages_fetched": self.pages_fetched,
             "pagination_complete": self.pagination_complete,
+            "required": self.required,
             "checkpoint_advanced": self.checkpoint_advanced,
             "error": self.error,
             "detail": self.detail,
@@ -168,7 +170,8 @@ def _run_one_source(state, conn, adapter_name: str, cfg: dict,
     surface_id = cfg["surface_id"]
     result = SourceResult(
         adapter_name=adapter_name, source_id=source_id,
-        surface_id=surface_id)
+        surface_id=surface_id,
+        required=bool(cfg.get("required")))
 
     policy = policy_sources.get(source_id) or {}
     if policy.get("ingestion_status") not in (None, "ACTIVE"):
@@ -373,6 +376,7 @@ def run_source_refresh(state, conn, sources_cfg: dict, *,
                 source_id=cfg.get("source_id", "?"),
                 surface_id=cfg.get("surface_id", "?"),
                 status=SRC_FAILED,
+                required=bool(cfg.get("required")),
                 error=f"{exc.__class__.__name__}:{exc}"[:300]))
             continue
         results.append(_run_one_source(

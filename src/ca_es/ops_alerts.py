@@ -113,6 +113,105 @@ def run_failed_candidate(run_id: str, error_summary) -> dict:
         {"run_id": run_id, "error_summary": error_summary}, [])
 
 
+# ------------------------------------------------------------------
+# P9.7 — alertas de fuentes (disponibilidad, nunca verdad de negocio)
+# ------------------------------------------------------------------
+
+SOURCE_CATEGORIES = {
+    "SOURCE_REFRESH_FAILED", "SOURCE_PARTIAL", "SOURCE_PARSE_FAILED",
+    "SOURCE_CONTENT_CHANGED", "SOURCE_STALE",
+}
+
+
+def derive_source_alerts(
+        refresh_doc: dict | None, refresh_ref: dict | None,
+        canon_doc: dict | None, canon_ref: dict | None,
+        *, sources_cfg: dict, conn, now: str | None = None) -> list[dict]:
+    """Candidatos desde el refresh/canon-refresh del run.
+
+    - UNCHANGED nunca alerta.
+    - CONTENT_CHANGED es informativo: un documento revisado puede ser
+      normal; el payload lo dice explicitamente.
+    - STALE solo si hay umbral configurado
+      (``sources.stale_after_days``) — nunca se asume que una fuente
+      "debe publicar cada dia".
+    """
+    out: list[dict] = []
+    refs = [refresh_ref["sha256"]] if refresh_ref else []
+    cref = [canon_ref["sha256"]] if canon_ref else []
+
+    if refresh_doc and refresh_doc.get("enabled", True):
+        for sr in refresh_doc.get("source_results") or []:
+            subject = f"{sr['source_id']}/{sr['surface_id']}"
+            status = sr.get("status")
+            if status == "FAILED":
+                out.append(_candidate(
+                    "SOURCE_REFRESH_FAILED", "source", subject, {
+                        "source_id": sr["source_id"],
+                        "surface_id": sr["surface_id"],
+                        "status": status,
+                        "error": sr.get("error"),
+                    }, refs))
+            elif status == "PARTIAL":
+                out.append(_candidate(
+                    "SOURCE_PARTIAL", "source", subject, {
+                        "source_id": sr["source_id"],
+                        "surface_id": sr["surface_id"],
+                        "status": status,
+                        "fetch_failures": sr.get("fetch_failures"),
+                        "pagination_complete":
+                            sr.get("pagination_complete"),
+                        "error": sr.get("error"),
+                    }, refs))
+
+    if canon_doc:
+        for failure in canon_doc.get("parse_failures") or []:
+            out.append(_candidate(
+                "SOURCE_PARSE_FAILED", "source_document",
+                failure["document_id"], {
+                    "document_id": failure["document_id"],
+                    "content_sha256": failure.get("content_sha256"),
+                    "error": failure.get("error"),
+                }, cref))
+        for promo in canon_doc.get("parse_promotions") or []:
+            if promo.get("from") is None:
+                continue
+            out.append(_candidate(
+                "SOURCE_CONTENT_CHANGED", "source_document",
+                promo["document_id"], {
+                    "document_id": promo["document_id"],
+                    "from": promo.get("from"),
+                    "to": promo.get("to"),
+                    "notice": "content changed and re-parsed OK;"
+                              " normal revision, not a source error",
+                }, cref))
+
+    stale_days = (sources_cfg or {}).get("stale_after_days")
+    if stale_days is not None and now:
+        from datetime import date
+        run_day = date.fromisoformat(now[:10])
+        rows = conn.execute(
+            "SELECT source_id, surface_id, updated_at"
+            " FROM source_checkpoints").fetchall()
+        for row in rows:
+            try:
+                cp_day = date.fromisoformat((row["updated_at"] or "")[:10])
+            except ValueError:
+                continue
+            age = (run_day - cp_day).days
+            if age > stale_days:
+                out.append(_candidate(
+                    "SOURCE_STALE", "source",
+                    f"{row['source_id']}/{row['surface_id']}", {
+                        "source_id": row["source_id"],
+                        "surface_id": row["surface_id"],
+                        "last_checkpoint_at": row["updated_at"],
+                        "age_days": age,
+                        "stale_after_days": stale_days,
+                    }, refs))
+    return out
+
+
 def apply_alerts(conn, candidates: list[dict], run_id: str,
                  evaluated_categories: set[str],
                  now: str | None = None) -> dict:

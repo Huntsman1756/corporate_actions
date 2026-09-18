@@ -517,10 +517,12 @@ def _step_alert_outbox(ctx: RunContext) -> dict:
     output este run se consideran evaluadas (clear)."""
     from .ops_alerts import (
         DEADLINE_CATEGORIES,
+        SOURCE_CATEGORIES,
         apply_alerts,
         derive_deadline_alerts,
         derive_exception_alerts,
         derive_inbox_alerts,
+        derive_source_alerts,
     )
 
     candidates = []
@@ -554,6 +556,20 @@ def _step_alert_outbox(ctx: RunContext) -> dict:
         candidates += derive_inbox_alerts(
             inbox_doc, ctx.outputs.get("process_inbox"))
         evaluated.add("PROCESSING_FAILURE")
+    # P9.7: fuentes — solo si el run produjo docs de source/canon
+    # refresh; en caso contrario las categorias no se evaluan y no
+    # se limpian alertas abiertas por un run sin sources.
+    refresh_doc = ctx.docs.get("source_refresh")
+    canon_doc = ctx.docs.get("canon_refresh")
+    sources_cfg = ctx.config.get("sources") or {}
+    if (sources_cfg.get("enabled")
+            and (refresh_doc is not None or canon_doc is not None)):
+        candidates += derive_source_alerts(
+            refresh_doc, ctx.outputs.get("source_refresh"),
+            canon_doc, ctx.outputs.get("canon_refresh"),
+            sources_cfg=sources_cfg, conn=ctx.conn,
+            now=ctx.now())
+        evaluated.update(SOURCE_CATEGORIES)
 
     stats = apply_alerts(
         ctx.conn, candidates, ctx.run_id, evaluated,

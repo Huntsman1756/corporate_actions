@@ -22,13 +22,14 @@ _INPUT_KEYS = {
 _ACTION_QUEUE_KEYS = {"window_days", "due_soon_days"}
 _RECON_KEYS = {"events"}
 _INBOX_KEYS = {"path"}
-_HEALTH_KEYS = {"positions_max_age_days", "canon_max_age_hours"}
+_HEALTH_KEYS = {"positions_max_age_days", "canon_max_age_hours",
+                "source_checkpoint_max_age_days"}
 _ALERT_KEYS = {"enabled"}
 _LINEAGE_KEYS = {"enabled", "required", "path"}
 
 _SOURCES_KEYS = {
     "enabled", "adapters", "timeout_seconds", "retries",
-    "politeness_seconds", "max_bytes",
+    "politeness_seconds", "max_bytes", "stale_after_days",
 }
 _SOURCES_ADAPTER_KEYS = {
     "adapter", "portal", "source_id", "surface_id",
