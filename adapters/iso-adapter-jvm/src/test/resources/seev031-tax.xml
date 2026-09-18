@@ -1,0 +1,55 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Document xmlns="urn:iso:std:iso:20022:tech:xsd:seev.031.002.15">
+  <CorpActnNtfctn>
+    <NtfctnGnlInf>
+      <NtfctnTp>NEWM</NtfctnTp>
+    </NtfctnGnlInf>
+    <CorpActnGnlInf>
+      <CorpActnEvtId>CA-TAX-0001</CorpActnEvtId>
+      <EvtTp>
+        <Cd>DVCA</Cd>
+      </EvtTp>
+      <MndtryVlntryEvtTp>
+        <Cd>MAND</Cd>
+      </MndtryVlntryEvtTp>
+      <UndrlygScty>
+        <FinInstrmId>
+          <ISIN>ES0113900J37</ISIN>
+        </FinInstrmId>
+      </UndrlygScty>
+    </CorpActnGnlInf>
+    <CorpActnDtls>
+      <DtDtls>
+        <ExDvddDt><Dt>2026-07-16</Dt></ExDvddDt>
+        <RcrdDt><Dt>2026-07-15</Dt></RcrdDt>
+        <PmtDt><Dt>2026-07-20</Dt></PmtDt>
+      </DtDtls>
+    </CorpActnDtls>
+    <CorpActnOptnDtls>
+      <OptnNb>001</OptnNb>
+      <OptnTp><Cd>CASH</Cd></OptnTp>
+      <DfltPrcgOrStgInstr>
+        <DfltOptnInd>true</DfltOptnInd>
+      </DfltPrcgOrStgInstr>
+      <CshMvmntDtls>
+        <CdtDbtInd>CRDT</CdtDbtInd>
+        <CtrctlPmtInd>NREQ</CtrctlPmtInd>
+        <IncmTp><Id>DVDA</Id></IncmTp>
+        <CtryOfIncmSrc>ES</CtryOfIncmSrc>
+        <DtDtls>
+          <PmtDt><Dt>2026-07-20</Dt></PmtDt>
+        </DtDtls>
+        <AmtDtls>
+          <GrssAmt Ccy="EUR">1562.50</GrssAmt>
+          <NetAmt Ccy="EUR">1265.62</NetAmt>
+          <WhldgTaxAmt Ccy="EUR">296.88</WhldgTaxAmt>
+        </AmtDtls>
+        <RateAndAmtDtls>
+          <WhldgTaxRate>
+            <Rate>19</Rate>
+          </WhldgTaxRate>
+        </RateAndAmtDtls>
+      </CshMvmntDtls>
+    </CorpActnOptnDtls>
+  </CorpActnNtfctn>
+</Document>
