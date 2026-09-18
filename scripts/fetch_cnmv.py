@@ -4,6 +4,10 @@ Formularios ASP.NET WebForms: se conserva ViewState y cookies, se hace
 POST con los campos del buscador y se extraen las filas de resultado.
 Adquisicion externa (no es runtime de ca-es).
 
+El parsing de filas/paginacion vive en
+``ca_es.sources.live.cnmv`` (P9): este script conserva solo la
+mecanica POST de consulta por denominacion/LEI.
+
     python scripts/fetch_cnmv.py --portal oir --denominacion P3 --out-dir g0/corpus/raw/cnmv/p3
 """
 from __future__ import annotations
@@ -15,6 +19,9 @@ import re
 import urllib.parse
 import urllib.request
 from pathlib import Path
+
+from ca_es.sources.live.cnmv import (  # noqa: E402
+    extract_results, fetch_document, paginate_links)
 
 REPO_ROOT = Path(__file__).resolve().parents[1]
 
@@ -108,94 +115,6 @@ def search(
         },
     )
     return opener.open(request, timeout=60).read().decode("utf-8", "replace")
-
-
-def _clean(fragment: str) -> str:
-    import html as html_mod
-
-    return re.sub(r"\s+", " ", html_mod.unescape(re.sub(r"<[^>]+>", " ", fragment))).strip()
-
-
-def extract_results(html: str) -> list[dict]:
-    text = re.sub(r"(?is)<script.*?</script>", " ", html)
-    parts = re.split(
-        r'id="[^"]*repListaPrincipal_(ctl\d+)_elementoPrimerNivel"', text
-    )
-    results: list[dict] = []
-    for index in range(1, len(parts), 2):
-        control, body = parts[index], parts[index + 1]
-        record: dict = {"control": control}
-
-        def grab(pattern: str, group: int = 1) -> str | None:
-            match = re.search(pattern, body, re.I | re.S)
-            return match.group(group) if match else None
-
-        record["date"] = grab(r"liFechaRegistro[^>]*>\s*([0-9]{2}/[0-9]{2}/[0-9]{4})")
-        record["time"] = grab(r"liHora[^>]*>\s*([0-9]{2}:[0-9]{2})")
-        record["issuer"] = grab(r"spanTituloCabecera[^>]*>([^<]+)</span>")
-        record["category"] = grab(r"descripcionSubtituloCabecera[^>]*>([^<]+)</span>")
-        title = re.search(
-            r"subtituloRegistroEnlace\"[^>]*href=\"([^\"]+)\"[^>]*>\s*<span[^>]*>(.*?)</span>",
-            body,
-            re.I | re.S,
-        )
-        if title:
-            record["document_url"] = title.group(1)
-            record["title"] = _clean(title.group(2))
-        else:
-            link = re.search(
-                r"subtituloRegistroEnlace\"[^>]*href=\"([^\"]+)\"[^>]*>(.*?)</a>",
-                body,
-                re.I | re.S,
-            )
-            if link:
-                record["document_url"] = link.group(1)
-                record["title"] = _clean(link.group(2))
-        record["registration_number"] = grab(r"N[uú]mero de registro:\s*([0-9]+)")
-        record["related"] = [
-            {"url": href, "text": _clean(text)}
-            for href, text in re.findall(
-                r'href="([^"]+)"[^>]*>([^<]*Relacionado con la comunicaci[^<]*)</a>',
-                body,
-                re.I,
-            )
-        ]
-        if record.get("title") or record.get("date"):
-            results.append(record)
-    return results
-
-
-def paginate_links(html: str) -> list[str]:
-    import html as html_mod
-
-    return sorted(
-        set(
-            html_mod.unescape(link)
-            for link in re.findall(
-                r'href="([^"]*resultado-[a-z]+\.aspx\?[^"]*page=[0-9]+[^"]*)"',
-                html,
-                re.I,
-            )
-        )
-    )
-
-
-def fetch_document(opener, url: str, out_dir: Path, name: str) -> dict:
-    request = urllib.request.Request(url, headers={**HEADERS, "Referer": PORTALS["ip"]["page"]})
-    with opener.open(request, timeout=90) as response:
-        payload = response.read()
-        content_type = response.headers.get("Content-Type", "")
-    extension = "pdf" if "pdf" in content_type else "html"
-    path = out_dir / f"{name}.{extension}"
-    path.write_bytes(payload)
-    import hashlib
-
-    return {
-        "path": str(path),
-        "content_type": content_type,
-        "size": len(payload),
-        "sha256": hashlib.sha256(payload).hexdigest(),
-    }
 
 
 def main(argv: list[str] | None = None) -> int:
