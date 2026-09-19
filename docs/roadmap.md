@@ -465,23 +465,82 @@ P12 External Gateway Adapters & Transport Conformance Lab
     P12.15-P12.16 conformance labs + e2e                  DONE
          (scripts/p12_e2e_demo.py legs S1-S5+F1-F4 verde)
          — P12 CLOSED
+
+P13 Custody Position / Cash Feeds
+    P13.6-P13.11 cash observation + binding + recons + cases  DONE
+         (9d1f204; CA_ES_CASH_MOVEMENTS_V2 como contrato de
+          observacion; binding explicito nunca por amount+date;
+          recons de posicion/cash feed + health)
+    P13.12+P13.15-P13.17 custody inbox P7 + CLI + e2e        DONE
+         (497f8dd; conformance + scripts/p13_e2e_demo.py
+          legs S1-S7)
+         — P13 CLOSED
+
+P14 Tax / Withholding / Net Entitlement
+    P14.0 capability audit + OSS survey                     DONE
+         (5d06a5a; AEAT/BOE como fuentes efectivo-datadas;
+          OpenFisca evaluado y rechazado para V1)
+    P14.1-P14.14 tax evidence/profile/rules/entitlement/recon DONE
+         (1bf8e3f; CA_ES_TAX_EVIDENCE_V1 EXPECTED/ACTUAL con
+          scopes por opcion; CA_ES_TAX_PROFILE_V1;
+          CA_ES_TAX_RULES_V1 estatico; CA_ES_TAX_ENTITLEMENT_V1;
+          CA_ES_EXPECTED_CASH_V1; CA_ES_TAX_RECON_V1; actual
+          nunca inferido de gross-net; NET cash recon cierra
+          NET_EXPECTED_NOT_AVAILABLE de forma opt-in)
+    P14.18 P7 tax_events DAG step                            DONE
+         (34fbd13; sin profile/rules -> indice minimo estable,
+          no invalida cache downstream)
+    P14 JVM facts + fixtures + docs + e2e                    DONE
+         (c60839e+51635eb; MT566/seev.036 ACTUAL verificados
+          contra Prowide pinneado; scripts/p14_e2e_demo.py
+          10 legs; CI run 35390408395 success)
+         — P14 CLOSED
+
+P15 Tax Recovery Lifecycle
+    P15.0 capability audit + OSS survey                      DONE
+         (9c78f83; TARE/BORE/TXRC como facts FIN genericos en
+          pin SRU2025 sin tocar adapter; MX TARE/BORE = SR2026,
+          gap forward-compatible documentado; seev.050-053
+          market claims NO reutilizados para tax reclaim)
+    P15.1-P15.7 lifecycle core                               DONE
+         (9148840; CA_ES_TAX_RECOVERY_RULES/ASSESSMENT/CASE/
+          DOCUMENT_SET/INSTRUCTION/STATUS/RECON_V1;
+          RELIEF_AT_SOURCE/QUICK_REFUND/STANDARD_RECLAIM;
+          recoverable_amount solo con regla+perfil+evidencia,
+          nunca de actual>expected; refund cash ligado solo
+          por referencia explicita)
+    P15.8-P15.9 P7 tax_recovery step + recovery CLI          DONE
+         (2bacd98; excepciones recovery -> P3.5)
+    P15.10-P15.11 R1-R12 + e2e + docs                        DONE
+         (3396eff; 30 tests + scripts/p15_e2e_demo.py 15 legs;
+          docs/p15/p150-p152; CI run 35420623083 success)
+         — P15 CLOSED
 ```
 
 ## Prioridad actual
 
-P1–P12 cerrados (incl. P4 MT + ISO 20022 seev.* con conformance
+P1–P15 cerrados (incl. P4 MT + ISO 20022 seev.* con conformance
 MT<->MX verificada, P7 daily operations end-to-end, P8 economic
 coverage V1 para SPLIT/REVERSE_SPLIT, RIGHTS_ISSUE staged,
 STOCK_DIVIDEND, SCRIP_DIVIDEND y CAPITAL_INCREASE=BONU, P9 live
 source refresh, P10 alert delivery boundary con FILE/WEBHOOK/
-SMTP, P11 instruction send boundary con FileSpoolTransport y
+SMTP, P11 instruction send boundary con FileSpoolTransport,
 P12 transport conformance lab con SFTP/IBM-MQ/FIN-ACK-NAK
-reales sobre OSS). SPOOLED/MQ_PUT_CONFIRMED/REMOTE_PERSISTED no
-son submission SWIFT; GATEWAY_* requiere receipt externo real +
-trust boundary operacional; SWIFT_ACKED/NAKED requiere service
-message FIN 21 correlado. Lo que sigue sin demostrar: compat con
-el perfil concreto de Alliance/middleware de una entidad —
+reales sobre OSS, P13 custody position/cash feeds, P14 tax/
+withholding/net entitlement con evidencia EXPECTED/ACTUAL y
+NET cash recon, y P15 tax recovery lifecycle completo
+RELIEF_AT_SOURCE/QUICK_REFUND/STANDARD_RECLAIM con
+recoverable_amount solo por regla+perfil+evidencia).
+SPOOLED/MQ_PUT_CONFIRMED/REMOTE_PERSISTED no son submission
+SWIFT; GATEWAY_* requiere receipt externo real + trust
+boundary operacional; SWIFT_ACKED/NAKED requiere service
+message FIN 21 correlado. Lo que sigue sin demostrar: compat
+con el perfil concreto de Alliance/middleware de una entidad —
 requiere ese boundary real.
+Siguiente: P16 Market Claims Lifecycle V1 (seev.050-053;
+claim basis sobre transaccion + CA event, nunca inferido de
+trade-before-ex + settlement-after-record; FX queda como
+boundary explicito pendiente).
 Sin nuevos gates formales (G4+ no existen); cada fase con tests
 y preregistro de scope.
 
