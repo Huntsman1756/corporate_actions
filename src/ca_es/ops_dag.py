@@ -493,6 +493,163 @@ def _step_tax_events(ctx: RunContext) -> dict | None:
     }
 
 
+def _previous_recovery_claims(ctx: RunContext) -> dict[str, dict]:
+    """Claims docs previos por evento desde el ultimo run exitoso."""
+    out: dict[str, dict] = {}
+    run = ctx.state.latest_successful_run(ctx.conn)
+    if not run:
+        return out
+    steps = ctx.state.get_steps(ctx.conn, run["run_id"])
+    for s in steps:
+        if s["step_id"] != "tax_recovery" or not s["output_sha256"]:
+            continue
+        try:
+            index = ctx.state.get_artifact(s["output_sha256"])
+        except Exception:
+            continue
+        for eid, entry in (index.get("items") or {}).items():
+            ref = (entry or {}).get("claims")
+            if not isinstance(ref, dict):
+                continue
+            try:
+                out[eid] = ctx.state.get_artifact(ref["sha256"])
+            except Exception:
+                continue
+    return out
+
+
+def _step_tax_recovery(ctx: RunContext) -> dict | None:
+    """P15: assessment -> claims -> doc sets -> instructions ->
+    status -> recon -> cases. Impuro (lee inbox), opcional.
+
+    Sin tax_recovery_rules: indice minimo estable — no invalida
+    downstream (mismo patron que tax_events sin configurar)."""
+    tax_index = ctx.docs.get("tax_events")
+    if tax_index is None:
+        return None
+
+    from .exceptions import build_cases_doc
+    from .tax_recovery_assessment import recovery_assessment
+    from .tax_recovery_case import merge_claims, open_claims
+    from .tax_recovery_docs import document_sets
+    from .tax_recovery_instruction import build_instructions
+    from .tax_recovery_recon import recovery_recon
+    from .tax_recovery_status import apply_status_events
+
+    rec_cfg = ctx.config.get("tax_recovery") or {}
+    rules_doc = ctx.input_doc("tax_recovery_rules")
+    if rules_doc is None:
+        return {
+            "schema": INDEX_SCHEMA,
+            "generated_at": ctx.now(),
+            "kind": "CA_ES_TAX_RECOVERY_V1",
+            "items": {},
+        }
+    profile_doc = ctx.input_doc("tax_profile")
+    provider_doc = ctx.input_doc("tax_recovery_provider")
+    movements = ctx.input_doc("cash_movements")
+    provided_docs = rec_cfg.get("provided_documents") or []
+    status_events = list(rec_cfg.get("status_events") or [])
+    jurisdiction = rec_cfg.get("jurisdiction") or \
+        (ctx.config.get("tax") or {}).get("jurisdiction") or "ES"
+    now = ctx.now()
+    as_of = ctx.as_of or ""
+
+    # facts por input_sha256 para extraer TARE/BORE del mensaje que
+    # produjo cada evidencia ACTUAL
+    facts_by_sha = {f.get("input_sha256"): f
+                    for f in _inbox_facts_all(ctx)}
+
+    prev_claims = _previous_recovery_claims(ctx)
+    prev_cases = _previous_cases(ctx)
+    items = {}
+    for eid in sorted(tax_index.get("items") or {}):
+        entry = tax_index["items"][eid]
+        tax_doc = ctx.state.get_artifact(
+            entry["tax_entitlement"]["sha256"])
+        actual_facts = []
+        actual_evidence = []
+        for ref in entry.get("tax_evidence_actual") or []:
+            ev = ctx.state.get_artifact(ref["sha256"])
+            actual_evidence.append(ev)
+            src = facts_by_sha.get(ev.get("input_sha256"))
+            if src is not None:
+                actual_facts.append(src)
+        income_type = tax_doc.get("income_type")
+
+        assessment = recovery_assessment(
+            tax_doc, actual_evidence, profile_doc, rules_doc,
+            jurisdiction=jurisdiction,
+            income_type=income_type or "DIVIDEND",
+            assessment_date=as_of[:10] or now[:10],
+            payment_date=tax_doc.get("calculation_date"),
+            now=now)
+        rec_entry = {
+            "assessment": ctx.state.store_artifact(
+                ctx.conn, assessment,
+                "CA_ES_TAX_RECOVERY_ASSESSMENT_V1", "V1",
+                run_id=ctx.run_id),
+        }
+
+        claims = open_claims(assessment, now=now)
+        claims = merge_claims(prev_claims.get(eid), claims, now=now)
+        rec_entry["claims"] = ctx.state.store_artifact(
+            ctx.conn, claims, "CA_ES_TAX_RECOVERY_CASE_V1", "V1",
+            run_id=ctx.run_id)
+
+        doc_sets = document_sets(claims, rules_doc, provided_docs,
+                                 actual_facts, now=now)
+        rec_entry["doc_sets"] = ctx.state.store_artifact(
+            ctx.conn, doc_sets,
+            "CA_ES_TAX_RECOVERY_DOCUMENT_SET_V1", "V1",
+            run_id=ctx.run_id)
+
+        instructions = build_instructions(
+            claims, doc_sets, rules_doc, provider_doc, now=now)
+        rec_entry["instructions"] = ctx.state.store_artifact(
+            ctx.conn, instructions,
+            "CA_ES_TAX_RECOVERY_INSTRUCTION_V1", "V1",
+            run_id=ctx.run_id)
+
+        # deadline check automatico: EXPIRY_CHECK con as_of para
+        # cada claim no terminal
+        expiry_events = [
+            {"claim_id": c["claim_id"], "event_type": "EXPIRY_CHECK",
+             "at": as_of or now, "source_ref": "ops:deadline-check"}
+            for c in claims.get("claims") or []]
+        status_doc = apply_status_events(
+            claims, expiry_events + status_events,
+            actor="ops", now=now)
+        rec_entry["status"] = ctx.state.store_artifact(
+            ctx.conn, status_doc, "CA_ES_TAX_RECOVERY_STATUS_V1",
+            "V1", run_id=ctx.run_id)
+        # persistir claims actualizados por los eventos
+        rec_entry["claims"] = ctx.state.store_artifact(
+            ctx.conn, claims, "CA_ES_TAX_RECOVERY_CASE_V1", "V1",
+            run_id=ctx.run_id)
+
+        recon = recovery_recon(
+            claims, instructions, doc_sets,
+            [movements] if movements else [], now=now)
+        rec_entry["recon"] = ctx.state.store_artifact(
+            ctx.conn, recon, "CA_ES_TAX_RECOVERY_RECON_V1", "V1",
+            run_id=ctx.run_id)
+
+        cases = build_cases_doc(
+            recon, previous_cases=prev_cases.get(eid), now=now)
+        rec_entry["recovery_cases"] = ctx.state.store_artifact(
+            ctx.conn, cases, "CA_ES_EXCEPTION_CASES_V1", "V1",
+            run_id=ctx.run_id)
+        items[eid] = rec_entry
+
+    return {
+        "schema": INDEX_SCHEMA,
+        "generated_at": now,
+        "kind": "CA_ES_TAX_RECOVERY_V1",
+        "items": items,
+    }
+
+
 def _step_exception_cases(ctx: RunContext) -> dict | None:
     recon_index = ctx.docs.get("cash_reconciliation")
     if recon_index is None:
@@ -922,6 +1079,21 @@ def default_dag() -> list[OperationalStep]:
             config_section="reconciliation",
             uses_inputs=("cash_movements",),
             fn=_step_cash_recon),
+        # P15: recovery lifecycle sobre la rama fiscal. Impuro
+        # (lee inbox + claims previos), opcional; sin
+        # tax_recovery_rules -> indice minimo estable.
+        OperationalStep(
+            "tax_recovery", "1",
+            dependencies=("tax_events", "cash_reconciliation"),
+            pure=False, mandatory=False,
+            expected_output_schema=INDEX_SCHEMA,
+            expected_output_version="V1",
+            config_section="tax_recovery",
+            uses_inputs=("tax_profile", "tax_recovery_rules",
+                         "tax_recovery_provider",
+                         "cash_movements"),
+            uses_as_of=True,
+            fn=_step_tax_recovery),
         OperationalStep(
             "exception_cases", "1",
             dependencies=("cash_reconciliation",),

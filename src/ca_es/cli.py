@@ -2170,6 +2170,172 @@ def cmd_tax_rules_validate(args: argparse.Namespace) -> int:
                   "valid": not errors, "errors": errors})
 
 
+# ------------------------------------------------------------------
+# P15 — tax recovery lifecycle
+
+
+def _load_json_list(path: str, label: str):
+    """Carga un manifiesto JSON de raiz lista (no un artifact doc)."""
+    try:
+        data = json.loads(Path(path).read_text(encoding="utf-8"))
+    except (OSError, json.JSONDecodeError) as exc:
+        return None, _input_error(_InputError(f"{label}: {exc}"))
+    if not isinstance(data, list):
+        return None, _input_error(
+            _InputError(f"{label} debe ser una lista JSON"))
+    return data, 0
+
+
+def cmd_recovery_rules_validate(args: argparse.Namespace) -> int:
+    from .tax_recovery_rules import validate_recovery_ruleset
+
+    doc, code = _load_json(args.rules, "recovery-rules")
+    if doc is None:
+        return code
+    errors = validate_recovery_ruleset(doc)
+    return _emit({"schema": "CA_ES_TAX_RECOVERY_RULES_VALIDATION_V1",
+                  "valid": not errors, "errors": errors})
+
+
+def cmd_recovery_assess(args: argparse.Namespace) -> int:
+    from .tax_recovery_assessment import recovery_assessment
+
+    ent, code = _load_json(args.tax_entitlement, "tax-entitlement")
+    if ent is None:
+        return code
+    evidence, code = _multi_load(args.evidence, "evidence")
+    if evidence is None:
+        return code
+    profile = None
+    if args.profile:
+        profile, code = _load_json(args.profile, "tax-profile")
+        if profile is None:
+            return code
+    rules, code = _load_json(args.rules, "recovery-rules")
+    if rules is None:
+        return code
+    return _emit(recovery_assessment(
+        ent, evidence, profile, rules,
+        jurisdiction=args.jurisdiction,
+        income_type=args.income_type,
+        assessment_date=args.assessment_date,
+        payment_date=args.payment_date,
+        now=args.now))
+
+
+def cmd_recovery_claims(args: argparse.Namespace) -> int:
+    from .tax_recovery_case import merge_claims, open_claims
+
+    assessment, code = _load_json(args.assessment, "assessment")
+    if assessment is None:
+        return code
+    doc_sets = None
+    if args.doc_sets:
+        doc_sets, code = _load_json(args.doc_sets, "doc-sets")
+        if doc_sets is None:
+            return code
+    complete = {cid: ds.get("set_status") == "COMPLETE"
+                for cid, ds in (doc_sets or {}).get(
+                    "sets", {}).items()}
+    doc = open_claims(assessment, doc_complete=complete,
+                      now=args.now)
+    if args.previous_claims:
+        prev, code = _load_json(args.previous_claims, "claims")
+        if prev is None:
+            return code
+        doc = merge_claims(prev, doc, now=args.now)
+    return _emit(doc)
+
+
+def cmd_recovery_docs(args: argparse.Namespace) -> int:
+    from .tax_recovery_docs import document_sets
+
+    claims, code = _load_json(args.claims, "claims")
+    if claims is None:
+        return code
+    rules, code = _load_json(args.rules, "recovery-rules")
+    if rules is None:
+        return code
+    provided = None
+    if args.provided_docs:
+        provided, code = _load_json_list(args.provided_docs,
+                                         "provided-docs")
+        if provided is None:
+            return code
+    facts, code = _multi_load(args.facts, "facts")
+    if facts is None:
+        return code
+    return _emit(document_sets(claims, rules, provided, facts,
+                               now=args.now))
+
+
+def cmd_recovery_instruct(args: argparse.Namespace) -> int:
+    from .tax_recovery_instruction import build_instructions
+
+    claims, code = _load_json(args.claims, "claims")
+    if claims is None:
+        return code
+    rules, code = _load_json(args.rules, "recovery-rules")
+    if rules is None:
+        return code
+    doc_sets = None
+    if args.doc_sets:
+        doc_sets, code = _load_json(args.doc_sets, "doc-sets")
+        if doc_sets is None:
+            return code
+    provider = None
+    if args.provider:
+        provider, code = _load_json(args.provider, "provider")
+        if provider is None:
+            return code
+    return _emit(build_instructions(
+        claims, doc_sets, rules, provider, now=args.now))
+
+
+def cmd_recovery_status(args: argparse.Namespace) -> int:
+    from .tax_recovery_status import apply_status_events
+
+    claims, code = _load_json(args.claims, "claims")
+    if claims is None:
+        return code
+    events, code = _load_json_list(args.events, "events")
+    if events is None:
+        return code
+    status_doc = apply_status_events(claims, events,
+                                     actor=args.actor,
+                                     now=args.now)
+    return _emit({"status": status_doc, "claims": claims})
+
+
+def cmd_recovery_recon(args: argparse.Namespace) -> int:
+    from .tax_recovery_recon import recovery_recon
+
+    claims, code = _load_json(args.claims, "claims")
+    if claims is None:
+        return code
+    instructions = None
+    if args.instructions:
+        instructions, code = _load_json(args.instructions,
+                                        "instructions")
+        if instructions is None:
+            return code
+    doc_sets = None
+    if args.doc_sets:
+        doc_sets, code = _load_json(args.doc_sets, "doc-sets")
+        if doc_sets is None:
+            return code
+    movements, code = _multi_load(args.movements, "movements")
+    if movements is None:
+        return code
+    observations, code = _multi_load(args.observations,
+                                     "observations")
+    if observations is None:
+        return code
+    return _emit(recovery_recon(
+        claims, instructions, doc_sets, movements, observations,
+        now=args.now))
+
+
 def build_parser() -> argparse.ArgumentParser:
     parser = argparse.ArgumentParser(prog="ca-es", description=__doc__)
     parser.add_argument("--repo-root", default=None)
@@ -2838,6 +3004,93 @@ def build_parser() -> argparse.ArgumentParser:
         help="validacion estatica de CA_ES_TAX_RULES_V1")
     trv.add_argument("--rules", required=True)
     trv.set_defaults(func=cmd_tax_rules_validate)
+
+    # P15 — tax recovery lifecycle
+    rrv = sub.add_parser(
+        "recovery-rules-validate",
+        help="validacion estatica de CA_ES_TAX_RECOVERY_RULES_V1")
+    rrv.add_argument("--rules", required=True)
+    rrv.set_defaults(func=cmd_recovery_rules_validate)
+
+    ras = sub.add_parser(
+        "recovery-assess",
+        help="tax entitlement + actual evidence + profile + rules "
+             "-> CA_ES_TAX_RECOVERY_ASSESSMENT_V1")
+    ras.add_argument("--tax-entitlement", required=True)
+    ras.add_argument("--evidence", action="append", default=[],
+                     help="CA_ES_TAX_EVIDENCE_V1 role=ACTUAL "
+                          "(repetible)")
+    ras.add_argument("--profile", default=None)
+    ras.add_argument("--rules", required=True,
+                     help="doc CA_ES_TAX_RECOVERY_RULES_V1")
+    ras.add_argument("--jurisdiction", required=True)
+    ras.add_argument("--income-type", required=True)
+    ras.add_argument("--assessment-date", required=True)
+    ras.add_argument("--payment-date", default=None)
+    ras.add_argument("--now", default=None)
+    ras.set_defaults(func=cmd_recovery_assess)
+
+    rcl = sub.add_parser(
+        "recovery-claims",
+        help="assessment ELIGIBLE -> CA_ES_TAX_RECOVERY_CASE_V1")
+    rcl.add_argument("--assessment", required=True)
+    rcl.add_argument("--doc-sets", default=None,
+                     help="doc CA_ES_TAX_RECOVERY_DOCUMENT_SET_V1 "
+                          "(index) para abrir en READY/PENDING_DOC")
+    rcl.add_argument("--previous-claims", default=None)
+    rcl.add_argument("--now", default=None)
+    rcl.set_defaults(func=cmd_recovery_claims)
+
+    rds = sub.add_parser(
+        "recovery-docs",
+        help="claims + rules -> CA_ES_TAX_RECOVERY_DOCUMENT_SET_V1")
+    rds.add_argument("--claims", required=True)
+    rds.add_argument("--rules", required=True)
+    rds.add_argument("--provided-docs", default=None,
+                     help="JSON [{doc_type, reference, source?}]")
+    rds.add_argument("--facts", action="append", default=[],
+                     help="facts doc para extraer TARE/BORE "
+                          "(repetible)")
+    rds.add_argument("--now", default=None)
+    rds.set_defaults(func=cmd_recovery_docs)
+
+    rin = sub.add_parser(
+        "recovery-instruct",
+        help="claims READY_TO_SUBMIT -> "
+             "CA_ES_TAX_RECOVERY_INSTRUCTION_V1")
+    rin.add_argument("--claims", required=True)
+    rin.add_argument("--doc-sets", default=None)
+    rin.add_argument("--rules", required=True)
+    rin.add_argument("--provider", default=None,
+                     help="doc CA_ES_TAX_RECOVERY_PROVIDER_V1")
+    rin.add_argument("--now", default=None)
+    rin.set_defaults(func=cmd_recovery_instruct)
+
+    rst = sub.add_parser(
+        "recovery-status",
+        help="eventos provider/manual -> transiciones de claims "
+             "+ CA_ES_TAX_RECOVERY_STATUS_V1")
+    rst.add_argument("--claims", required=True)
+    rst.add_argument("--events", required=True,
+                     help="JSON lista de eventos")
+    rst.add_argument("--actor", default="system")
+    rst.add_argument("--now", default=None)
+    rst.set_defaults(func=cmd_recovery_status)
+
+    rrc = sub.add_parser(
+        "recovery-recon",
+        help="claims + refund cash por referencia explicita -> "
+             "CA_ES_TAX_RECOVERY_RECON_V1")
+    rrc.add_argument("--claims", required=True)
+    rrc.add_argument("--instructions", default=None)
+    rrc.add_argument("--doc-sets", default=None)
+    rrc.add_argument("--movements", action="append", default=[],
+                     help="doc CA_ES_CASH_MOVEMENTS_V2 (repetible)")
+    rrc.add_argument("--observations", action="append", default=[],
+                     help="doc CA_ES_CASH_ACCOUNT_OBSERVATION_V1 "
+                          "(repetible)")
+    rrc.add_argument("--now", default=None)
+    rrc.set_defaults(func=cmd_recovery_recon)
 
     return parser
 
