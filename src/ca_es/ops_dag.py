@@ -650,6 +650,304 @@ def _step_tax_recovery(ctx: RunContext) -> dict | None:
     }
 
 
+def _previous_market_claims(ctx: RunContext) -> dict[str, dict]:
+    """Claims docs previos por evento desde el ultimo run exitoso."""
+    out: dict[str, dict] = {}
+    run = ctx.state.latest_successful_run(ctx.conn)
+    if not run:
+        return out
+    steps = ctx.state.get_steps(ctx.conn, run["run_id"])
+    for s in steps:
+        if s["step_id"] != "market_claims" or not s["output_sha256"]:
+            continue
+        try:
+            index = ctx.state.get_artifact(s["output_sha256"])
+        except Exception:
+            continue
+        for eid, entry in (index.get("items") or {}).items():
+            ref = (entry or {}).get("claims")
+            if not isinstance(ref, dict):
+                continue
+            try:
+                out[eid] = ctx.state.get_artifact(ref["sha256"])
+            except Exception:
+                continue
+    return out
+
+
+_MC_KIND_ORDER = {"CLAIM_CREATION": 0, "CLAIM_STATUS": 1,
+                  "CANCELLATION_REQUEST": 2,
+                  "CANCELLATION_STATUS": 3}
+
+
+def _step_market_claims(ctx: RunContext) -> dict | None:
+    """P16: basis -> assessment -> claims -> seev.050-053 events
+    -> cancellation -> recon -> cases. Impuro (lee inbox +
+    claims previos), opcional.
+
+    Sin market_claim_rules ni securities_transactions: indice
+    minimo estable — no invalida downstream."""
+    canon = ctx.input_doc("canon")
+    if canon is None:
+        return None
+
+    from .exceptions import build_cases_doc
+    from .market_claim_assessment import claim_assessment
+    from .market_claim_basis import claim_basis
+    from .market_claim_cancellation import cancellation_doc
+    from .market_claim_case import merge_claims, open_claims
+    from .market_claim_messages import (
+        SUPPORTED_ALL, bind_claim, project_claim_cancellation,
+        project_claim_status, project_market_claim)
+    from .market_claim_recon import claim_recon
+    from .market_claim_status import apply_claim_events
+
+    mc_cfg = ctx.config.get("market_claims") or {}
+    rules_doc = ctx.input_doc("market_claim_rules")
+    tx_doc = ctx.input_doc("securities_transactions")
+    if rules_doc is None and tx_doc is None:
+        return {
+            "schema": INDEX_SCHEMA,
+            "generated_at": ctx.now(),
+            "kind": "CA_ES_MARKET_CLAIM_V1",
+            "items": {},
+        }
+    movements = ctx.input_doc("cash_movements")
+    jurisdiction = mc_cfg.get("jurisdiction") or \
+        (ctx.config.get("tax") or {}).get("jurisdiction") or "ES"
+    now = ctx.now()
+    as_of = (ctx.as_of or now)[:10]
+
+    facts_docs = [f for f in _inbox_facts_all(ctx)
+                  if f.get("message_identifier") in SUPPORTED_ALL]
+
+    # ref -> canonical_event_id via notificaciones ligadas
+    # (misma pasada que tax_events: MT564/seev.031 + binder canon)
+    ref_to_eid: dict[str, str] = {}
+    from .surface import Surface
+    from .swift_ca import bind_event, project_ca_message
+    try:
+        from .mx_ca import project_mx_message
+    except ImportError:
+        project_mx_message = None
+    for facts_doc in _inbox_facts_all(ctx):
+        mid = facts_doc.get("message_identifier")
+        eid = None
+        if mid == "MT564":
+            msg = project_ca_message(facts_doc, now=now)
+            if msg.get("status") == "OK":
+                eid = (bind_event(msg, canon, now=now) or {}).get(
+                    "canonical_event_id")
+        elif isinstance(mid, str) and mid.startswith("seev.031.") \
+                and project_mx_message is not None:
+            try:
+                msg = project_mx_message(facts_doc, now=now)
+                eid = (bind_event(msg, canon, now=now) or {}).get(
+                    "canonical_event_id")
+            except Exception:
+                eid = None
+        if eid:
+            for f in facts_doc.get("facts") or []:
+                mp = f.get("model_path") or f.get("field_path") or ""
+                if mp.endswith("/CorpActnEvtId") or \
+                        mp.endswith("20C::CORP"):
+                    ref_to_eid.setdefault(f.get("value"), eid)
+
+    # proyecciones seev.050-053 agrupadas por evento canon
+    proj_by_eid: dict[str, list] = {}
+    for facts_doc in facts_docs:
+        mid = facts_doc.get("message_identifier")
+        if mid in {"seev.050.001.01", "seev.050.001.02",
+                   "seev.050.001.03"}:
+            p = project_market_claim(facts_doc, now=now)
+        elif mid.startswith("seev.052."):
+            p = project_claim_status(facts_doc, now=now)
+        else:
+            p = project_claim_cancellation(facts_doc, now=now)
+        proj = p.get("projection") or {}
+        ref = proj.get("canonical_event_reference")
+        eid = ref_to_eid.get(ref)
+        if eid is None:
+            eid = proj.get("_bound_event_id")
+        proj_by_eid.setdefault(eid, []).append(p)
+
+    ent_index = ctx.docs.get("entitlements") or {}
+    prev_claims = _previous_market_claims(ctx)
+    prev_cases = _previous_cases(ctx)
+    events = {e.get("canonical_event_id"): e
+              for e in canon.get("events") or []}
+    target_eids = set(events) | {
+        e for e in proj_by_eid if e is not None}
+    items = {}
+    for eid in sorted(e for e in target_eids if e):
+        ev = events.get(eid) or {}
+        dates = (ev.get("temporal") or {}).get("dates") or {}
+        event_type = ev.get("event_type")
+        isin = ((ev.get("affected_instrument") or {}).get("isin"))
+
+        # proceeds rate explicita desde el entitlement del evento
+        proceeds_rate = None
+        proceeds_ccy = None
+        ent_ref = (ent_index.get("items") or {}).get(eid)
+        if isinstance(ent_ref, dict):
+            try:
+                ent = ctx.state.get_artifact(ent_ref["sha256"])
+            except Exception:
+                ent = None
+            for it in (ent or {}).get("items") or []:
+                gps = ((it.get("gross_per_share") or {}).get("value"))
+                if gps is not None:
+                    proceeds_rate = gps
+                    proceeds_ccy = ((it.get("gross_cash") or {})
+                                    .get("currency"))
+                    break
+
+        # transacciones filtradas al isin del evento
+        tx_filtered = {"schema": "CA_ES_SECURITIES_TRANSACTIONS_V1",
+                       "transactions": []}
+        for tx in (tx_doc or {}).get("transactions") or []:
+            if isin is None or tx.get("isin") == isin:
+                tx_filtered["transactions"].append(tx)
+
+        basis = claim_basis(
+            tx_filtered, canonical_event_id=eid,
+            event_type=event_type,
+            ex_date=dates.get("EX_DATE"),
+            record_date=dates.get("RECORD_DATE"),
+            payment_date=dates.get("PAYMENT_DATE"), now=now)
+        mc_entry = {"basis": ctx.state.store_artifact(
+            ctx.conn, basis, "CA_ES_MARKET_CLAIM_BASIS_V1", "V1",
+            run_id=ctx.run_id)}
+
+        assessment = claim_assessment(
+            basis, rules_doc, jurisdiction=jurisdiction,
+            assessment_date=as_of,
+            proceeds_rate=proceeds_rate,
+            proceeds_currency=proceeds_ccy, now=now)
+        mc_entry["assessment"] = ctx.state.store_artifact(
+            ctx.conn, assessment,
+            "CA_ES_MARKET_CLAIM_ASSESSMENT_V1", "V1",
+            run_id=ctx.run_id)
+
+        claims = open_claims(assessment, now=now)
+        claims = merge_claims(prev_claims.get(eid), claims, now=now)
+
+        # eventos de mensajes ligados por referencia explicita
+        projections = sorted(
+            proj_by_eid.get(eid) or [],
+            key=lambda p: (_MC_KIND_ORDER.get(p.get("kind"), 9),
+                           p.get("input_sha256") or ""))
+        msg_events = []
+        cancel_events = []
+        for p in projections:
+            proj = p.get("projection") or {}
+            binding = bind_claim(proj, claims)
+            kind = p.get("kind")
+            if binding.get("binding_status") != "BOUND":
+                msg_events.append({
+                    "event_type": "_UNBOUND",
+                    "binding_status": binding.get("binding_status"),
+                    "message_identifier": p.get("message_identifier"),
+                    "source_ref": p.get("input_sha256")})
+                continue
+            cid = binding.get("claim_id")
+            cash_mvts = proj.get("cash_movements") or []
+            sec_mvts = proj.get("securities_movements") or []
+            if kind == "CLAIM_CREATION":
+                ev_dict = {
+                    "event_type": "NOTIFICATION", "claim_id": cid,
+                    "at": now, "source_ref": p.get("input_sha256"),
+                    "projection": proj,
+                    "observed_amount": (cash_mvts[0] or {}).get(
+                        "amount") if cash_mvts else None,
+                    "observed_quantity": (sec_mvts[0] or {}).get(
+                        "quantity") if sec_mvts else None}
+                msg_events.append(ev_dict)
+            elif kind == "CLAIM_STATUS":
+                msg_events.append({
+                    "event_type": "STATUS", "claim_id": cid,
+                    "at": now, "source_ref": p.get("input_sha256"),
+                    "internal_status": proj.get("internal_status"),
+                    "status_choice": proj.get("status_choice")})
+            elif kind == "CANCELLATION_REQUEST":
+                ev_dict = {"event_type": "CANCELLATION_REQUEST",
+                           "claim_id": cid, "at": now,
+                           "source_ref": p.get("input_sha256"),
+                           "message_identifier": p.get(
+                               "message_identifier")}
+                msg_events.append(ev_dict)
+                cancel_events.append(ev_dict)
+            elif kind == "CANCELLATION_STATUS":
+                ev_dict = {"event_type": "CANCELLATION_STATUS",
+                           "claim_id": cid, "at": now,
+                           "source_ref": p.get("input_sha256"),
+                           "cancel_outcome": proj.get(
+                               "internal_status"),
+                           "message_identifier": p.get(
+                               "message_identifier")}
+                msg_events.append(ev_dict)
+                cancel_events.append(ev_dict)
+
+        status_doc = apply_claim_events(
+            claims, msg_events, actor="ops", now=now)
+        mc_entry["status"] = ctx.state.store_artifact(
+            ctx.conn, status_doc, "CA_ES_MARKET_CLAIM_STATUS_V1",
+            "V1", run_id=ctx.run_id)
+
+        cancel_doc = cancellation_doc(claims, cancel_events,
+                                      now=now)
+        mc_entry["cancellation"] = ctx.state.store_artifact(
+            ctx.conn, cancel_doc,
+            "CA_ES_MARKET_CLAIM_CANCELLATION_V1", "V1",
+            run_id=ctx.run_id)
+
+        recon = claim_recon(
+            claims, [movements] if movements else [], now=now)
+        # settlement events derivados del recon factual
+        settle_events = []
+        for ritem in recon.get("items") or []:
+            if ritem.get("status") == "MATCH":
+                settle_events.append({
+                    "event_type": "SETTLEMENT_OBSERVED",
+                    "claim_id": ritem.get("claim_id"),
+                    "at": now, "fully_settled": True,
+                    "source_ref": "ops:claim-recon"})
+            elif ritem.get("status") in (
+                    "AMOUNT_MISMATCH", "QUANTITY_MISMATCH") and (
+                    ritem.get("bound_movement_ids")):
+                settle_events.append({
+                    "event_type": "SETTLEMENT_OBSERVED",
+                    "claim_id": ritem.get("claim_id"),
+                    "at": now, "fully_settled": False,
+                    "source_ref": "ops:claim-recon"})
+        if settle_events:
+            status_doc = apply_claim_events(
+                claims, settle_events, actor="ops", now=now)
+        mc_entry["claims"] = ctx.state.store_artifact(
+            ctx.conn, claims, "CA_ES_MARKET_CLAIM_V1", "V1",
+            run_id=ctx.run_id)
+
+        recon = claim_recon(
+            claims, [movements] if movements else [], now=now)
+        mc_entry["recon"] = ctx.state.store_artifact(
+            ctx.conn, recon, "CA_ES_MARKET_CLAIM_RECON_V1", "V1",
+            run_id=ctx.run_id)
+
+        cases = build_cases_doc(
+            recon, previous_cases=prev_cases.get(eid), now=now)
+        mc_entry["claim_cases"] = ctx.state.store_artifact(
+            ctx.conn, cases, "CA_ES_EXCEPTION_CASES_V1", "V1",
+            run_id=ctx.run_id)
+        items[eid] = mc_entry
+
+    return {
+        "schema": INDEX_SCHEMA,
+        "generated_at": now,
+        "kind": "CA_ES_MARKET_CLAIM_V1",
+        "items": items,
+    }
+
+
 def _step_exception_cases(ctx: RunContext) -> dict | None:
     recon_index = ctx.docs.get("cash_reconciliation")
     if recon_index is None:
@@ -1094,6 +1392,22 @@ def default_dag() -> list[OperationalStep]:
                          "cash_movements"),
             uses_as_of=True,
             fn=_step_tax_recovery),
+        # P16: market claims lifecycle sobre seev.050-053 del
+        # inbox + transacciones/reglas declaradas. Impuro,
+        # opcional; sin rules ni transactions -> indice minimo.
+        OperationalStep(
+            "market_claims", "1",
+            dependencies=("process_inbox", "entitlements",
+                          "tax_recovery"),
+            pure=False, mandatory=False,
+            expected_output_schema=INDEX_SCHEMA,
+            expected_output_version="V1",
+            config_section="market_claims",
+            uses_inputs=("canon", "market_claim_rules",
+                         "securities_transactions",
+                         "cash_movements"),
+            uses_as_of=True,
+            fn=_step_market_claims),
         OperationalStep(
             "exception_cases", "1",
             dependencies=("cash_reconciliation",),

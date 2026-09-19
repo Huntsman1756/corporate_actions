@@ -2336,6 +2336,136 @@ def cmd_recovery_recon(args: argparse.Namespace) -> int:
         now=args.now))
 
 
+# ---------------------------------------------------------------------
+# P16 — market claims lifecycle (seev.050-053)
+# ---------------------------------------------------------------------
+
+
+def cmd_mc_rules_validate(args: argparse.Namespace) -> int:
+    from .market_claim_rules import validate_claim_ruleset
+
+    doc, code = _load_json(args.rules, "market-claim-rules")
+    if doc is None:
+        return code
+    errors = validate_claim_ruleset(doc)
+    return _emit({"schema": "CA_ES_MARKET_CLAIM_RULES_VALIDATION_V1",
+                  "valid": not errors, "errors": errors})
+
+
+def cmd_mc_basis(args: argparse.Namespace) -> int:
+    from .market_claim_basis import claim_basis
+
+    tx, code = _load_json(args.transactions, "transactions")
+    if tx is None:
+        return code
+    return _emit(claim_basis(
+        tx, canonical_event_id=args.event_id,
+        event_type=args.event_type, ex_date=args.ex_date,
+        record_date=args.record_date,
+        payment_date=args.payment_date, now=args.now))
+
+
+def cmd_mc_assess(args: argparse.Namespace) -> int:
+    from .market_claim_assessment import claim_assessment
+
+    basis, code = _load_json(args.basis, "basis")
+    if basis is None:
+        return code
+    rules = None
+    if args.rules:
+        rules, code = _load_json(args.rules, "market-claim-rules")
+        if rules is None:
+            return code
+    return _emit(claim_assessment(
+        basis, rules, jurisdiction=args.jurisdiction,
+        assessment_date=args.assessment_date,
+        proceeds_rate=args.proceeds_rate,
+        proceeds_currency=args.proceeds_currency,
+        proceeds_quantity_ratio=args.proceeds_quantity_ratio,
+        proceeds_target_isin=args.proceeds_target_isin,
+        now=args.now))
+
+
+def cmd_mc_claims(args: argparse.Namespace) -> int:
+    from .market_claim_case import merge_claims, open_claims
+
+    assessment, code = _load_json(args.assessment, "assessment")
+    if assessment is None:
+        return code
+    doc = open_claims(assessment, now=args.now)
+    if args.previous_claims:
+        prev, code = _load_json(args.previous_claims, "claims")
+        if prev is None:
+            return code
+        doc = merge_claims(prev, doc, now=args.now)
+    return _emit(doc)
+
+
+def cmd_mc_project(args: argparse.Namespace) -> int:
+    from .market_claim_messages import (
+        SUPPORTED_050, SUPPORTED_052, bind_claim,
+        project_claim_cancellation, project_claim_status,
+        project_market_claim)
+
+    facts, code = _load_json(args.facts, "mx-facts")
+    if facts is None:
+        return code
+    mid = facts.get("message_identifier") or ""
+    if mid in SUPPORTED_050:
+        doc = project_market_claim(facts, now=args.now)
+    elif mid in SUPPORTED_052:
+        doc = project_claim_status(facts, now=args.now)
+    else:
+        doc = project_claim_cancellation(facts, now=args.now)
+    if args.claims:
+        claims, code = _load_json(args.claims, "claims")
+        if claims is None:
+            return code
+        doc = {**doc,
+               "binding": bind_claim(doc.get("projection"),
+                                     claims)}
+    return _emit(doc)
+
+
+def cmd_mc_events(args: argparse.Namespace) -> int:
+    from .market_claim_status import apply_claim_events
+
+    claims, code = _load_json(args.claims, "claims")
+    if claims is None:
+        return code
+    events, code = _load_json_list(args.events, "events")
+    if events is None:
+        return code
+    status_doc = apply_claim_events(claims, events,
+                                    actor=args.actor,
+                                    now=args.now)
+    return _emit({"status": status_doc, "claims": claims})
+
+
+def cmd_mc_cancel(args: argparse.Namespace) -> int:
+    from .market_claim_cancellation import cancellation_doc
+
+    claims, code = _load_json(args.claims, "claims")
+    if claims is None:
+        return code
+    events, code = _load_json_list(args.events, "events")
+    if events is None:
+        return code
+    return _emit(cancellation_doc(claims, events, now=args.now))
+
+
+def cmd_mc_recon(args: argparse.Namespace) -> int:
+    from .market_claim_recon import claim_recon
+
+    claims, code = _load_json(args.claims, "claims")
+    if claims is None:
+        return code
+    movements, code = _multi_load(args.movements, "movements")
+    if movements is None:
+        return code
+    return _emit(claim_recon(claims, movements, now=args.now))
+
+
 def build_parser() -> argparse.ArgumentParser:
     parser = argparse.ArgumentParser(prog="ca-es", description=__doc__)
     parser.add_argument("--repo-root", default=None)
@@ -3091,6 +3221,95 @@ def build_parser() -> argparse.ArgumentParser:
                           "(repetible)")
     rrc.add_argument("--now", default=None)
     rrc.set_defaults(func=cmd_recovery_recon)
+
+    # P16 — market claims lifecycle (seev.050-053)
+    mcv = sub.add_parser(
+        "mc-rules-validate",
+        help="validacion estatica de CA_ES_MARKET_CLAIM_RULES_V1")
+    mcv.add_argument("--rules", required=True)
+    mcv.set_defaults(func=cmd_mc_rules_validate)
+
+    mcb = sub.add_parser(
+        "mc-basis",
+        help="transactions + fechas explicitas del evento -> "
+             "CA_ES_MARKET_CLAIM_BASIS_V1")
+    mcb.add_argument("--transactions", required=True,
+                     help="doc CA_ES_SECURITIES_TRANSACTIONS_V1")
+    mcb.add_argument("--event-id", required=True)
+    mcb.add_argument("--event-type", default=None)
+    mcb.add_argument("--ex-date", default=None)
+    mcb.add_argument("--record-date", default=None)
+    mcb.add_argument("--payment-date", default=None)
+    mcb.add_argument("--now", default=None)
+    mcb.set_defaults(func=cmd_mc_basis)
+
+    mca = sub.add_parser(
+        "mc-assess",
+        help="basis + reglas de mercado -> "
+             "CA_ES_MARKET_CLAIM_ASSESSMENT_V1")
+    mca.add_argument("--basis", required=True)
+    mca.add_argument("--rules", default=None,
+                     help="doc CA_ES_MARKET_CLAIM_RULES_V1; "
+                          "ausente -> MARKET_PRACTICE_REQUIRED")
+    mca.add_argument("--jurisdiction", required=True)
+    mca.add_argument("--assessment-date", required=True)
+    mca.add_argument("--proceeds-rate", default=None,
+                     help="tasa cash por unidad (del entitlement)")
+    mca.add_argument("--proceeds-currency", default=None)
+    mca.add_argument("--proceeds-quantity-ratio", default=None)
+    mca.add_argument("--proceeds-target-isin", default=None)
+    mca.add_argument("--now", default=None)
+    mca.set_defaults(func=cmd_mc_assess)
+
+    mcc = sub.add_parser(
+        "mc-claims",
+        help="assessment PROVEN -> CA_ES_MARKET_CLAIM_V1")
+    mcc.add_argument("--assessment", required=True)
+    mcc.add_argument("--previous-claims", default=None)
+    mcc.add_argument("--now", default=None)
+    mcc.set_defaults(func=cmd_mc_claims)
+
+    mcp = sub.add_parser(
+        "mc-project",
+        help="facts seev.050/051/052/053 -> proyeccion "
+             "CA_ES_MARKET_CLAIM_MESSAGE_V1 (+binding opcional)")
+    mcp.add_argument("--facts", required=True,
+                     help="doc CA_ES_SWIFT_MX_FACTS_V1")
+    mcp.add_argument("--claims", default=None,
+                     help="doc CA_ES_MARKET_CLAIM_V1 para bind")
+    mcp.add_argument("--now", default=None)
+    mcp.set_defaults(func=cmd_mc_project)
+
+    mce = sub.add_parser(
+        "mc-events",
+        help="eventos ligados -> transiciones de claims + "
+             "CA_ES_MARKET_CLAIM_STATUS_V1")
+    mce.add_argument("--claims", required=True)
+    mce.add_argument("--events", required=True,
+                     help="JSON lista de eventos")
+    mce.add_argument("--actor", default="system")
+    mce.add_argument("--now", default=None)
+    mce.set_defaults(func=cmd_mc_events)
+
+    mcx = sub.add_parser(
+        "mc-cancel",
+        help="eventos de cancelacion -> "
+             "CA_ES_MARKET_CLAIM_CANCELLATION_V1")
+    mcx.add_argument("--claims", required=True)
+    mcx.add_argument("--events", required=True,
+                     help="JSON lista de eventos CANCELLATION_*")
+    mcx.add_argument("--now", default=None)
+    mcx.set_defaults(func=cmd_mc_cancel)
+
+    mcr = sub.add_parser(
+        "mc-recon",
+        help="claims + movimientos por referencia explicita -> "
+             "CA_ES_MARKET_CLAIM_RECON_V1")
+    mcr.add_argument("--claims", required=True)
+    mcr.add_argument("--movements", action="append", default=[],
+                     help="doc CA_ES_CASH_MOVEMENTS_V2 (repetible)")
+    mcr.add_argument("--now", default=None)
+    mcr.set_defaults(func=cmd_mc_recon)
 
     return parser
 
