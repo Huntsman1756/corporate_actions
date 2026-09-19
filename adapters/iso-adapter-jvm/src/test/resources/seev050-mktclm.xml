@@ -1,0 +1,42 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Document xmlns="urn:iso:std:iso:20022:tech:xsd:seev.050.001.03">
+  <MktClmCre>
+    <TxRef>
+      <AcctSvcrTxId>CLM-050-DEMO-1</AcctSvcrTxId>
+      <MktInfrstrctrTxId>MI-TX-DEMO-9</MktInfrstrctrTxId>
+    </TxRef>
+    <CorpActnGnlInf>
+      <CorpActnEvtId>BME-DVCA-0001</CorpActnEvtId>
+      <EvtTp>
+        <Cd>DVCA</Cd>
+      </EvtTp>
+      <EvtPrcgTp>
+        <Cd>MAND</Cd>
+      </EvtPrcgTp>
+      <FinInstrmId>
+        <ISIN>ES0113900J37</ISIN>
+      </FinInstrmId>
+    </CorpActnGnlInf>
+    <RltdSttlmInstrDtls>
+      <RltdSttlmInstrId>SI-DEMO-1</RltdSttlmInstrId>
+      <RltdSttlmQty>
+        <Unit>1000</Unit>
+      </RltdSttlmQty>
+      <TrfOfPrcdsTpInd>CLFT</TrfOfPrcdsTpInd>
+    </RltdSttlmInstrDtls>
+    <AcctDtls>
+      <SfkpgAcct>ACC-ES-1</SfkpgAcct>
+    </AcctDtls>
+    <MktClmTp>MKTC</MktClmTp>
+    <MktClmDtls>
+      <OptnNb>001</OptnNb>
+      <OptnTp>
+        <Cd>CASH</Cd>
+      </OptnTp>
+      <CshMvmntDtls>
+        <CdtDbtInd>CRDT</CdtDbtInd>
+        <EntitldAmt Ccy="EUR">125.00</EntitldAmt>
+      </CshMvmntDtls>
+    </MktClmDtls>
+  </MktClmCre>
+</Document>

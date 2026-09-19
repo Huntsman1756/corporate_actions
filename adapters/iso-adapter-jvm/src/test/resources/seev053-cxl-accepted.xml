@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Document xmlns="urn:iso:std:iso:20022:tech:xsd:seev.053.001.03">
+  <MktClmCxlReqStsAdvc>
+    <MktClmCxlReqId>
+      <Id>CXL-REQ-DEMO-1</Id>
+    </MktClmCxlReqId>
+    <TxRef>
+      <AcctSvcrTxId>CLM-050-DEMO-1</AcctSvcrTxId>
+    </TxRef>
+    <CorpActnGnlInf>
+      <CorpActnEvtId>BME-DVCA-0001</CorpActnEvtId>
+      <EvtTp>
+        <Cd>DVCA</Cd>
+      </EvtTp>
+      <FinInstrmId>
+        <ISIN>ES0113900J37</ISIN>
+      </FinInstrmId>
+    </CorpActnGnlInf>
+    <MktClmCxlReqSts>
+      <Accptd>
+        <NoSpcfdRsn>NORE</NoSpcfdRsn>
+      </Accptd>
+    </MktClmCxlReqSts>
+  </MktClmCxlReqStsAdvc>
+</Document>
