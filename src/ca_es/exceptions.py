@@ -48,6 +48,7 @@ SECURITY_RECON_SCHEMA = "CA_ES_SECURITY_RECON_V1"
 CUSTODY_POSITION_RECON_SCHEMA = "CA_ES_POSITION_RECON_V1"
 CUSTODY_CASH_RECON_SCHEMA = "CA_ES_CASH_FEED_RECON_V1"
 TAX_RECON_SCHEMA = "CA_ES_TAX_RECON_V1"
+TAX_RECOVERY_RECON_SCHEMA = "CA_ES_TAX_RECOVERY_RECON_V1"
 
 WORKFLOW_OPEN = "OPEN"
 WORKFLOW_IN_REVIEW = "IN_REVIEW"
@@ -100,6 +101,11 @@ PRIORITY = {
     "WITHHOLDING_RATE_MISMATCH": "HIGH",
     "MISSING_TAX_COMPONENT": "MEDIUM",
     "UNEXPECTED_TAX_COMPONENT": "MEDIUM",
+    # P15: estados factuales del recovery lifecycle
+    "REJECTED": "HIGH",
+    "OVERPAID": "HIGH",
+    "PARTIALLY_PAID": "MEDIUM",
+    "EXPIRED": "MEDIUM",
     "INDETERMINATE": "LOW",
 }
 PRIORITY_RANK = {"HIGH": 0, "MEDIUM": 1, "LOW": 2}
@@ -293,6 +299,43 @@ def _tax_snapshot(item: dict, event_id: str, priority: str) -> dict:
     }
 
 
+def _tax_recovery_snapshot(item: dict, event_id: str,
+                           priority: str) -> dict:
+    """Snapshot factual de un item CA_ES_TAX_RECOVERY_RECON_V1.
+
+    Clave estable: event + claim_id (ya determinista); la clave
+    nunca incluye factual_status. Estados pendientes/informativos
+    (NO_REFUND_OBSERVED, NOT_SUBMITTED, NOT_APPLICABLE,
+    INDETERMINATE, PAID) no generan caso: se filtran antes.
+    """
+    return {
+        "case_key": (f"tax-recovery|{event_id or '-'}|"
+                     f"{item.get('claim_id') or '-'}"),
+        "canonical_event_id": event_id,
+        "account_id": item.get("account_id"),
+        "isin": None,
+        "direction": None,
+        "factual_status": item.get("status"),
+        "reason_codes": list(item.get("reason_codes") or []),
+        "entitlement_status": None,
+        "amount_basis": None,
+        "expected_amount": item.get("expected_amount"),
+        "actual_amount": item.get("refunded_amount"),
+        "expected_quantity": None,
+        "actual_quantity": None,
+        "expected_ref": item.get("claim_id"),
+        "delta": item.get("outstanding_amount"),
+        "currency": item.get("currency"),
+        "value_date": None,
+        "movement_ids": list(item.get("bound_movement_ids") or []),
+        "linked_movement_ids": [],
+        "evidence": {"claim_id": item.get("claim_id"),
+                     "bound_references": item.get(
+                         "bound_references")},
+        "priority": priority,
+    }
+
+
 def classify_cases(recon_doc: dict) -> list[dict]:
     """recon result -> snapshots factuales observados (sin workflow).
 
@@ -309,10 +352,18 @@ def classify_cases(recon_doc: dict) -> list[dict]:
     custody_scope = recon_doc.get("case_scope") or (
         "custody-positions" if custody_pos else "custody-cash")
     tax = recon_doc.get("schema") == TAX_RECON_SCHEMA
+    recovery = (recon_doc.get("schema")
+                == TAX_RECOVERY_RECON_SCHEMA)
     observed = []
     for item in recon_doc.get("items", []):
         status = item.get("status")
         if status == "MATCH":
+            continue
+        if recovery and status in (
+                "NO_REFUND_OBSERVED", "NOT_SUBMITTED",
+                "NOT_APPLICABLE", "INDETERMINATE", "PAID"):
+            # estados pendientes/informativos del lifecycle: no son
+            # excepciones (igual que INDETERMINATE en tax recon)
             continue
         if tax and status == "INDETERMINATE":
             # expected tax no calculable: atencion/indeterminado,
@@ -326,6 +377,10 @@ def classify_cases(recon_doc: dict) -> list[dict]:
             priority = PRIORITY[status]
         if tax:
             observed.append(_tax_snapshot(item, event_id, priority))
+            continue
+        if recovery:
+            observed.append(_tax_recovery_snapshot(
+                item, event_id, priority))
             continue
         if custody_pos or custody_cash:
             observed.append(_custody_snapshot(
