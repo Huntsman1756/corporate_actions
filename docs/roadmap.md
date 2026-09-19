@@ -515,11 +515,30 @@ P15 Tax Recovery Lifecycle
          (3396eff; 30 tests + scripts/p15_e2e_demo.py 15 legs;
           docs/p15/p150-p152; CI run 35420623083 success)
          — P15 CLOSED
+
+P16 Market Claims Lifecycle V1
+    P16.0 capability audit + OSS survey                      DONE
+         (df7776a; seev.050.001.01-03/051.001.01-02/052-053
+          .001.01-03 verificados contra pin SRU2025 via javap;
+          seev.060-067 Buyer Protection = doc-only, candidato
+          P18; SR2026 .001.04 fuera del pin)
+    P16.1-P16.6 lifecycle core                               DONE
+         (2ecc000; CA_ES_MARKET_CLAIM_BASIS/RULES/ASSESSMENT/
+          CLAIM/MESSAGE/STATUS/CANCELLATION/RECON_V1; claim
+          nunca inferida de trade-before-ex + settlement-after-
+          record; sin regla -> MARKET_PRACTICE_REQUIRED)
+    P16.7 P7 market_claims step + CLI mc-* + P3.5            DONE
+         (06f0439; indice minimo estable sin rules/tx)
+    P16.8-P16.9 M1-M15 + e2e + JVM whitelist + docs          DONE
+         (f6ea9a4; 30 tests + scripts/p16_e2e_demo.py 18 legs
+          con seev.050-053 reales; docs/p16/p160-p162;
+          CI run 35426091227 success)
+         — P16 CLOSED
 ```
 
 ## Prioridad actual
 
-P1–P15 cerrados (incl. P4 MT + ISO 20022 seev.* con conformance
+P1–P16 cerrados (incl. P4 MT + ISO 20022 seev.* con conformance
 MT<->MX verificada, P7 daily operations end-to-end, P8 economic
 coverage V1 para SPLIT/REVERSE_SPLIT, RIGHTS_ISSUE staged,
 STOCK_DIVIDEND, SCRIP_DIVIDEND y CAPITAL_INCREASE=BONU, P9 live
@@ -528,19 +547,24 @@ SMTP, P11 instruction send boundary con FileSpoolTransport,
 P12 transport conformance lab con SFTP/IBM-MQ/FIN-ACK-NAK
 reales sobre OSS, P13 custody position/cash feeds, P14 tax/
 withholding/net entitlement con evidencia EXPECTED/ACTUAL y
-NET cash recon, y P15 tax recovery lifecycle completo
+NET cash recon, P15 tax recovery lifecycle completo
 RELIEF_AT_SOURCE/QUICK_REFUND/STANDARD_RECLAIM con
-recoverable_amount solo por regla+perfil+evidencia).
+recoverable_amount solo por regla+perfil+evidencia, y P16
+market claims lifecycle seev.050-053 con claim nunca inferida
+de trade-before-ex + settlement-after-record).
 SPOOLED/MQ_PUT_CONFIRMED/REMOTE_PERSISTED no son submission
 SWIFT; GATEWAY_* requiere receipt externo real + trust
 boundary operacional; SWIFT_ACKED/NAKED requiere service
 message FIN 21 correlado. Lo que sigue sin demostrar: compat
 con el perfil concreto de Alliance/middleware de una entidad —
 requiere ese boundary real.
-Siguiente: P16 Market Claims Lifecycle V1 (seev.050-053;
-claim basis sobre transaccion + CA event, nunca inferido de
-trade-before-ex + settlement-after-record; FX queda como
-boundary explicito pendiente).
+Siguiente: P17 Securities Transaction & Settlement Feed V1
+(MT540-548/536/537 + sese.023-025 -> CA_ES_SETTLEMENT_
+OBSERVATION/TRANSACTION/STATUS/RECON -> SECURITIES_
+TRANSACTIONS_V1 output compatible P16; identidad solo por
+referencias explicitas, nunca ISIN+qty+fecha; partial
+settlement cumulative; FX queda como boundary explicito
+pendiente).
 Sin nuevos gates formales (G4+ no existen); cada fase con tests
 y preregistro de scope.
 
