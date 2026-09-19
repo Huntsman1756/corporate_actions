@@ -534,11 +534,32 @@ P16 Market Claims Lifecycle V1
           con seev.050-053 reales; docs/p16/p160-p162;
           CI run 35426091227 success)
          — P16 CLOSED
+
+P17 Securities Transaction & Settlement Feed V1
+    P17.0 capability audit + OSS survey                      DONE
+         (867985e; MT540-548 verificados en pw-swift-core;
+          sese.023.001.01-11/.002.01-11, sese.024.001.01-13/
+          .002.01-12, sese.025.001.01-12/.002.01-11 en pin
+          SRU2025; MT536/537 statements fuera de V1)
+    P17.1-P17.4 observation/ledger/status/recon/export core  DONE
+         (CA_ES_SETTLEMENT_OBSERVATION/TRANSACTION/STATUS/
+          RECON_V1 + export CA_ES_SECURITIES_TRANSACTIONS_V1
+          compatible claim_basis; identidad solo por refs
+          explicitas; cumulative semantics; dup semantico por
+          hash de contenido, nunca por mid+kind)
+    P17.5 P7 settlement_feed step + CLI st-* + P3.5          DONE
+         (indice minimo estable sin observaciones;
+          market_claims consume export solo sin tx input)
+    P17.8 S1-S15 + DAG + JVM whitelist + docs                DONE
+         (21 tests + 4 DAG; fixtures reales MT541/545/548 +
+          sese.023-025 verificados end-to-end;
+          docs/p17/p170-conformance)
+         — P17 CLOSED
 ```
 
 ## Prioridad actual
 
-P1–P16 cerrados (incl. P4 MT + ISO 20022 seev.* con conformance
+P1–P17 cerrados (incl. P4 MT + ISO 20022 seev.* con conformance
 MT<->MX verificada, P7 daily operations end-to-end, P8 economic
 coverage V1 para SPLIT/REVERSE_SPLIT, RIGHTS_ISSUE staged,
 STOCK_DIVIDEND, SCRIP_DIVIDEND y CAPITAL_INCREASE=BONU, P9 live
@@ -551,20 +572,18 @@ NET cash recon, P15 tax recovery lifecycle completo
 RELIEF_AT_SOURCE/QUICK_REFUND/STANDARD_RECLAIM con
 recoverable_amount solo por regla+perfil+evidencia, y P16
 market claims lifecycle seev.050-053 con claim nunca inferida
-de trade-before-ex + settlement-after-record).
+de trade-before-ex + settlement-after-record, y P17 settlement
+transaction feed MT54x/sese.023-025 con identidad solo por
+referencias explicitas y export V1 compatible P16).
 SPOOLED/MQ_PUT_CONFIRMED/REMOTE_PERSISTED no son submission
 SWIFT; GATEWAY_* requiere receipt externo real + trust
 boundary operacional; SWIFT_ACKED/NAKED requiere service
 message FIN 21 correlado. Lo que sigue sin demostrar: compat
 con el perfil concreto de Alliance/middleware de una entidad —
 requiere ese boundary real.
-Siguiente: P17 Securities Transaction & Settlement Feed V1
-(MT540-548/536/537 + sese.023-025 -> CA_ES_SETTLEMENT_
-OBSERVATION/TRANSACTION/STATUS/RECON -> SECURITIES_
-TRANSACTIONS_V1 output compatible P16; identidad solo por
-referencias explicitas, nunca ISIN+qty+fecha; partial
-settlement cumulative; FX queda como boundary explicito
-pendiente).
+Siguiente: P18 Buyer Protection (seev.060-067; requiere evaluar
+migracion de pin SRU2025->SRU2026 — el audit P16 lo documenta)
+o P19 FX como boundary explicito diferido.
 Sin nuevos gates formales (G4+ no existen); cada fase con tests
 y preregistro de scope.
 

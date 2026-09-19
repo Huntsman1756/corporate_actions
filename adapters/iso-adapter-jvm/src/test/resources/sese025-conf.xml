@@ -1,0 +1,46 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Document xmlns="urn:iso:std:iso:20022:tech:xsd:sese.025.001.12">
+  <SctiesSttlmTxConf>
+    <TxIdDtls>
+      <AcctSvcrTxId>SESE-TX-1</AcctSvcrTxId>
+      <SctiesMvmntTp>RECE</SctiesMvmntTp>
+      <Pmt>APMT</Pmt>
+    </TxIdDtls>
+    <TradDtls>
+      <TradId>TRD-1</TradId>
+      <UnqTxIdr>UTI-1</UnqTxIdr>
+      <TradDt>
+        <Dt>
+          <Dt>2024-01-10</Dt>
+        </Dt>
+      </TradDt>
+      <SttlmDt>
+        <Dt>
+          <Dt>2024-01-12</Dt>
+        </Dt>
+      </SttlmDt>
+      <FctvSttlmDt>
+        <Dt>
+          <Dt>2024-01-12</Dt>
+        </Dt>
+      </FctvSttlmDt>
+    </TradDtls>
+    <FinInstrmId>
+      <ISIN>ES0113900J37</ISIN>
+    </FinInstrmId>
+    <QtyAndAcctDtls>
+      <SttldQty>
+        <Qty>
+          <Unit>1000</Unit>
+        </Qty>
+      </SttldQty>
+      <SfkpgAcct>
+        <Id>ACC-1</Id>
+      </SfkpgAcct>
+    </QtyAndAcctDtls>
+    <SttldAmt>
+      <Amt Ccy="EUR">2500</Amt>
+      <CdtDbtInd>CRDT</CdtDbtInd>
+    </SttldAmt>
+  </SctiesSttlmTxConf>
+</Document>
