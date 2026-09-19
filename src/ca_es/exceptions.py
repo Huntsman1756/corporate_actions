@@ -50,6 +50,7 @@ CUSTODY_CASH_RECON_SCHEMA = "CA_ES_CASH_FEED_RECON_V1"
 TAX_RECON_SCHEMA = "CA_ES_TAX_RECON_V1"
 TAX_RECOVERY_RECON_SCHEMA = "CA_ES_TAX_RECOVERY_RECON_V1"
 MARKET_CLAIM_RECON_SCHEMA = "CA_ES_MARKET_CLAIM_RECON_V1"
+SETTLEMENT_RECON_SCHEMA = "CA_ES_SETTLEMENT_RECON_V1"
 
 WORKFLOW_OPEN = "OPEN"
 WORKFLOW_IN_REVIEW = "IN_REVIEW"
@@ -108,6 +109,12 @@ PRIORITY = {
     "PARTIALLY_PAID": "MEDIUM",
     "EXPIRED": "MEDIUM",
     "INDETERMINATE": "LOW",
+    # P17: estados factuales del settlement feed
+    "OVER_SETTLED": "HIGH",
+    "QUANTITY_CONFLICT": "HIGH",
+    "FAILED": "HIGH",
+    "NO_INSTRUCTION_BASIS": "MEDIUM",
+    "INSUFFICIENT_IDENTITY": "MEDIUM",
 }
 PRIORITY_RANK = {"HIGH": 0, "MEDIUM": 1, "LOW": 2}
 
@@ -376,6 +383,44 @@ def _market_claim_snapshot(item: dict, event_id: str,
     }
 
 
+def _settlement_snapshot(item: dict, priority: str) -> dict:
+    """Snapshot factual de un item CA_ES_SETTLEMENT_RECON_V1.
+
+    Clave estable: transaction_id determinista (o el ref del
+    mensaje huerfano); nunca incluye factual_status. Estados
+    pendientes/informativos del ciclo (MATCH, PARTIALLY_SETTLED,
+    NO_SETTLEMENT_OBSERVED, MATCHED, PENDING, INSTRUCTED) se
+    filtran antes; CANCELLED llega como LOW por defecto.
+    """
+    tx = item.get("transaction_id") or item.get("source_ref") or "-"
+    return {
+        "case_key": f"settlement-feed|{tx}",
+        "canonical_event_id": None,
+        "account_id": item.get("account_id"),
+        "isin": item.get("isin"),
+        "direction": None,
+        "factual_status": item.get("status"),
+        "reason_codes": list(item.get("reason_codes") or []),
+        "entitlement_status": None,
+        "amount_basis": None,
+        "expected_amount": None,
+        "actual_amount": None,
+        "expected_quantity": item.get("instructed_quantity"),
+        "actual_quantity": item.get("settled_quantity"),
+        "expected_ref": item.get("transaction_id"),
+        "delta": item.get("outstanding_quantity"),
+        "currency": None,
+        "value_date": None,
+        "movement_ids": [],
+        "linked_movement_ids": [],
+        "evidence": {"transaction_id": item.get("transaction_id"),
+                     "message_identifier": item.get(
+                         "message_identifier"),
+                     "conflicts": item.get("conflicts")},
+        "priority": priority,
+    }
+
+
 def classify_cases(recon_doc: dict) -> list[dict]:
     """recon result -> snapshots factuales observados (sin workflow).
 
@@ -396,10 +441,19 @@ def classify_cases(recon_doc: dict) -> list[dict]:
                 == TAX_RECOVERY_RECON_SCHEMA)
     market_claim = (recon_doc.get("schema")
                     == MARKET_CLAIM_RECON_SCHEMA)
+    settlement = (recon_doc.get("schema")
+                  == SETTLEMENT_RECON_SCHEMA)
     observed = []
     for item in recon_doc.get("items", []):
         status = item.get("status")
         if status == "MATCH":
+            continue
+        if settlement and status in (
+                "PARTIALLY_SETTLED", "NO_SETTLEMENT_OBSERVED",
+                "MATCHED", "PENDING", "INSTRUCTED"):
+            # estados normales/pendientes del ciclo de settlement:
+            # no son excepciones; CANCELLED llega como LOW por
+            # defecto (terminal observado, auditable)
             continue
         if market_claim and status in (
                 "NO_SETTLEMENT_OBSERVED", "NOT_NOTIFIED",
@@ -429,6 +483,9 @@ def classify_cases(recon_doc: dict) -> list[dict]:
         if recovery:
             observed.append(_tax_recovery_snapshot(
                 item, event_id, priority))
+            continue
+        if settlement:
+            observed.append(_settlement_snapshot(item, priority))
             continue
         if market_claim:
             observed.append(_market_claim_snapshot(

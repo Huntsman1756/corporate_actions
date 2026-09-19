@@ -2466,6 +2466,57 @@ def cmd_mc_recon(args: argparse.Namespace) -> int:
     return _emit(claim_recon(claims, movements, now=args.now))
 
 
+def cmd_st_observe(args: argparse.Namespace) -> int:
+    from .settlement_observation import observe_message
+
+    facts, code = _load_json(args.facts, "settlement-facts")
+    if facts is None:
+        return code
+    return _emit(observe_message(facts, now=args.now))
+
+
+def cmd_st_ledger(args: argparse.Namespace) -> int:
+    from .settlement_transaction import build_ledger
+
+    docs, code = _multi_load(args.observations, "observations")
+    if docs is None:
+        return code
+    prev = None
+    if args.previous:
+        prev, code = _load_json(args.previous, "ledger")
+        if prev is None:
+            return code
+    return _emit(build_ledger(docs, previous_doc=prev,
+                              now=args.now))
+
+
+def cmd_st_status(args: argparse.Namespace) -> int:
+    from .settlement_status import status_doc
+
+    ledger, code = _load_json(args.ledger, "ledger")
+    if ledger is None:
+        return code
+    return _emit(status_doc(ledger, now=args.now))
+
+
+def cmd_st_recon(args: argparse.Namespace) -> int:
+    from .settlement_recon import settlement_recon
+
+    ledger, code = _load_json(args.ledger, "ledger")
+    if ledger is None:
+        return code
+    return _emit(settlement_recon(ledger, now=args.now))
+
+
+def cmd_st_export(args: argparse.Namespace) -> int:
+    from .settlement_export import export_transactions
+
+    ledger, code = _load_json(args.ledger, "ledger")
+    if ledger is None:
+        return code
+    return _emit(export_transactions(ledger))
+
+
 def build_parser() -> argparse.ArgumentParser:
     parser = argparse.ArgumentParser(prog="ca-es", description=__doc__)
     parser.add_argument("--repo-root", default=None)
@@ -3310,6 +3361,53 @@ def build_parser() -> argparse.ArgumentParser:
                      help="doc CA_ES_CASH_MOVEMENTS_V2 (repetible)")
     mcr.add_argument("--now", default=None)
     mcr.set_defaults(func=cmd_mc_recon)
+
+    # P17 — settlement transaction feed (MT54x / sese.023-025)
+    sto = sub.add_parser(
+        "st-observe",
+        help="facts MT54x/sese.023-025 -> "
+             "CA_ES_SETTLEMENT_OBSERVATION_V1")
+    sto.add_argument("--facts", required=True,
+                     help="doc CA_ES_SWIFT_MT_FACTS_V1 o "
+                          "CA_ES_SWIFT_MX_FACTS_V1")
+    sto.add_argument("--now", default=None)
+    sto.set_defaults(func=cmd_st_observe)
+
+    stl = sub.add_parser(
+        "st-ledger",
+        help="observaciones -> CA_ES_SETTLEMENT_TRANSACTION_V1 "
+             "(identidad solo por referencias explicitas)")
+    stl.add_argument("--observations", action="append",
+                     default=[], required=True,
+                     help="doc CA_ES_SETTLEMENT_OBSERVATION_V1 "
+                          "(repetible)")
+    stl.add_argument("--previous", default=None,
+                     help="ledger previo para merge")
+    stl.add_argument("--now", default=None)
+    stl.set_defaults(func=cmd_st_ledger)
+
+    sts = sub.add_parser(
+        "st-status",
+        help="ledger -> CA_ES_SETTLEMENT_STATUS_V1 (vista de "
+             "ciclo auditable)")
+    sts.add_argument("--ledger", required=True)
+    sts.add_argument("--now", default=None)
+    sts.set_defaults(func=cmd_st_status)
+
+    str_ = sub.add_parser(
+        "st-recon",
+        help="ledger -> CA_ES_SETTLEMENT_RECON_V1 (instructed "
+             "vs cumulative settled, conflictos)")
+    str_.add_argument("--ledger", required=True)
+    str_.add_argument("--now", default=None)
+    str_.set_defaults(func=cmd_st_recon)
+
+    ste = sub.add_parser(
+        "st-export",
+        help="ledger -> CA_ES_SECURITIES_TRANSACTIONS_V1 "
+             "(input de P16 market claims)")
+    ste.add_argument("--ledger", required=True)
+    ste.set_defaults(func=cmd_st_export)
 
     return parser
 

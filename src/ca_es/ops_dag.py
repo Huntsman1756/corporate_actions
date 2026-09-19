@@ -650,6 +650,114 @@ def _step_tax_recovery(ctx: RunContext) -> dict | None:
     }
 
 
+def _previous_settlement_artifacts(ctx: RunContext) -> dict:
+    """Artefactos previos del settlement feed desde el ultimo
+    run exitoso: ledger doc y lista de casos."""
+    out: dict = {"ledger": None, "cases": []}
+    run = ctx.state.latest_successful_run(ctx.conn)
+    if not run:
+        return out
+    steps = ctx.state.get_steps(ctx.conn, run["run_id"])
+    for s in steps:
+        if s["step_id"] != "settlement_feed" \
+                or not s["output_sha256"]:
+            continue
+        try:
+            index = ctx.state.get_artifact(s["output_sha256"])
+        except Exception:
+            continue
+        entry = (index.get("items") or {}).get("feed") or {}
+        for key, field in (("ledger", "ledger"),
+                           ("cases", "cases")):
+            ref = entry.get(key)
+            if not isinstance(ref, dict):
+                continue
+            try:
+                doc = ctx.state.get_artifact(ref["sha256"])
+            except Exception:
+                continue
+            if field == "ledger":
+                out["ledger"] = doc
+            else:
+                out["cases"] = doc.get("cases") or []
+        break
+    return out
+
+
+def _step_settlement_feed(ctx: RunContext) -> dict | None:
+    """P17: inbox MT54x/sese.023-025 -> observations -> ledger ->
+    status -> recon -> export V1 -> cases. Impuro (lee inbox +
+    ledger previo), opcional.
+
+    Sin observaciones en el inbox: indice minimo estable — no
+    invalida downstream."""
+    from .exceptions import build_cases_doc
+    from .settlement_export import export_transactions
+    from .settlement_observation import (
+        MT_SETTLEMENT_IDS, MX_SETTLEMENT_PREFIXES,
+        observations_doc)
+    from .settlement_recon import settlement_recon
+    from .settlement_status import status_doc
+    from .settlement_transaction import build_ledger
+
+    now = ctx.now()
+    facts_docs = []
+    for f in _inbox_facts_all(ctx):
+        mid = f.get("message_identifier")
+        if mid in MT_SETTLEMENT_IDS or (
+                isinstance(mid, str) and any(
+                    mid.startswith(p)
+                    for p in MX_SETTLEMENT_PREFIXES)):
+            facts_docs.append(f)
+
+    prev = _previous_settlement_artifacts(ctx)
+    if not facts_docs and prev["ledger"] is None:
+        return {
+            "schema": INDEX_SCHEMA,
+            "generated_at": now,
+            "kind": "CA_ES_SETTLEMENT_TRANSACTION_V1",
+            "items": {},
+        }
+
+    obs = observations_doc(facts_docs, now=now)
+    ledger = build_ledger([obs], previous_doc=prev["ledger"],
+                          now=now)
+    feed_entry = {"observations": ctx.state.store_artifact(
+        ctx.conn, obs, "CA_ES_SETTLEMENT_OBSERVATION_V1", "V1",
+        run_id=ctx.run_id)}
+    feed_entry["ledger"] = ctx.state.store_artifact(
+        ctx.conn, ledger, "CA_ES_SETTLEMENT_TRANSACTION_V1",
+        "V1", run_id=ctx.run_id)
+
+    statuses = status_doc(ledger, now=now)
+    feed_entry["status"] = ctx.state.store_artifact(
+        ctx.conn, statuses, "CA_ES_SETTLEMENT_STATUS_V1", "V1",
+        run_id=ctx.run_id)
+
+    recon = settlement_recon(ledger, now=now)
+    feed_entry["recon"] = ctx.state.store_artifact(
+        ctx.conn, recon, "CA_ES_SETTLEMENT_RECON_V1", "V1",
+        run_id=ctx.run_id)
+
+    exported = export_transactions(ledger)
+    feed_entry["transactions"] = ctx.state.store_artifact(
+        ctx.conn, exported, "CA_ES_SECURITIES_TRANSACTIONS_V1",
+        "V1", run_id=ctx.run_id)
+
+    cases = build_cases_doc(recon, previous_cases=prev["cases"],
+                            now=now)
+    feed_entry["cases"] = ctx.state.store_artifact(
+        ctx.conn, cases, "CA_ES_EXCEPTION_CASES_V1", "V1",
+        run_id=ctx.run_id)
+
+    return {
+        "schema": INDEX_SCHEMA,
+        "generated_at": now,
+        "kind": "CA_ES_SETTLEMENT_TRANSACTION_V1",
+        "items": {"feed": feed_entry},
+    }
+
+
 def _previous_market_claims(ctx: RunContext) -> dict[str, dict]:
     """Claims docs previos por evento desde el ultimo run exitoso."""
     out: dict[str, dict] = {}
@@ -705,6 +813,18 @@ def _step_market_claims(ctx: RunContext) -> dict | None:
     mc_cfg = ctx.config.get("market_claims") or {}
     rules_doc = ctx.input_doc("market_claim_rules")
     tx_doc = ctx.input_doc("securities_transactions")
+    if tx_doc is None:
+        # P17: el settlement feed exporta
+        # CA_ES_SECURITIES_TRANSACTIONS_V1; solo se usa cuando no
+        # hay input explicito declarado
+        feed_index = ctx.docs.get("settlement_feed") or {}
+        ref = ((feed_index.get("items") or {}).get("feed")
+               or {}).get("transactions")
+        if isinstance(ref, dict):
+            try:
+                tx_doc = ctx.state.get_artifact(ref["sha256"])
+            except Exception:
+                tx_doc = None
     if rules_doc is None and tx_doc is None:
         return {
             "schema": INDEX_SCHEMA,
@@ -1392,13 +1512,25 @@ def default_dag() -> list[OperationalStep]:
                          "cash_movements"),
             uses_as_of=True,
             fn=_step_tax_recovery),
+        # P17: settlement feed sobre MT54x/sese.023-025 del
+        # inbox. Impuro (lee inbox + ledger previo), opcional;
+        # sin observaciones -> indice minimo estable.
+        OperationalStep(
+            "settlement_feed", "1",
+            dependencies=("process_inbox",),
+            pure=False, mandatory=False,
+            expected_output_schema=INDEX_SCHEMA,
+            expected_output_version="V1",
+            fn=_step_settlement_feed),
         # P16: market claims lifecycle sobre seev.050-053 del
-        # inbox + transacciones/reglas declaradas. Impuro,
-        # opcional; sin rules ni transactions -> indice minimo.
+        # inbox + transacciones/reglas declaradas (o exportadas
+        # por settlement_feed cuando no hay input explicito).
+        # Impuro, opcional; sin rules ni transactions -> indice
+        # minimo.
         OperationalStep(
             "market_claims", "1",
             dependencies=("process_inbox", "entitlements",
-                          "tax_recovery"),
+                          "tax_recovery", "settlement_feed"),
             pure=False, mandatory=False,
             expected_output_schema=INDEX_SCHEMA,
             expected_output_version="V1",
